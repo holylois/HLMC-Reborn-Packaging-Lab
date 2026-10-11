@@ -39,6 +39,7 @@ public final class SchoolCatch {
         if (stack.isEmpty()) return false;
         var config = Legends.fish;
         if (config != null && config.enabled) Legends.weigh(stack, level, angler.getRandom(), angler.getLuck(), angler.getName().getString(), config);
+        FishCaught.record(angler,stack);
         fish.discard();
         angler.awardStat(Stats.FISH_CAUGHT);
         if (!angler.getInventory().add(stack)) {

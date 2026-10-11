@@ -60,6 +60,7 @@ public final class HolyLois implements ModInitializer {
         BlueMapSkins.register();
         PartyAliases.register();
         TravelMenus.register();
+        discoveries.registerJournal();
         PayloadTypeRegistry.clientboundPlay().register(AuthStatus.TYPE, AuthStatus.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(holylois.auth.RewardNotice.TYPE, holylois.auth.RewardNotice.CODEC);
         AccountRequests.register();
@@ -75,12 +76,14 @@ public final class HolyLois implements ModInitializer {
             DailyRewards.registerTest(dispatcher);
             dispatcher.register(net.minecraft.commands.Commands.literal("structures").executes(context -> Discoveries.here(context.getSource().getPlayerOrException())));
             var page = com.mojang.brigadier.arguments.IntegerArgumentType.integer(1);
+            dispatcher.register(net.minecraft.commands.Commands.literal("journal")
+                .executes(context -> discoveries.open(context.getSource().getPlayerOrException(),new holylois.boombox.JournalRequest(1,0,0,6,""))));
             dispatcher.register(net.minecraft.commands.Commands.literal("discoveries")
-                .executes(context -> discoveries.list(context.getSource().getPlayerOrException(), false, 1))
+                .executes(context -> discoveries.open(context.getSource().getPlayerOrException(),new holylois.boombox.JournalRequest(0,0,0,6,"")))
                 .then(net.minecraft.commands.Commands.argument("page", page)
                     .executes(context -> discoveries.list(context.getSource().getPlayerOrException(), false, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context, "page"))))
                 .then(net.minecraft.commands.Commands.literal("mine")
-                    .executes(context -> discoveries.list(context.getSource().getPlayerOrException(), true, 1))
+                    .executes(context -> discoveries.open(context.getSource().getPlayerOrException(),new holylois.boombox.JournalRequest(1,2,0,6,"")))
                     .then(net.minecraft.commands.Commands.argument("page", page)
                         .executes(context -> discoveries.list(context.getSource().getPlayerOrException(), true, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context, "page"))))));
         });

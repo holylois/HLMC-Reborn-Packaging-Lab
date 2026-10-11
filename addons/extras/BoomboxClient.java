@@ -33,6 +33,7 @@ public final class BoomboxClient implements ClientModInitializer {
         PackCheckClient.register();
         PartyHud.register();
         TravelClient.register();
+        JournalClient.register();
         AccountScreen.register();
         RareCatchHud.register();
         FishLook.register();

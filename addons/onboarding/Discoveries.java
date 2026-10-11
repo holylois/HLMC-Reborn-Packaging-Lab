@@ -24,6 +24,12 @@ import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
 import java.util.regex.Pattern;
+import holylois.boombox.JournalState;
+import holylois.boombox.JournalRequest;
+import holylois.boombox.PartySupport;
+import holylois.boombox.FishCaught;
+import holylois.boombox.FishData;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 /**
  * Discoveries and world firsts (owner 2026-10-11). Every notable structure instance is remembered once. The first of each kind
@@ -42,10 +48,15 @@ public final class Discoveries {
         public long time;
         public int x, y, z, number;
         public boolean first;
+        public UUID uuid;
     }
     /** A boss or elite world first: key "boss:minecraft:ender_dragon", "elite", "level:50"... */
-    public static final class First { public String key, what, player, dim; public long time; public int x, y, z; }
-    public static final class State { public int version = 2; public List<Found> found = new ArrayList<>(); public List<First> firsts = new ArrayList<>(); }
+    public static final class First { public String key, what, player, dim; public long time; public int x, y, z, level; }
+    public static final class State {
+        public int version = 3;
+        public List<Found> found = new ArrayList<>(); public List<First> firsts = new ArrayList<>();
+        public Map<UUID,JournalBook> journals = new HashMap<>();
+    }
 
     private static final Map<String, String> VANILLA = Map.ofEntries(
         Map.entry("ancient_city", "Ancient City"), Map.entry("trial_chambers", "Trial Chambers"),
@@ -70,7 +81,64 @@ public final class Discoveries {
     private final Map<String, Found> found = new HashMap<>();
     private final Map<String, First> firsts = new LinkedHashMap<>();
     private final Map<String, Integer> counts = new HashMap<>();
+    private final Map<UUID,JournalBook> journals = new HashMap<>();
+    private final Map<UUID,Long> nextPage = new HashMap<>();
+    private boolean dirty;
     private Path file;
+
+    void registerJournal() {
+        ServerPlayNetworking.registerGlobalReceiver(JournalRequest.TYPE,(request,context)->open(context.player(),request));
+        FishCaught.EVENT.register((player,fish)->{
+            if(file==null||!PartySupport.ready(player))return;
+            book(player).caught(BuiltInRegistries.ITEM.getKey(fish.getItem()).toString(),fish.getCount(),FishData.kilograms(fish),FishData.rarity(fish),
+                player.level().dimension().identifier().toString(),player.getBlockX(),player.getBlockY(),player.getBlockZ(),now());
+            dirty=true;
+        });
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server->{if(dirty&&server.getTickCount()%400==0)save();});
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPING.register(server->{if(dirty)save();});
+        net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register((handler,server)->nextPage.remove(handler.player.getUUID()));
+    }
+    private static long now(){return System.currentTimeMillis()/1000;}
+    private JournalBook book(ServerPlayer player){return journals.computeIfAbsent(player.getUUID(),id->new JournalBook());}
+    int open(ServerPlayer player,JournalRequest request) {
+        if(file==null||!PartySupport.ready(player))return 0;
+        long now=System.currentTimeMillis();
+        if(now<nextPage.getOrDefault(player.getUUID(),0L))return 0;
+        nextPage.put(player.getUUID(),now+150);
+        if(ServerPlayNetworking.canSend(player,JournalState.TYPE))ServerPlayNetworking.send(player,snapshot(player,request));
+        else player.sendSystemMessage(Component.literal("Update your pack to open the Holy Lois Journal.").withStyle(ChatFormatting.YELLOW));
+        return 1;
+    }
+    JournalState snapshot(ServerPlayer player,JournalRequest request){
+        var entries=new ArrayList<JournalState.Entry>();
+        var own=book(player);
+        for(var f:found.values()){
+            // Legacy first discoveries can be recovered by name; new visits use the stable UUID.
+            if((player.getUUID().equals(f.uuid)||f.uuid==null&&player.getGameProfile().name().equalsIgnoreCase(f.player))&&own.visit(f.key,f.time))dirty=true;
+            if(request.tab()==0 ? !f.first : !own.places.containsKey(f.key))continue;
+            entries.add(new JournalState.Entry(f.key,JournalState.PLACE,f.name+(f.first?"":" #"+f.number),StatsVisibility.display(f.player),
+                f.dim==null?"minecraft:overworld":f.dim,f.x,f.y,f.z,request.tab()==0?f.time:own.places.get(f.key),1,0,0,0,true,f.first));
+        }
+        if(request.tab()==0){
+            for(var f:firsts.values()){
+                boolean mob=f.key.startsWith("mob:");
+                if(mob&&firsts.containsKey("boss:"+f.key.substring(4)))continue;
+                entries.add(new JournalState.Entry(f.key,mob?JournalState.KILL:JournalState.FEAT,mob?f.key.substring(4):f.what,StatsVisibility.display(f.player),
+                    f.dim,f.x,f.y,f.z,f.time,1,0,0,f.level,true,true));
+            }
+        }else{
+            for(var f:own.fish.values())entries.add(new JournalState.Entry("fish:"+f.species,JournalState.FISH,f.species,"",f.dim,f.x,f.y,f.z,f.time,f.count,f.heaviest,f.rarities,0,true,false));
+            for(var type:BuiltInRegistries.ENTITY_TYPE){
+                long count=player.getStats().getValue(net.minecraft.stats.Stats.ENTITY_KILLED,type);
+                if(count<=0)continue;
+                String id=BuiltInRegistries.ENTITY_TYPE.getKey(type).toString();var k=own.kills.get(id);
+                if(id.equals("minecraft:player"))continue;
+                entries.add(new JournalState.Entry("kill:"+id,JournalState.KILL,id,"",k==null?"":k.dim,k==null?0:k.x,k==null?0:k.y,k==null?0:k.z,
+                    k==null?0:k.time,count,0,0,k==null?0:k.level,k!=null,false));
+            }
+        }
+        return JournalBook.page(entries,request);
+    }
 
     /** Display name for a structure id, or null when it should not be announced. */
     static String name(String id) {
@@ -108,6 +176,7 @@ public final class Discoveries {
     static String article(String name) { return "AEIOU".indexOf(Character.toUpperCase(name.charAt(0))) >= 0 ? "an" : "a"; }
 
     void load(MinecraftServer server, Path worldRoot) {
+        found.clear();firsts.clear();counts.clear();journals.clear();nextPage.clear();dirty=false;
         file = worldRoot.resolve("holylois/discoveries.json");
         try {
             if (Files.exists(file)) {
@@ -123,11 +192,12 @@ public final class Discoveries {
                     if (upgrade) LOG.info("Holy Lois discoveries: numbered {} older finds (first of each kind = world first)", state.found.size());
                 }
                 if (state != null && state.firsts != null) for (var first : state.firsts) firsts.put(first.key, first);
-                if (state != null && state.version < 2) save();
+                if(state!=null&&state.journals!=null)journals.putAll(state.journals);
+                if (state != null && state.version < 3) save();
             }
             LOG.info("Holy Lois discoveries: {} structures found so far, {} world firsts", found.size(),
                 found.values().stream().filter(f -> f.first).count() + firsts.size());
-        } catch (Exception error) { LOG.warn("Cannot read discoveries; starting a new list in memory", error); }
+        } catch (Exception error) { throw new IllegalStateException("Cannot read discoveries; refusing to overwrite saved journal records",error); }
     }
 
     /** Version 1 kept one entry per find: number them by time, the first of each name is the world first, place from the key. */
@@ -145,7 +215,7 @@ public final class Discoveries {
 
     /** Called every two seconds for each authenticated player. */
     void check(MinecraftServer server, ServerPlayer player) {
-        if (file == null || player.isSpectator()) return;
+        if (file == null || player.isSpectator() || !PartySupport.ready(player)) return;
         var level = player.level();
         var manager = level.structureManager();
         var pos = player.blockPosition();
@@ -158,10 +228,12 @@ public final class Discoveries {
             var start = manager.getStructureWithPieceAt(pos.getX(), pos.getY(), pos.getZ(), structure);
             if (start == null || !start.isValid()) continue;
             String key = level.dimension().identifier() + "|" + id + "|" + start.getChunkPos().x() + "," + start.getChunkPos().z();
+            if(book(player).visit(key,now()))dirty=true;
             if (found.containsKey(key)) continue;
             var entry = new Found();
             entry.key = key; entry.structure = id.toString(); entry.name = name;
             entry.player = player.getGameProfile().name(); entry.time = System.currentTimeMillis() / 1000;
+            entry.uuid = player.getUUID();
             entry.dim = level.dimension().identifier().toString();
             entry.x = pos.getX(); entry.y = pos.getY(); entry.z = pos.getZ();
             entry.biome = level.getBiome(pos).unwrapKey().map(k -> k.identifier().toString()).orElse("");
@@ -189,12 +261,21 @@ public final class Discoveries {
 
     /** Boss and Runeforged firsts, from the AFTER_DEATH hook. Credit goes to the player who earned the kill. */
     void killed(MinecraftServer server, LivingEntity entity) {
-        if (file == null || !(entity.getKillCredit() instanceof ServerPlayer player)) return;
+        if (file == null || !(entity.getKillCredit() instanceof ServerPlayer player) || !PartySupport.ready(player)) return;
         String type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
+        int[] rune = Runeforged.levelAndElite(entity);
+        int level=rune==null?0:rune[0];
+        book(player).killed(type,level,entity.level().dimension().identifier().toString(),entity.getBlockX(),entity.getBlockY(),entity.getBlockZ(),now());
+        dirty=true;
         String boss = BOSSES.get(type);
         if (boss == null && entity.getType().builtInRegistryHolder().is(BOSS_TAG)) boss = entity.getName().getString();
         if (boss != null) first(server, player, entity, "boss:" + type, "slew " + boss);
-        int[] rune = Runeforged.levelAndElite(entity);
+        var mobFirst=rememberMob(type,player.getGameProfile().name(),entity.level().dimension().identifier().toString(),entity.getBlockX(),entity.getBlockY(),entity.getBlockZ(),now(),level);
+        if(mobFirst!=null){
+            if(boss==null)server.getPlayerList().broadcastSystemMessage(Component.literal("✦ World first: ").withStyle(ChatFormatting.GOLD)
+                .append(Component.literal(StatsVisibility.display(mobFirst.player)+" defeated the first "))
+                .append(entity.getType().getDescription()).append(Component.literal(".")),false);
+        }
         if (rune == null) return;
         String mob = entity.getName().getString();
         if (rune[1] > 0) first(server, player, entity, "elite", "slew the first Runeforged elite (" + mob + ", level " + rune[0] + ")");
@@ -203,6 +284,15 @@ public final class Discoveries {
     }
 
     private static final TagKey<EntityType<?>> BOSS_TAG = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("c", "bosses"));
+
+    /** First credit never changes when a later kill raises the record level. */
+    First rememberMob(String type,String player,String dimension,int x,int y,int z,long time,int level){
+        String key="mob:"+type;var prior=firsts.get(key);
+        if(prior!=null){if(level>prior.level){prior.level=level;dirty=true;}return null;}
+        var first=new First();first.key=key;first.what="slew the first "+title(type.substring(type.indexOf(':')+1));
+        first.player=player;first.dim=dimension;first.x=x;first.y=y;first.z=z;first.time=time;first.level=level;
+        firsts.put(key,first);dirty=true;return first;
+    }
 
     private void first(MinecraftServer server, ServerPlayer player, LivingEntity entity, String key, String what) {
         if (firsts.containsKey(key)) return;
@@ -226,7 +316,7 @@ public final class Discoveries {
 
     private static MutableComponent worldFirst(String player, Component rest) {
         return Component.literal("✦ WORLD FIRST ✦ ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-            .append(Component.literal(player).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(false)))
+            .append(Component.literal(StatsVisibility.display(player)).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(false)))
             .append(rest.copy().withStyle(style -> style.withBold(false)));
     }
 
@@ -308,10 +398,12 @@ public final class Discoveries {
             state.found.addAll(found.values());
             state.found.sort(Comparator.comparingLong(f -> f.time));
             state.firsts.addAll(firsts.values());
+            state.journals.putAll(journals);
             Files.createDirectories(file.getParent());
             var temporary = file.resolveSibling("discoveries.json.tmp");
             Files.writeString(temporary, JSON.toJson(state));
             Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            dirty=false;
         } catch (Exception error) { LOG.warn("Cannot save discoveries", error); }
     }
 

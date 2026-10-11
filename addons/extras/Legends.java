@@ -162,7 +162,11 @@ public final class Legends {
         if (weights != null && weights.enabled && LootRules.matchesAny(weights.tables, id)) {
             var hook = context.getOptional(LootContextParams.THIS_ENTITY);
             String angler = hook instanceof FishingHook fishing && fishing.getPlayerOwner() != null ? fishing.getPlayerOwner().getName().getString() : null;
-            for (var stack : drops) weigh(stack, level, random, context.getLuck(), angler, weights);
+            for (var stack : drops) {
+                weigh(stack, level, random, context.getLuck(), angler, weights);
+                if (hook instanceof FishingHook fishing && fishing.getPlayerOwner() instanceof net.minecraft.server.level.ServerPlayer player)
+                    FishCaught.record(player,stack);
+            }
         }
     }
 

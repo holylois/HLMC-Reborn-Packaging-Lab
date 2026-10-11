@@ -45,6 +45,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         List<String> failed = new ArrayList<>();
         try {
             context.takeScreenshot("01-title");
+            journalFixture();
             var world = context.worldBuilder().create();
             world.getConnection().waitForChunksRender();
             context.takeScreenshot("02-world");
@@ -72,6 +73,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "held maps", context, world, HolyLoisClientTests::heldMaps);
             run(failed, "water by camera height", context, world, HolyLoisClientTests::waterByHeight);
             run(failed, "item cards", context, world, HolyLoisClientTests::itemCards);
+            run(failed, "holy lois journal", context, world, HolyLoisClientTests::journal);
             run(failed, "hooked school fish arrives as an item", context, world, HolyLoisClientTests::schoolCatch);
             run(failed, "fish tooltips", context, world, HolyLoisClientTests::fishTooltips);
             run(failed, "fish of thieves eating frames", context, world, HolyLoisClientTests::fishEatingFrames);
@@ -110,6 +112,71 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.takeScreenshot("03-inventory");
         context.runOnClient(client -> client.player.closeContainer());
         context.waitTicks(5);
+    }
+
+    /** Test-only journal peer exercises the real request/response codecs and client receiver, without owner data. */
+    private static void journalFixture(){
+        net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.registerGlobalReceiver(holylois.boombox.JournalRequest.TYPE,(request,context)->{
+            var all=journalEntries(request.tab());
+            var entries=all.stream().filter(e->request.filter()==0||e.kind()==request.filter()).filter(e->e.name().toLowerCase(java.util.Locale.ROOT).contains(request.search().toLowerCase(java.util.Locale.ROOT))).toList();
+            int pages=Math.max(1,(entries.size()+request.size()-1)/request.size()),page=Math.min(request.page(),pages-1),start=page*request.size();
+            net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(context.player(),new holylois.boombox.JournalState(request.tab(),request.filter(),page,pages,entries.size(),request.size(),request.search(),entries.subList(start,Math.min(entries.size(),start+request.size()))));
+        });
+    }
+    private static List<holylois.boombox.JournalState.Entry> journalEntries(int tab){
+        var entries=new ArrayList<holylois.boombox.JournalState.Entry>();
+        if(tab==1){
+            entries.add(new holylois.boombox.JournalState.Entry("fish:cod",1,"minecraft:cod","","minecraft:overworld",150,64,-300,1791670000,12,8.5,29,0,true,false));
+            entries.add(new holylois.boombox.JournalState.Entry("kill:zombie",3,"minecraft:zombie","","minecraft:overworld",150,64,-300,1791660000,48,0,0,75,true,false));
+        }
+        for(int i=0;i<19;i++)entries.add(new holylois.boombox.JournalState.Entry("place:"+i,2,"Ice Spire "+(i+1),"Explorer","minecraft:overworld",1700+i*300,90,-1700,1791600000-i*3600,1,0,0,0,true,tab==0));
+        return entries;
+    }
+    private static void journal(ClientGameTestContext context,TestSingleplayerContext world){
+        context.getInput().pressKey(options->net.minecraft.client.KeyMapping.get("key.holylois.journal"));
+        context.waitForScreen(holylois.boombox.JournalScreen.class);
+        context.waitTicks(12);
+        context.takeScreenshot("52-journal-personal");
+        context.runOnClient(client->{
+            var screen=(holylois.boombox.JournalScreen)client.gui.screen();
+            var state=(holylois.boombox.JournalState)field(screen,"state");
+            check(state!=null&&state.tab()==1&&state.total()==21,"journal key opens a server-owned personal collection");
+        });
+        context.clickScreenButton("holylois.journal.world");context.waitTicks(12);
+        context.takeScreenshot("52-journal-world-firsts");
+        context.clickScreenButton(">");context.waitTicks(12);
+        context.runOnClient(client->{
+            var state=(holylois.boombox.JournalState)field(client.gui.screen(),"state");
+            check(state.tab()==0&&state.page()==1&&state.entries().size()<=8,"world firsts page through bounded server responses");
+        });
+        context.clickScreenButton("holylois.journal.mine");context.waitTicks(12);
+        context.clickScreenButton("holylois.journal.filter1");context.waitTicks(12);
+        context.runOnClient(client->{
+            var screen=(holylois.boombox.JournalScreen)client.gui.screen();
+            var state=(holylois.boombox.JournalState)field(screen,"state");
+            check(state.total()==1&&state.entries().getFirst().weight()==8.5,"fish category retains the measured best weight");
+            String fishName=holylois.boombox.JournalScreen.name(state.entries().getFirst()).getString();
+            for(var child:screen.children())if(child instanceof net.minecraft.client.gui.components.Button button&&button.getMessage().getString().equals(fishName)){button.onPress(new net.minecraft.client.input.KeyEvent(40,0,0));break;}
+            check((boolean)field(screen,"detail"),"selecting a journal row opens its details");
+        });
+        context.waitTicks(5);context.takeScreenshot("52-journal-fish-details");
+        int before=context.computeOnClient(client->waypointCount());
+        context.clickScreenButton("holylois.journal.waypoint");context.waitTicks(8);
+        check(context.computeOnClient(client->waypointCount())==before+1,"selected journal entry adds a client-only waypoint");
+        context.clickScreenButton("holylois.journal.waypoint");context.waitTicks(4);
+        check(context.computeOnClient(client->waypointCount())==before+1,"adding the same journal waypoint does not duplicate it");
+        context.runOnClient(client->{
+            var screen=(holylois.boombox.JournalScreen)client.gui.screen();screen.resize(360,230);
+            for(var child:screen.children())if(child instanceof net.minecraft.client.gui.components.AbstractWidget widget)
+                check(widget.getX()>=0&&widget.getY()>=0&&widget.getX()+widget.getWidth()<=360&&widget.getY()+widget.getHeight()<=230,"journal controls fit a small screen");
+        });
+        context.waitTicks(8);context.takeScreenshot("52-journal-small");
+        context.runOnClient(client->client.gui.setScreen(null));
+        check(context.computeOnClient(client->client.gui.screen()==null),"journal closes without trapping the cursor");
+    }
+    private static int waypointCount(){
+        var session=BuiltInHudModules.MINIMAP.getCurrentSession();var root=session==null?null:session.getWorldManager().getCurrentRootContainer();
+        int count=0;if(root!=null)for(var w:root.getAllWorldsIterable())for(var set:w.getIterableWaypointSets())for(var point:set.getWaypoints())count++;return count;
     }
 
     /**
