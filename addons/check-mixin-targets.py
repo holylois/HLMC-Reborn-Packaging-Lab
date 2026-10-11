@@ -6,6 +6,10 @@ Exit code 1 lists every missing class or method.
 """
 import json, os, re, shutil, subprocess, sys, zipfile
 from pathlib import Path
+import importlib.util
+
+spec=importlib.util.spec_from_file_location('mixin_source',Path(__file__).with_name('mixin-source.py'))
+source_scanner=importlib.util.module_from_spec(spec);spec.loader.exec_module(source_scanner)
 
 HERE = Path(__file__).resolve().parent
 ADDONS = ['extras', 'onboarding', 'auth-ui']
@@ -30,12 +34,14 @@ for jar in jars:
     with zipfile.ZipFile(jar) as z:
         for name in z.namelist():
             if name.endswith('.class'): index.setdefault(name[:-6].replace('/', '.'), jar)
-# Our own classes (shared payloads/screens) also count as targets.
+# Compiled classes are authoritative, including nested names such as RarityOutlineMixin$Extract.
 own = {}
 for addon in ADDONS:
-    for source in (HERE / addon).glob('*.java'):
-        package = re.search(r'package\s+([\w.]+);', source.read_text(encoding='utf-8'))
-        if package: own[package.group(1) + '.' + source.stem] = source
+    classes=HERE/addon/'build/classes/java/main'
+    if not classes.is_dir():sys.exit('Run gradlew build first: compiled classes missing for '+addon)
+    for compiled in classes.rglob('*.class'):
+        name=compiled.relative_to(classes).as_posix()[:-6].replace('/','.')
+        own[name]=compiled;index[name]=classes
 
 JAVAP = javap()
 members_cache = {}
@@ -59,32 +65,28 @@ problems, checked = [], 0
 for addon in ADDONS:
     for source in sorted((HERE / addon).glob('*.java')):
         text = source.read_text(encoding='utf-8')
-        mixin = re.search(r'@Mixin\s*\((.*?)\)\s*(?:public\s+)?(?:abstract\s+)?(?:class|interface)', text, re.S)
-        if not mixin: continue
+        blocks=source_scanner.mixin_blocks(text)
+        if not blocks:continue
         imports = dict((m.group(2), m.group(1) + '.' + m.group(2)) for m in re.finditer(r'import\s+([\w.]+)\.(\w+);', text))
         package = re.search(r'package\s+([\w.]+);', text).group(1)
-        spec = mixin.group(1)
-        targets = strings(spec[spec.index('targets'):]) if 'targets' in spec else []
-        for ref in re.findall(r'([\w.$]+)\.class', spec):
-            first, _, rest = ref.partition('.')
-            full = imports.get(first, ref if '.' in ref else package + '.' + ref)
-            if rest and first in imports: full = imports[first] + '$' + rest.replace('.', '$')
-            targets.append(full)
-        methods = set()
-        for m in re.finditer(r'@(?:Inject|Redirect|ModifyVariable|ModifyArg|ModifyArgs|ModifyConstant|ModifyExpressionValue|ModifyReturnValue|WrapOperation|WrapWithCondition|WrapMethod|Overwrite)\s*\((.*?)\)\s*(?:private|public|protected|static|@)', text, re.S):
-            spec_m = re.search(r'method\s*=\s*(\{[^}]*\}|"[^"]*")', m.group(1))
-            if spec_m: methods |= {s.split('(')[0] for s in strings(spec_m.group(1))}
-        for target in targets:
-            target = target.replace('/', '.')
-            checked += 1
-            if target in own: continue
-            if target not in index:
-                problems.append(f'{addon}/{source.name}: target class {target} not found in the shipped jars'); continue
-            missing = sorted(x for x in methods if x not in members(target))
-            # A mixin with several targets only needs each method in one of them.
-            if missing and len(targets) > 1:
-                missing = [x for x in missing if not any(t in index and x in members(t) for t in targets)]
-            for name in missing: problems.append(f'{addon}/{source.name}: {target} has no method {name}')
+        for spec,body in blocks:
+            targets,methods=[],set()
+            if 'targets' in spec:targets=strings(spec[spec.index('targets'):])
+            for ref in re.findall(r'([\w.$]+)\.class',spec):
+                first,_,rest=ref.partition('.')
+                full=imports.get(first,ref if '.' in ref else package+'.'+ref)
+                if rest and first in imports:full=imports[first]+'$'+rest.replace('.','$')
+                targets.append(full)
+            for m in re.finditer(r'@(?:Inject|Redirect|ModifyVariable|ModifyArg|ModifyArgs|ModifyConstant|ModifyExpressionValue|ModifyReturnValue|WrapOperation|WrapWithCondition|WrapMethod|Overwrite)\s*\((.*?)\)\s*(?:private|public|protected|static|@)',body,re.S):
+                spec_m=re.search(r'method\s*=\s*(\{[^}]*\}|"[^"]*")',m.group(1))
+                if spec_m:methods|={s.split('(')[0] for s in strings(spec_m.group(1))}
+            for target in targets:
+                target=target.replace('/','.');checked+=1
+                if target not in index:
+                    problems.append(f'{addon}/{source.name}: target class {target} not found in the shipped jars');continue
+                missing=sorted(x for x in methods if x not in members(target))
+                if missing and len(targets)>1:missing=[x for x in missing if not any(t in index and x in members(t) for t in targets)]
+                for name in missing:problems.append(f'{addon}/{source.name}: {target} has no method {name}')
 # Every class a mixin config lists must exist under the config's package (a wrong package fails silently in game).
 for addon in ADDONS:
     for config in (HERE / addon).glob('*.mixins.json'):

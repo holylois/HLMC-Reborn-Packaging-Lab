@@ -36,7 +36,9 @@ jobs:
         run: ./gradlew build -PskipNetworkTests --console=plain
       # Extras mixins are optional (defaultRequire 0) and fail silently at runtime; this fails the build instead.
       - name: Check every mixin target exists in the shipped jars
-        run: python3 check-mixin-targets.py
+        run: |
+          python3 test-mixin-source.py
+          python3 check-mixin-targets.py
       - uses: actions/upload-artifact@v4
         with:
           name: holylois-addons
