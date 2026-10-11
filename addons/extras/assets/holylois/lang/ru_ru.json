@@ -141,5 +141,9 @@
   "item.holylois.holy_lootbox": "Holy Lootbox",
   "item.holylois.holy_lootbox.inside": "Ежедневный подарок Holy Lois",
   "item.holylois.holy_lootbox.open": "%s, чтобы открыть",
-  "item.holylois.holy_lootbox.tier": "Подарок уровня %s для %s"
+  "item.holylois.holy_lootbox.tier": "Подарок уровня %s для %s",
+  "holylois.cinematic.status": "Кинокамера: %s. Камера на рыбалке: %s. Переключить: /cinematic on|off, /cinematic fishing on|off",
+  "holylois.cinematic.on": "вкл",
+  "holylois.cinematic.off": "выкл",
+  "holylois.cinematic.unavailable": "Мод кинокамеры недоступен."
 }

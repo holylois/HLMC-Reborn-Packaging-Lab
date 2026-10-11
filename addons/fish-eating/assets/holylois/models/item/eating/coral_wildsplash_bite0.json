@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "holylois:item/eating/coral_wildsplash_bite0"
+  }
+}

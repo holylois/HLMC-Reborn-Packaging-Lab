@@ -1,0 +1,319 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/stone_islehopper"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/stone_islehopper_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/stone_islehopper_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/stone_islehopper_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/stone_islehopper"
+            }
+          }
+        },
+        "when": {
+          "islehopper_variant": "fishofthieves:stone"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/moss_islehopper"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/moss_islehopper_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/moss_islehopper_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/moss_islehopper_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/moss_islehopper"
+            }
+          }
+        },
+        "when": {
+          "islehopper_variant": "fishofthieves:moss"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/honey_islehopper"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/honey_islehopper_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/honey_islehopper_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/honey_islehopper_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/honey_islehopper"
+            }
+          }
+        },
+        "when": {
+          "islehopper_variant": "fishofthieves:honey"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/raven_islehopper"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/raven_islehopper_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/raven_islehopper_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/raven_islehopper_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/raven_islehopper"
+            }
+          }
+        },
+        "when": {
+          "islehopper_variant": "fishofthieves:raven"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/amethyst_islehopper"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/amethyst_islehopper_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/amethyst_islehopper_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/amethyst_islehopper_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/amethyst_islehopper"
+            }
+          }
+        },
+        "when": {
+          "islehopper_variant": "fishofthieves:amethyst"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/briny_islehopper"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/briny_islehopper_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/briny_islehopper_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/briny_islehopper_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/briny_islehopper"
+            }
+          }
+        },
+        "when": {
+          "islehopper_variant": "fishofthieves:briny"
+        }
+      }
+    ],
+    "component": "minecraft:custom_data",
+    "fallback": {
+      "type": "minecraft:condition",
+      "property": "minecraft:using_item",
+      "on_false": {
+        "type": "minecraft:model",
+        "model": "fishofthieves:item/stone_islehopper"
+      },
+      "on_true": {
+        "type": "minecraft:range_dispatch",
+        "property": "minecraft:use_duration",
+        "scale": 0.03,
+        "entries": [
+          {
+            "threshold": 0.3,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/stone_islehopper_bite0"
+            }
+          },
+          {
+            "threshold": 0.55,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/stone_islehopper_bite1"
+            }
+          },
+          {
+            "threshold": 0.8,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/stone_islehopper_bite2"
+            }
+          }
+        ],
+        "fallback": {
+          "type": "minecraft:model",
+          "model": "fishofthieves:item/stone_islehopper"
+        }
+      }
+    },
+    "property": "minecraft:component"
+  }
+}

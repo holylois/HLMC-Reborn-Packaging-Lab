@@ -56,6 +56,9 @@ def syncServerMods = tasks.register('syncServerMods', Sync) {
     from lockedJars(['server', 'both'])
     from project(':extras').tasks.named('jar')
     from project(':onboarding').tasks.named('jar')
+    // Candidate mods for a quick boot test (HOLYLOIS_EXTRA_SERVER_MODS=folder), never part of a release.
+    def extra = System.getenv('HOLYLOIS_EXTRA_SERVER_MODS')
+    if (extra) from(extra) { include '*.jar' }
     into rootProject.file('run/server/mods')
 }
 

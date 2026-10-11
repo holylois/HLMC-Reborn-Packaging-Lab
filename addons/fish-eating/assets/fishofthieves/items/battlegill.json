@@ -1,0 +1,319 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/jade_battlegill"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/jade_battlegill_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/jade_battlegill_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/jade_battlegill_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/jade_battlegill"
+            }
+          }
+        },
+        "when": {
+          "battlegill_variant": "fishofthieves:jade"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/sky_battlegill"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sky_battlegill_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sky_battlegill_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sky_battlegill_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/sky_battlegill"
+            }
+          }
+        },
+        "when": {
+          "battlegill_variant": "fishofthieves:sky"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/rum_battlegill"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/rum_battlegill_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/rum_battlegill_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/rum_battlegill_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/rum_battlegill"
+            }
+          }
+        },
+        "when": {
+          "battlegill_variant": "fishofthieves:rum"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/sand_battlegill"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sand_battlegill_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sand_battlegill_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sand_battlegill_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/sand_battlegill"
+            }
+          }
+        },
+        "when": {
+          "battlegill_variant": "fishofthieves:sand"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/bittersweet_battlegill"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/bittersweet_battlegill_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/bittersweet_battlegill_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/bittersweet_battlegill_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/bittersweet_battlegill"
+            }
+          }
+        },
+        "when": {
+          "battlegill_variant": "fishofthieves:bittersweet"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/zest_battlegill"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/zest_battlegill_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/zest_battlegill_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/zest_battlegill_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/zest_battlegill"
+            }
+          }
+        },
+        "when": {
+          "battlegill_variant": "fishofthieves:zest"
+        }
+      }
+    ],
+    "component": "minecraft:custom_data",
+    "fallback": {
+      "type": "minecraft:condition",
+      "property": "minecraft:using_item",
+      "on_false": {
+        "type": "minecraft:model",
+        "model": "fishofthieves:item/jade_battlegill"
+      },
+      "on_true": {
+        "type": "minecraft:range_dispatch",
+        "property": "minecraft:use_duration",
+        "scale": 0.03,
+        "entries": [
+          {
+            "threshold": 0.3,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/jade_battlegill_bite0"
+            }
+          },
+          {
+            "threshold": 0.55,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/jade_battlegill_bite1"
+            }
+          },
+          {
+            "threshold": 0.8,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/jade_battlegill_bite2"
+            }
+          }
+        ],
+        "fallback": {
+          "type": "minecraft:model",
+          "model": "fishofthieves:item/jade_battlegill"
+        }
+      }
+    },
+    "property": "minecraft:component"
+  }
+}

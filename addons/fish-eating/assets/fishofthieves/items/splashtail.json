@@ -1,0 +1,319 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/ruby_splashtail"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/ruby_splashtail_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/ruby_splashtail_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/ruby_splashtail_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/ruby_splashtail"
+            }
+          }
+        },
+        "when": {
+          "splashtail_variant": "fishofthieves:ruby"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/sunny_splashtail"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sunny_splashtail_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sunny_splashtail_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sunny_splashtail_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/sunny_splashtail"
+            }
+          }
+        },
+        "when": {
+          "splashtail_variant": "fishofthieves:sunny"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/indigo_splashtail"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/indigo_splashtail_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/indigo_splashtail_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/indigo_splashtail_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/indigo_splashtail"
+            }
+          }
+        },
+        "when": {
+          "splashtail_variant": "fishofthieves:indigo"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/umber_splashtail"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/umber_splashtail_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/umber_splashtail_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/umber_splashtail_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/umber_splashtail"
+            }
+          }
+        },
+        "when": {
+          "splashtail_variant": "fishofthieves:umber"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/seafoam_splashtail"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/seafoam_splashtail_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/seafoam_splashtail_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/seafoam_splashtail_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/seafoam_splashtail"
+            }
+          }
+        },
+        "when": {
+          "splashtail_variant": "fishofthieves:seafoam"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/obsidian_splashtail"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/obsidian_splashtail_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/obsidian_splashtail_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/obsidian_splashtail_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/obsidian_splashtail"
+            }
+          }
+        },
+        "when": {
+          "splashtail_variant": "fishofthieves:obsidian"
+        }
+      }
+    ],
+    "component": "minecraft:custom_data",
+    "fallback": {
+      "type": "minecraft:condition",
+      "property": "minecraft:using_item",
+      "on_false": {
+        "type": "minecraft:model",
+        "model": "fishofthieves:item/ruby_splashtail"
+      },
+      "on_true": {
+        "type": "minecraft:range_dispatch",
+        "property": "minecraft:use_duration",
+        "scale": 0.03,
+        "entries": [
+          {
+            "threshold": 0.3,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/ruby_splashtail_bite0"
+            }
+          },
+          {
+            "threshold": 0.55,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/ruby_splashtail_bite1"
+            }
+          },
+          {
+            "threshold": 0.8,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/ruby_splashtail_bite2"
+            }
+          }
+        ],
+        "fallback": {
+          "type": "minecraft:model",
+          "model": "fishofthieves:item/ruby_splashtail"
+        }
+      }
+    },
+    "property": "minecraft:component"
+  }
+}

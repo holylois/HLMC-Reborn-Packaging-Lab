@@ -9,6 +9,8 @@ import java.util.Random;
 /** Legends, fish weights and the mod check's built-ins without a running game. Args: the legends and fish config files to check. */
 public final class LegendsTest {
     public static void main(String[] args) throws Exception {
+        check(FishTraits.seconds("legendary", 0.5, false, true) == 2 * FishTraits.seconds("legendary", 0.5, false, false)
+            && FishTraits.seconds("mythic", 1, true, true) == 4 * FishTraits.seconds("mythic", 1, false, false), "cooking doubles a trophy's effect time");
         check(LootRules.matches("*:chests/*", "nova_structures:chests/tavern/bar") && LootRules.matches("*:chests/*", "minecraft:chests/simple_dungeon")
             && !LootRules.matches("*:chests/*", "minecraft:gameplay/fishing") && LootRules.matches("minecraft:gameplay/fishing", "minecraft:gameplay/fishing")
             && !LootRules.matches("minecraft:gameplay/fishing", "minecraft:gameplay/fishing/fish") && LootRules.matches("*:*crate*", "fishingloot:crates/wooden") && !LootRules.matchesAny(new LootRules.LegendsConfig().chestTables, "fishingloot:crates/wooden"), "table globs");

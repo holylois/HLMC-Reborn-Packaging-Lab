@@ -1,0 +1,872 @@
+{
+ "fishofthieves:ancientscale": {
+  "variant_key": "ancientscale_variant",
+  "variants": {
+   "fishofthieves:almond": {
+    "palette": [
+     "#E88058",
+     "#8B4733",
+     "#BE5130"
+    ],
+    "color": "#E88058",
+    "name_key": "entity.fishofthieves.ancientscale.almond",
+    "name": "Almond"
+   },
+   "fishofthieves:sapphire": {
+    "palette": [
+     "#6E5691",
+     "#26CCE1",
+     "#0974CD"
+    ],
+    "color": "#43D3E5",
+    "name_key": "entity.fishofthieves.ancientscale.sapphire",
+    "name": "Sapphire"
+   },
+   "fishofthieves:smoke": {
+    "palette": [
+     "#583F57",
+     "#757495",
+     "#86434B"
+    ],
+    "color": "#A582A4",
+    "name_key": "entity.fishofthieves.ancientscale.smoke",
+    "name": "Smoke"
+   },
+   "fishofthieves:bone": {
+    "palette": [
+     "#EBE3E3",
+     "#B96568",
+     "#C38E97"
+    ],
+    "color": "#D0BFBE",
+    "name_key": "entity.fishofthieves.ancientscale.bone",
+    "name": "Bone"
+   },
+   "fishofthieves:starshine": {
+    "palette": [
+     "#BABD25",
+     "#A8502A",
+     "#62650C"
+    ],
+    "color": "#D9DC4C",
+    "name_key": "entity.fishofthieves.ancientscale.starshine",
+    "name": "Starshine"
+   },
+   "fishofthieves:blossom": {
+    "palette": [
+     "#3E262B",
+     "#D9A9BC",
+     "#AC6D94"
+    ],
+    "color": "#AE7A86",
+    "name_key": "entity.fishofthieves.ancientscale.blossom",
+    "name": "Blossom"
+   }
+  },
+  "palette": [
+   "#E88058",
+   "#8B4733",
+   "#BE5130"
+  ],
+  "color": "#E88058"
+ },
+ "fishofthieves:battlegill": {
+  "variant_key": "battlegill_variant",
+  "variants": {
+   "fishofthieves:jade": {
+    "palette": [
+     "#284532",
+     "#12241E",
+     "#928265"
+    ],
+    "color": "#77B08B",
+    "name_key": "entity.fishofthieves.battlegill.jade",
+    "name": "Jade"
+   },
+   "fishofthieves:sky": {
+    "palette": [
+     "#3D2B54",
+     "#374C8C",
+     "#8CA2C2"
+    ],
+    "color": "#657CC2",
+    "name_key": "entity.fishofthieves.battlegill.sky",
+    "name": "Sky"
+   },
+   "fishofthieves:rum": {
+    "palette": [
+     "#572727",
+     "#8E423A",
+     "#381917"
+    ],
+    "color": "#BD6B6B",
+    "name_key": "entity.fishofthieves.battlegill.rum",
+    "name": "Rum"
+   },
+   "fishofthieves:sand": {
+    "palette": [
+     "#D9CCCC",
+     "#A48E90",
+     "#834649"
+    ],
+    "color": "#CFBFBF",
+    "name_key": "entity.fishofthieves.battlegill.sand",
+    "name": "Sand"
+   },
+   "fishofthieves:bittersweet": {
+    "palette": [
+     "#C36A1B",
+     "#662A15",
+     "#865D55"
+    ],
+    "color": "#E58F43",
+    "name_key": "entity.fishofthieves.battlegill.bittersweet",
+    "name": "Bittersweet"
+   },
+   "fishofthieves:zest": {
+    "palette": [
+     "#544107",
+     "#DDAE28",
+     "#D8DFF2"
+    ],
+    "color": "#EFC239",
+    "name_key": "entity.fishofthieves.battlegill.zest",
+    "name": "Zest"
+   }
+  },
+  "palette": [
+   "#284532",
+   "#12241E",
+   "#928265"
+  ],
+  "color": "#77B08B"
+ },
+ "fishofthieves:devilfish": {
+  "variant_key": "devilfish_variant",
+  "variants": {
+   "fishofthieves:ashen": {
+    "palette": [
+     "#4F4552",
+     "#7F6272",
+     "#D39398"
+    ],
+    "color": "#998B9D",
+    "name_key": "entity.fishofthieves.devilfish.ashen",
+    "name": "Ashen"
+   },
+   "fishofthieves:seashell": {
+    "palette": [
+     "#9C7D83",
+     "#CDAEAC",
+     "#72545A"
+    ],
+    "color": "#A3858B",
+    "name_key": "entity.fishofthieves.devilfish.seashell",
+    "name": "Seashell"
+   },
+   "fishofthieves:lava": {
+    "palette": [
+     "#6D2218",
+     "#A35225",
+     "#D58D41"
+    ],
+    "color": "#D9604F",
+    "name_key": "entity.fishofthieves.devilfish.lava",
+    "name": "Lava"
+   },
+   "fishofthieves:forsaken": {
+    "palette": [
+     "#DAAA35",
+     "#A26825",
+     "#ECCE64"
+    ],
+    "color": "#DEB34A",
+    "name_key": "entity.fishofthieves.devilfish.forsaken",
+    "name": "Forsaken"
+   },
+   "fishofthieves:firelight": {
+    "palette": [
+     "#17151D",
+     "#932C19",
+     "#511411"
+    ],
+    "color": "#E05F48",
+    "name_key": "entity.fishofthieves.devilfish.firelight",
+    "name": "Firelight"
+   },
+   "fishofthieves:leopard": {
+    "palette": [
+     "#694134",
+     "#D7D8EB",
+     "#6962A8"
+    ],
+    "color": "#B88170",
+    "name_key": "entity.fishofthieves.devilfish.leopard",
+    "name": "Leopard"
+   }
+  },
+  "palette": [
+   "#4F4552",
+   "#7F6272",
+   "#D39398"
+  ],
+  "color": "#998B9D"
+ },
+ "fishofthieves:islehopper": {
+  "variant_key": "islehopper_variant",
+  "variants": {
+   "fishofthieves:stone": {
+    "palette": [
+     "#5B5364",
+     "#35303F",
+     "#713F4A"
+    ],
+    "color": "#938A9E",
+    "name_key": "entity.fishofthieves.islehopper.stone",
+    "name": "Stone"
+   },
+   "fishofthieves:moss": {
+    "palette": [
+     "#3D9C4E",
+     "#99783F",
+     "#ADD671"
+    ],
+    "color": "#65C376",
+    "name_key": "entity.fishofthieves.islehopper.moss",
+    "name": "Moss"
+   },
+   "fishofthieves:honey": {
+    "palette": [
+     "#E78D2A",
+     "#FBCD37",
+     "#A14016"
+    ],
+    "color": "#EA983E",
+    "name_key": "entity.fishofthieves.islehopper.honey",
+    "name": "Honey"
+   },
+   "fishofthieves:raven": {
+    "palette": [
+     "#323840",
+     "#7C3632",
+     "#208AB4"
+    ],
+    "color": "#8692A2",
+    "name_key": "entity.fishofthieves.islehopper.raven",
+    "name": "Raven"
+   },
+   "fishofthieves:amethyst": {
+    "palette": [
+     "#6E2A6A",
+     "#8621B1",
+     "#BB48CC"
+    ],
+    "color": "#C464BF",
+    "name_key": "entity.fishofthieves.islehopper.amethyst",
+    "name": "Amethyst"
+   },
+   "fishofthieves:briny": {
+    "palette": [
+     "#55536F",
+     "#2D2C3C",
+     "#D0DCEF"
+    ],
+    "color": "#8784A4",
+    "name_key": "entity.fishofthieves.islehopper.briny",
+    "name": "Briny"
+   }
+  },
+  "palette": [
+   "#5B5364",
+   "#35303F",
+   "#713F4A"
+  ],
+  "color": "#938A9E"
+ },
+ "fishofthieves:plentifin": {
+  "variant_key": "plentifin_variant",
+  "variants": {
+   "fishofthieves:olive": {
+    "palette": [
+     "#325214",
+     "#C0BE51",
+     "#7A7B39"
+    ],
+    "color": "#92D552",
+    "name_key": "entity.fishofthieves.plentifin.olive",
+    "name": "Olive"
+   },
+   "fishofthieves:amber": {
+    "palette": [
+     "#EAAC02",
+     "#C83710",
+     "#D86C56"
+    ],
+    "color": "#EFBE39",
+    "name_key": "entity.fishofthieves.plentifin.amber",
+    "name": "Amber"
+   },
+   "fishofthieves:cloudy": {
+    "palette": [
+     "#3C4450",
+     "#943E46",
+     "#A0CACC"
+    ],
+    "color": "#8591A3",
+    "name_key": "entity.fishofthieves.plentifin.cloudy",
+    "name": "Cloudy"
+   },
+   "fishofthieves:bonedust": {
+    "palette": [
+     "#AC7161",
+     "#91463D",
+     "#D3C3B4"
+    ],
+    "color": "#C07268",
+    "name_key": "entity.fishofthieves.plentifin.bonedust",
+    "name": "Bonedust"
+   },
+   "fishofthieves:watery": {
+    "palette": [
+     "#218DC6",
+     "#3D5253",
+     "#856C5D"
+    ],
+    "color": "#47ACE0",
+    "name_key": "entity.fishofthieves.plentifin.watery",
+    "name": "Watery"
+   },
+   "fishofthieves:crimson": {
+    "palette": [
+     "#881E23",
+     "#E13A38",
+     "#9B9DCB"
+    ],
+    "color": "#E34745",
+    "name_key": "entity.fishofthieves.plentifin.crimson",
+    "name": "Crimson"
+   }
+  },
+  "palette": [
+   "#325214",
+   "#C0BE51",
+   "#7A7B39"
+  ],
+  "color": "#92D552"
+ },
+ "fishofthieves:pondie": {
+  "variant_key": "pondie_variant",
+  "variants": {
+   "fishofthieves:charcoal": {
+    "palette": [
+     "#4E4E76",
+     "#8285BA",
+     "#906A53"
+    ],
+    "color": "#7E7EAA",
+    "name_key": "entity.fishofthieves.pondie.charcoal",
+    "name": "Charcoal"
+   },
+   "fishofthieves:orchid": {
+    "palette": [
+     "#E178C4",
+     "#7071C7",
+     "#A7428F"
+    ],
+    "color": "#E178C4",
+    "name_key": "entity.fishofthieves.pondie.orchid",
+    "name": "Orchid"
+   },
+   "fishofthieves:bronze": {
+    "palette": [
+     "#D7824F",
+     "#A65328",
+     "#D4C9AE"
+    ],
+    "color": "#D88350",
+    "name_key": "entity.fishofthieves.pondie.bronze",
+    "name": "Bronze"
+   },
+   "fishofthieves:bright": {
+    "palette": [
+     "#AB9F04",
+     "#E3492B",
+     "#EAE350"
+    ],
+    "color": "#EFE239",
+    "name_key": "entity.fishofthieves.pondie.bright",
+    "name": "Bright"
+   },
+   "fishofthieves:moonsky": {
+    "palette": [
+     "#256AA6",
+     "#DBBACE",
+     "#B61E58"
+    ],
+    "color": "#5098D8",
+    "name_key": "entity.fishofthieves.pondie.moonsky",
+    "name": "Moonsky"
+   },
+   "fishofthieves:dewdrop": {
+    "palette": [
+     "#D7E1EE",
+     "#3D3447",
+     "#6264A6"
+    ],
+    "color": "#B0C4DD",
+    "name_key": "entity.fishofthieves.pondie.dewdrop",
+    "name": "Dewdrop"
+   }
+  },
+  "palette": [
+   "#4E4E76",
+   "#8285BA",
+   "#906A53"
+  ],
+  "color": "#7E7EAA"
+ },
+ "fishofthieves:splashtail": {
+  "variant_key": "splashtail_variant",
+  "variants": {
+   "fishofthieves:ruby": {
+    "palette": [
+     "#933338",
+     "#4E1D32",
+     "#5B316C"
+    ],
+    "color": "#C86065",
+    "name_key": "entity.fishofthieves.splashtail.ruby",
+    "name": "Ruby"
+   },
+   "fishofthieves:sunny": {
+    "palette": [
+     "#F05206",
+     "#F8A61A",
+     "#832910"
+    ],
+    "color": "#EF7439",
+    "name_key": "entity.fishofthieves.splashtail.sunny",
+    "name": "Sunny"
+   },
+   "fishofthieves:indigo": {
+    "palette": [
+     "#6B82C9",
+     "#793066",
+     "#533E87"
+    ],
+    "color": "#6B82C9",
+    "name_key": "entity.fishofthieves.splashtail.indigo",
+    "name": "Indigo"
+   },
+   "fishofthieves:umber": {
+    "palette": [
+     "#945B63",
+     "#E6E1D8",
+     "#C6A5A2"
+    ],
+    "color": "#AD7B81",
+    "name_key": "entity.fishofthieves.splashtail.umber",
+    "name": "Umber"
+   },
+   "fishofthieves:seafoam": {
+    "palette": [
+     "#B26130",
+     "#348A3A",
+     "#CE713C"
+    ],
+    "color": "#D28556",
+    "name_key": "entity.fishofthieves.splashtail.seafoam",
+    "name": "Seafoam"
+   },
+   "fishofthieves:obsidian": {
+    "palette": [
+     "#312D3C",
+     "#685794",
+     "#CED5ED"
+    ],
+    "color": "#8E84A4",
+    "name_key": "entity.fishofthieves.splashtail.obsidian",
+    "name": "Obsidian"
+   }
+  },
+  "palette": [
+   "#933338",
+   "#4E1D32",
+   "#5B316C"
+  ],
+  "color": "#C86065"
+ },
+ "fishofthieves:stormfish": {
+  "variant_key": "stormfish_variant",
+  "variants": {
+   "fishofthieves:ancient": {
+    "palette": [
+     "#8A93B2",
+     "#5E4A5F",
+     "#946980"
+    ],
+    "color": "#8A93B2",
+    "name_key": "entity.fishofthieves.stormfish.ancient",
+    "name": "Ancient"
+   },
+   "fishofthieves:shores": {
+    "palette": [
+     "#26283C",
+     "#463744",
+     "#947446"
+    ],
+    "color": "#7D80AB",
+    "name_key": "entity.fishofthieves.stormfish.shores",
+    "name": "Shores"
+   },
+   "fishofthieves:wild": {
+    "palette": [
+     "#163017",
+     "#46462C",
+     "#7C8B43"
+    ],
+    "color": "#6DBB6F",
+    "name_key": "entity.fishofthieves.stormfish.wild",
+    "name": "Wild"
+   },
+   "fishofthieves:shadow": {
+    "palette": [
+     "#221E1F",
+     "#1D3636",
+     "#85443D"
+    ],
+    "color": "#73B5B5",
+    "name_key": "entity.fishofthieves.stormfish.shadow",
+    "name": "Shadow"
+   },
+   "fishofthieves:twilight": {
+    "palette": [
+     "#C87D2B",
+     "#6F3702",
+     "#241C24"
+    ],
+    "color": "#EF9139",
+    "name_key": "entity.fishofthieves.stormfish.twilight",
+    "name": "Twilight"
+   },
+   "fishofthieves:starshine": {
+    "palette": [
+     "#3B2837",
+     "#E9E8E8",
+     "#5E66A5"
+    ],
+    "color": "#A87F9F",
+    "name_key": "entity.fishofthieves.stormfish.starshine",
+    "name": "Starshine"
+   }
+  },
+  "palette": [
+   "#8A93B2",
+   "#5E4A5F",
+   "#946980"
+  ],
+  "color": "#8A93B2"
+ },
+ "fishofthieves:wildsplash": {
+  "variant_key": "wildsplash_variant",
+  "variants": {
+   "fishofthieves:russet": {
+    "palette": [
+     "#853F23",
+     "#3D4C24",
+     "#677E4C"
+    ],
+    "color": "#D27856",
+    "name_key": "entity.fishofthieves.wildsplash.russet",
+    "name": "Russet"
+   },
+   "fishofthieves:sandy": {
+    "palette": [
+     "#8A4A4F",
+     "#E1D9D0",
+     "#CDB3AA"
+    ],
+    "color": "#B47479",
+    "name_key": "entity.fishofthieves.wildsplash.sandy",
+    "name": "Sandy"
+   },
+   "fishofthieves:ocean": {
+    "palette": [
+     "#2D59AA",
+     "#713B55",
+     "#8EDBDD"
+    ],
+    "color": "#5681D2",
+    "name_key": "entity.fishofthieves.wildsplash.ocean",
+    "name": "Ocean"
+   },
+   "fishofthieves:muddy": {
+    "palette": [
+     "#9C5E0A",
+     "#774218",
+     "#BE8E48"
+    ],
+    "color": "#EFA239",
+    "name_key": "entity.fishofthieves.wildsplash.muddy",
+    "name": "Muddy"
+   },
+   "fishofthieves:coral": {
+    "palette": [
+     "#97241F",
+     "#C62D43",
+     "#BF502E"
+    ],
+    "color": "#DA544E",
+    "name_key": "entity.fishofthieves.wildsplash.coral",
+    "name": "Coral"
+   },
+   "fishofthieves:calico": {
+    "palette": [
+     "#E7E3D9",
+     "#D35C00",
+     "#594664"
+    ],
+    "color": "#D4CCBA",
+    "name_key": "entity.fishofthieves.wildsplash.calico",
+    "name": "Calico"
+   }
+  },
+  "palette": [
+   "#853F23",
+   "#3D4C24",
+   "#677E4C"
+  ],
+  "color": "#D27856"
+ },
+ "fishofthieves:wrecker": {
+  "variant_key": "wrecker_variant",
+  "variants": {
+   "fishofthieves:rose": {
+    "palette": [
+     "#4F2C76",
+     "#A159AC",
+     "#5A3033"
+    ],
+    "color": "#9263C5",
+    "name_key": "entity.fishofthieves.wrecker.rose",
+    "name": "Rose"
+   },
+   "fishofthieves:sun": {
+    "palette": [
+     "#9B260D",
+     "#521319",
+     "#D17E21"
+    ],
+    "color": "#EF5939",
+    "name_key": "entity.fishofthieves.wrecker.sun",
+    "name": "Sun"
+   },
+   "fishofthieves:blackcloud": {
+    "palette": [
+     "#383E4A",
+     "#80A6A3",
+     "#733B40"
+    ],
+    "color": "#868FA2",
+    "name_key": "entity.fishofthieves.wrecker.blackcloud",
+    "name": "Blackcloud"
+   },
+   "fishofthieves:snow": {
+    "palette": [
+     "#9D777D",
+     "#7A4B4E",
+     "#D1BDC0"
+    ],
+    "color": "#A68288",
+    "name_key": "entity.fishofthieves.wrecker.snow",
+    "name": "Snow"
+   },
+   "fishofthieves:moon": {
+    "palette": [
+     "#515091",
+     "#9F9ED0",
+     "#9A454A"
+    ],
+    "color": "#7575B3",
+    "name_key": "entity.fishofthieves.wrecker.moon",
+    "name": "Moon"
+   },
+   "fishofthieves:emerald": {
+    "palette": [
+     "#B4C956",
+     "#4D6E37",
+     "#D1D9EE"
+    ],
+    "color": "#B7CB5D",
+    "name_key": "entity.fishofthieves.wrecker.emerald",
+    "name": "Emerald"
+   }
+  },
+  "palette": [
+   "#4F2C76",
+   "#A159AC",
+   "#5A3033"
+  ],
+  "color": "#9263C5"
+ },
+ "fishofthieves:cooked_ancientscale": {
+  "palette": [
+   "#D5C5A2",
+   "#8F684A",
+   "#BC9769"
+  ],
+  "color": "#D5C5A2"
+ },
+ "fishofthieves:cooked_battlegill": {
+  "palette": [
+   "#C5A575",
+   "#DAD1B6",
+   "#845D3D"
+  ],
+  "color": "#C5A575"
+ },
+ "fishofthieves:cooked_devilfish": {
+  "palette": [
+   "#D4C4A1",
+   "#A27A4A",
+   "#C6A271"
+  ],
+  "color": "#D4C4A1"
+ },
+ "fishofthieves:cooked_islehopper": {
+  "palette": [
+   "#C5A676",
+   "#8A6445",
+   "#D9CEB4"
+  ],
+  "color": "#C5A676"
+ },
+ "fishofthieves:cooked_plentifin": {
+  "palette": [
+   "#8B6340",
+   "#D5C4A3",
+   "#BC9665"
+  ],
+  "color": "#BB916C"
+ },
+ "fishofthieves:cooked_pondie": {
+  "palette": [
+   "#D1BF9C",
+   "#86603B",
+   "#B89060"
+  ],
+  "color": "#D1BF9C"
+ },
+ "fishofthieves:cooked_splashtail": {
+  "palette": [
+   "#B28A5D",
+   "#845D3B",
+   "#CCB795"
+  ],
+  "color": "#BA966E"
+ },
+ "fishofthieves:cooked_stormfish": {
+  "palette": [
+   "#C4A473",
+   "#865D40",
+   "#DACFB5"
+  ],
+  "color": "#C4A473"
+ },
+ "fishofthieves:cooked_wildsplash": {
+  "palette": [
+   "#BC9062",
+   "#885F43",
+   "#D7CAA9"
+  ],
+  "color": "#BF9569"
+ },
+ "fishofthieves:cooked_wrecker": {
+  "palette": [
+   "#D1BB95",
+   "#AB824C",
+   "#714C32"
+  ],
+  "color": "#D1BB95"
+ },
+ "minecraft:cod": {
+  "palette": [
+   "#CBAD84",
+   "#93694B",
+   "#B18953"
+  ],
+  "color": "#CBAD84"
+ },
+ "minecraft:salmon": {
+  "palette": [
+   "#534339",
+   "#A73533",
+   "#867C70"
+  ],
+  "color": "#CD5D5B"
+ },
+ "minecraft:cooked_cod": {
+  "palette": [
+   "#A7835F",
+   "#DAD1B6",
+   "#CAAC7D"
+  ],
+  "color": "#B39475"
+ },
+ "minecraft:cooked_salmon": {
+  "palette": [
+   "#5B442D",
+   "#BD663A",
+   "#597460"
+  ],
+  "color": "#CD815B"
+ },
+ "minecraft:pufferfish": {
+  "palette": [
+   "#C28922",
+   "#F5DBAF",
+   "#66A1BA"
+  ],
+  "color": "#DFAA49"
+ },
+ "minecraft:tropical_fish": {
+  "palette": [
+   "#B24C29",
+   "#F17328",
+   "#F1C1A5"
+  ],
+  "color": "#EF7D39"
+ },
+ "farmersdelight:cod_slice": {
+  "palette": [
+   "#DFCEB7",
+   "#B08853",
+   "#C6A271"
+  ],
+  "color": "#DCCAB2"
+ },
+ "farmersdelight:salmon_slice": {
+  "palette": [
+   "#B84B2D",
+   "#F0752B",
+   "#F3C7AD"
+  ],
+  "color": "#D56F53"
+ },
+ "farmersdelight:cooked_cod_slice": {
+  "palette": [
+   "#F3DDBB",
+   "#97723C",
+   "#CEA054"
+  ],
+  "color": "#EED0A0"
+ },
+ "farmersdelight:cooked_salmon_slice": {
+  "palette": [
+   "#B6472E",
+   "#E35D0E",
+   "#F99A9A"
+  ],
+  "color": "#D46C54"
+ }
+}

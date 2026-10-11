@@ -141,5 +141,9 @@
   "item.holylois.holy_lootbox": "Holy Lootbox",
   "item.holylois.holy_lootbox.inside": "Daily gift from Holy Lois",
   "item.holylois.holy_lootbox.open": "%s to open",
-  "item.holylois.holy_lootbox.tier": "Tier %s gift for %s"
+  "item.holylois.holy_lootbox.tier": "Tier %s gift for %s",
+  "holylois.cinematic.status": "Cinematic camera: %s. Fishing camera: %s. Switch: /cinematic on|off, /cinematic fishing on|off",
+  "holylois.cinematic.on": "on",
+  "holylois.cinematic.off": "off",
+  "holylois.cinematic.unavailable": "The cinematic camera mod is not available."
 }

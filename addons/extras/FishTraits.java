@@ -49,11 +49,11 @@ public final class FishTraits {
 
     static int tier(String rarity) { return switch (rarity) { case "rare" -> 1; case "epic" -> 2; case "legendary" -> 3; case "mythic" -> 4; default -> 0; }; }
 
-    /** Seconds of the eaten effect: 30 s for a small Rare up to 8 minutes for a big Mythic; Shiny and cooked add more. */
+    /** Seconds of the eaten effect: 30 s for a small Rare up to 8 minutes for a big Mythic; Shiny and cooking double it. */
     static int seconds(String rarity, double size, boolean shiny, boolean cooked) {
         double base = switch (tier(rarity)) { case 1 -> 30; case 2 -> 60; case 3 -> 120; case 4 -> 240; default -> 0; };
         double grow = 0.75 + Math.min(1, Math.max(0, size)) * 0.5;
-        return (int) Math.round(base * grow * (shiny ? 2 : 1) * (cooked ? 1.5 : 1));
+        return (int) Math.round(base * grow * (shiny ? 2 : 1) * (cooked ? 2 : 1));
     }
 
     static int amplifier(String rarity) { return switch (tier(rarity)) { case 3 -> 1; case 4 -> 2; default -> 0; }; }
@@ -73,7 +73,10 @@ public final class FishTraits {
         var trait = SPECIES.getOrDefault(species, FALLBACK);
         var food = stack.get(DataComponents.CONSUMABLE);
         if (trait.eat() != null && food != null) {
-            int ticks = Math.max(200, Math.round(seconds(rarity, size, shiny, cooked) * 20 * share)), level = Math.max(0, amplifier(rarity) - (share < 1 ? 1 : 0));
+            // Owner 2026-10-11: only raw fish are filleted, so cooking a whole trophy is the big meal, one level stronger (IV at most);
+            // fillets stay the steady snack, a quarter of the time and one level weaker.
+            int ticks = Math.max(200, Math.round(seconds(rarity, size, shiny, cooked) * 20 * share));
+            int level = Math.min(3, Math.max(0, amplifier(rarity) - (share < 1 ? 1 : 0) + (cooked && share >= 1 ? 1 : 0)));
             var effects = new ArrayList<MobEffectInstance>();
             // Instant-ish effects (Saturation) would be absurd for minutes: a few seconds of them, by tier.
             boolean instant = trait.eat().value().isInstantaneous() || trait.eat() == MobEffects.SATURATION;

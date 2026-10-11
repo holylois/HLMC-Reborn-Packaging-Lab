@@ -68,6 +68,10 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "death loot goes back to its slots", context, world, HolyLoisClientTests::deathLootBackToSlots);
             run(failed, "music in your ears during the cinematic", context, world, HolyLoisClientTests::musicInEarsDuringCinematic);
             run(failed, "fishing cinematic angles and quiet soundtrack", context, world, HolyLoisClientTests::fishingCinematicAngles);
+            run(failed, "fish picked up and put back in the same slot", context, world, HolyLoisClientTests::fishSameSlot);
+            run(failed, "held maps", context, world, HolyLoisClientTests::heldMaps);
+            run(failed, "fish tooltips", context, world, HolyLoisClientTests::fishTooltips);
+            run(failed, "fish of thieves eating frames", context, world, HolyLoisClientTests::fishEatingFrames);
             run(failed, "armor 3d", context, world, HolyLoisClientTests::armor3d);
             run(failed, "r over a fillet", context, world, HolyLoisClientTests::rOverFillet);
             run(failed, "offhand swap spam", context, world, HolyLoisClientTests::offhandSwapSpam);
@@ -538,6 +542,128 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
      * Not Enough Animations with the FirstPerson body and Fresh Animations (KeptArms): a map held up in view, eating at the
      * mouth and a lantern, in first person (body arms, no vanilla hands) and from the front.
      */
+    /** A drawn map and an explorer map (the kind found in camps and chests), held in first person and seen from the front. */
+    private static void heldMaps(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        var server = world.getServer();
+        server.runCommand("gamemode survival @a");
+        for (String kind : new String[] {"drawn", "camp"}) {
+            server.runCommand("clear @a");
+            server.runOnServer(s -> {
+                var player = s.getPlayerList().getPlayers().getFirst();
+                var level = s.overworld();
+                ItemStack map = net.minecraft.world.item.MapItem.create(level, player.getBlockX(), player.getBlockZ(), (byte) 0, true, true);
+                net.minecraft.world.item.MapItem.renderBiomePreviewMap(level, map);
+                // A camp map is its own 26.3 item (Dungeons and Taverns hands these out), with real map data.
+                if (kind.equals("camp")) { var camp = new ItemStack(net.minecraft.world.item.Items.ABANDONED_CAMP_MAP); camp.set(net.minecraft.core.component.DataComponents.MAP_ID, map.get(net.minecraft.core.component.DataComponents.MAP_ID)); map = camp; }
+                player.getInventory().setItem(0, map);
+                player.getInventory().setSelectedSlot(0);
+            });
+            context.waitTicks(40);
+            context.runOnClient(client -> { client.player.getInventory().setSelectedSlot(0); client.player.setXRot(35); client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); });
+            context.waitTicks(10);
+            context.takeScreenshot("45-map-" + kind + "-first-person");
+            if (kind.equals("camp")) {
+                boolean held = context.computeOnClient(client -> {
+                    try {
+                        var loader = field(Class.forName("dev.tr7zw.notenoughanimations.NEAnimationsLoader"), "INSTANCE");
+                        for (var animation : (Iterable<?>) field(field(loader, "animationProvider"), "basicAnimations"))
+                            if (animation.getClass().getSimpleName().equals("MapHoldingAnimation"))
+                                return ((java.util.Set<?>) field(animation, "compatibleMaps")).contains(net.minecraft.world.item.Items.ABANDONED_CAMP_MAP);
+                    } catch (ReflectiveOperationException error) { return false; }
+                    return false;
+                });
+                check(held, "Not Enough Animations holds camp maps like filled maps");
+            }
+            context.runOnClient(client -> { client.player.setXRot(0); client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT); });
+            context.waitTicks(10);
+            context.takeScreenshot("45-map-" + kind + "-front");
+            context.runOnClient(client -> client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK));
+            context.waitTicks(10);
+            context.takeScreenshot("45-map-" + kind + "-back");
+        }
+        context.runOnClient(client -> client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+        server.runCommand("clear @a");
+    }
+
+    /** Each rarity's fish hovered in the inventory, for the name and tooltip colors. */
+    private static void fishTooltips(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        var server = world.getServer();
+        server.runCommand("gamemode survival @a");
+        String[] kinds = {"plain-cod", "plain-pondie", "plain-splashtail", "rare", "epic", "legendary", "mythic", "shiny"};
+        for (String kind : kinds) {
+            server.runCommand("clear @a");
+            context.runOnClient(client -> client.player.getInventory().setSelectedSlot(8));
+            if (kind.equals("plain-cod")) server.runCommand("give @p cod");
+            else if (kind.startsWith("plain-")) server.runCommand("give @p fishofthieves:" + kind.substring(6));
+            else server.runCommand("execute as @p run legends give " + kind);
+            context.waitTicks(5);
+            server.runCommand("item replace entity @p container.20 from entity @p container.0");
+            server.runCommand("item replace entity @p container.0 with air");
+            context.waitTicks(5);
+            context.getInput().pressKey(options -> options.keyInventory);
+            context.waitTicks(5);
+            var pos = context.computeOnClient(client -> {
+                var screen = (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) client.gui.screen();
+                Slot target = null;
+                for (var slot : screen.getMenu().slots)
+                    if (slot.container instanceof net.minecraft.world.entity.player.Inventory && slot.getContainerSlot() == 20) target = slot;
+                int left = (int) field(screen, "leftPos"), top = (int) field(screen, "topPos");
+                double scale = client.getWindow().getGuiScale();
+                return new double[] {(left + target.x + 8) * scale, (top + target.y + 8) * scale};
+            });
+            context.getInput().setCursorPos(pos[0], pos[1]);
+            context.waitTicks(5);
+            String name = context.computeOnClient(client -> {
+                var stack = client.player.getInventory().getItem(20);
+                var styled = stack.getStyledHoverName();
+                var colors = new StringBuilder();
+                styled.visit((style, text) -> { if (!text.isEmpty()) colors.append(text).append('=').append(style.getColor()).append(' '); return java.util.Optional.empty(); }, net.minecraft.network.chat.Style.EMPTY);
+                var lines = new StringBuilder();
+                for (var line : stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(client.level), client.player, net.minecraft.world.item.TooltipFlag.NORMAL))
+                    line.visit((style, text) -> { if (!text.isBlank()) lines.append(" | ").append(text).append('=').append(style.getColor()); return java.util.Optional.empty(); }, net.minecraft.network.chat.Style.EMPTY);
+                return holylois.boombox.FishData.rarity(stack) + ": " + colors + " lines" + lines;
+            });
+            log("fish tooltip " + kind + " -> " + name);
+            // A swatch row right under the name; Fish of Thieves' variant name moves into it, in color, exactly once.
+            String row = context.computeOnClient(client -> {
+                var lines = client.player.getInventory().getItem(20).getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(client.level), client.player, net.minecraft.world.item.TooltipFlag.NORMAL);
+                return lines.size() > 1 ? lines.get(1).getString() : "";
+            });
+            check(row.startsWith("■■"), kind + ": swatch row under the name (" + row + ")");
+            if (kind.equals("plain-pondie")) check(row.matches("■+ [A-Z][a-z]+") && !name.contains("=gray"),"pondie variant shown once, in color (" + name + ")");
+            context.takeScreenshot("46-fish-tooltip-" + kind);
+            context.runOnClient(client -> client.gui.setScreen(null));
+            context.waitTicks(3);
+        }
+        server.runCommand("clear @a");
+    }
+
+    /** A Fish of Thieves fish eaten in first person: the bite frames from the Holy Lois eating pack show up while eating. */
+    private static void fishEatingFrames(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        var server = world.getServer();
+        server.runCommand("gamemode survival @a");
+        boolean packOn = context.computeOnClient(client -> client.getResourcePackRepository().getSelectedIds().stream().anyMatch(id -> id.contains("HolyLois-FishEating")));
+        check(packOn, "the fish eating pack is enabled in the test client");
+        for (String fish : new String[] {"pondie", "cooked_splashtail"}) {
+            server.runCommand("clear @a");
+            server.runCommand("give @p fishofthieves:" + fish);
+            context.waitTicks(20);
+            // HUD off (F1) so no catch card covers the hand.
+            context.runOnClient(client -> { client.player.getInventory().setSelectedSlot(0); client.player.setXRot(20); client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); });
+            context.getInput().pressKey(options -> options.keyToggleGui);
+            server.runOnServer(s -> s.getPlayerList().getPlayers().forEach(p -> p.getFoodData().setFoodLevel(6)));
+            context.getInput().holdKey(options -> options.keyUse);
+            context.waitTicks(22);
+            boolean eating = context.computeOnClient(client -> client.player.isUsingItem());
+            context.takeScreenshot("47-eat-" + fish);
+            context.getInput().releaseKey(options -> options.keyUse);
+            context.getInput().pressKey(options -> options.keyToggleGui);
+            context.waitTicks(10);
+            check(eating, fish + " is being eaten when the frame is captured");
+        }
+        server.runCommand("clear @a");
+    }
+
     private static void armAnimations(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
         var server = world.getServer();
         server.runCommand("gamemode survival @a");
@@ -819,6 +945,88 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         swapSpam(context, world, false);
         swapSpam(context, world, true);
         world.getServer().runCommand("gamemode survival @a");
+    }
+
+    /**
+     * Owner 2026-10-11: picking a fish up and putting it back in the same slot sometimes left a phantom fish there (the client
+     * showed one the server did not have). Small and heavy trophies, survival and creative, quick and slow clicks.
+     */
+    private static void fishSameSlot(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        var server = world.getServer();
+        var results = new java.util.ArrayList<String>();
+        for (String mode : new String[] {"survival", "creative"})
+            for (String rarity : new String[] {"rare", "legendary"}) {
+                server.runCommand("gamemode " + mode + " @a");
+                server.runCommand("clear @a");
+                // Hold slot 9 so Inventory Profiles Next does not refill the hand from the moved fish.
+                context.runOnClient(client -> client.player.getInventory().setSelectedSlot(8));
+                server.runCommand("execute as @p run legends give " + rarity);
+                context.waitTicks(5);
+                // Commands move it like gameplay does, so the client is told (a direct server-side move is not synced in creative).
+                server.runCommand("item replace entity @p container.20 from entity @p container.0");
+                server.runCommand("item replace entity @p container.0 with air");
+                context.waitTicks(5);
+                context.getInput().pressKey(options -> options.keyInventory);
+                context.waitTicks(5);
+                if (mode.equals("creative")) context.runOnClient(client -> {
+                    var screen = client.gui.screen();
+                    for (var tab : BuiltInRegistries.CREATIVE_MODE_TAB)
+                        if (tab.getType() == net.minecraft.world.item.CreativeModeTab.Type.INVENTORY) {
+                            var select = screen.getClass().getDeclaredMethod("selectTab", net.minecraft.world.item.CreativeModeTab.class);
+                            select.setAccessible(true); select.invoke(screen, tab);
+                        }
+                });
+                context.waitTicks(3);
+                var pos = context.computeOnClient(client -> {
+                    var screen = (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) client.gui.screen();
+                    Slot target = null;
+                    for (var slot : screen.getMenu().slots)
+                        if (slot.container instanceof net.minecraft.world.entity.player.Inventory && slot.getContainerSlot() == 20) target = slot;
+                    int left = (int) field(screen, "leftPos"), top = (int) field(screen, "topPos");
+                    double scale = client.getWindow().getGuiScale();
+                    return new double[] {(left + target.x + 8) * scale, (top + target.y + 8) * scale};
+                });
+                context.getInput().setCursorPos(pos[0], pos[1]);
+                context.waitTicks(2);
+                String startC = context.computeOnClient(client -> slotState(client.player) + " fishAt " + fishAt(client.player));
+                String startS = server.computeOnServer(s -> { var p = s.getPlayerList().getPlayers().getFirst(); return slotState(p) + " fishAt " + fishAt(p); });
+                log("same-slot start " + mode + " " + rarity + ": client " + startC + " | server " + startS);
+                int bad = 0;
+                for (int round = 0; round < 8; round++) {
+                    context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+                    context.waitTicks(round % 2 == 0 ? 1 : 4);
+                    context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+                    context.waitTicks(round % 3 == 0 ? 1 : 5);
+                    String c = context.computeOnClient(client -> slotState(client.player));
+                    String sv = server.computeOnServer(s -> slotState(s.getPlayerList().getPlayers().getFirst()));
+                    // Back in its slot after every pick-and-place, never left on the cursor (the "phantom fish").
+                    if (!c.startsWith("slot cod") || !c.endsWith("cursor -")) { bad++; log("same-slot not placed " + mode + " " + rarity + " round " + round + ": client " + c); }
+                    else if (!c.equals(sv)) { bad++; log("same-slot mismatch " + mode + " " + rarity + " round " + round + ": client " + c + " | server " + sv); }
+                }
+                context.runOnClient(client -> client.gui.setScreen(null));
+                context.waitTicks(5);
+                results.add(mode + " " + rarity + ": " + bad + " mismatches");
+            }
+        server.runCommand("gamemode survival @a");
+        server.runCommand("clear @a");
+        log("fish same slot: " + results);
+        check(results.stream().allMatch(r -> r.endsWith(": 0 mismatches")), "a fish put back in its slot never leaves a phantom (" + results + ")");
+    }
+
+    private static String fishAt(net.minecraft.world.entity.player.Player player) {
+        var at = new java.util.ArrayList<Integer>();
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) if (!player.getInventory().getItem(i).isEmpty()) at.add(i);
+        return at.toString();
+    }
+
+    /** Slot 20 and the cursor as item id, count and fish weight label. */
+    private static String slotState(net.minecraft.world.entity.player.Player player) {
+        java.util.function.Function<ItemStack, String> d = st -> st.isEmpty() ? "-" : BuiltInRegistries.ITEM.getKey(st.getItem()).getPath() + "x" + st.getCount() + "@" + holylois.boombox.FishData.label(st);
+        var carried = player.containerMenu.getCarried();
+        // The creative screen carries its cursor item in its own picker menu, not the player's inventory menu.
+        if (player.level().isClientSide() && net.minecraft.client.Minecraft.getInstance().gui.screen() instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> screen && carried.isEmpty())
+            carried = screen.getMenu().getCarried();
+        return "slot " + d.apply(player.getInventory().getItem(20)) + " cursor " + d.apply(carried);
     }
 
     private static void swapSpam(ClientGameTestContext context, TestSingleplayerContext world, boolean creative) throws Exception {

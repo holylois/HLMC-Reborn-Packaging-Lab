@@ -1,0 +1,319 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/charcoal_pondie"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/charcoal_pondie_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/charcoal_pondie_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/charcoal_pondie_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/charcoal_pondie"
+            }
+          }
+        },
+        "when": {
+          "pondie_variant": "fishofthieves:charcoal"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/orchid_pondie"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/orchid_pondie_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/orchid_pondie_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/orchid_pondie_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/orchid_pondie"
+            }
+          }
+        },
+        "when": {
+          "pondie_variant": "fishofthieves:orchid"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/bronze_pondie"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/bronze_pondie_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/bronze_pondie_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/bronze_pondie_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/bronze_pondie"
+            }
+          }
+        },
+        "when": {
+          "pondie_variant": "fishofthieves:bronze"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/bright_pondie"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/bright_pondie_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/bright_pondie_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/bright_pondie_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/bright_pondie"
+            }
+          }
+        },
+        "when": {
+          "pondie_variant": "fishofthieves:bright"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/moonsky_pondie"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/moonsky_pondie_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/moonsky_pondie_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/moonsky_pondie_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/moonsky_pondie"
+            }
+          }
+        },
+        "when": {
+          "pondie_variant": "fishofthieves:moonsky"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/dewdrop_pondie"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/dewdrop_pondie_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/dewdrop_pondie_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/dewdrop_pondie_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/dewdrop_pondie"
+            }
+          }
+        },
+        "when": {
+          "pondie_variant": "fishofthieves:dewdrop"
+        }
+      }
+    ],
+    "component": "minecraft:custom_data",
+    "fallback": {
+      "type": "minecraft:condition",
+      "property": "minecraft:using_item",
+      "on_false": {
+        "type": "minecraft:model",
+        "model": "fishofthieves:item/charcoal_pondie"
+      },
+      "on_true": {
+        "type": "minecraft:range_dispatch",
+        "property": "minecraft:use_duration",
+        "scale": 0.03,
+        "entries": [
+          {
+            "threshold": 0.3,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/charcoal_pondie_bite0"
+            }
+          },
+          {
+            "threshold": 0.55,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/charcoal_pondie_bite1"
+            }
+          },
+          {
+            "threshold": 0.8,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/charcoal_pondie_bite2"
+            }
+          }
+        ],
+        "fallback": {
+          "type": "minecraft:model",
+          "model": "fishofthieves:item/charcoal_pondie"
+        }
+      }
+    },
+    "property": "minecraft:component"
+  }
+}

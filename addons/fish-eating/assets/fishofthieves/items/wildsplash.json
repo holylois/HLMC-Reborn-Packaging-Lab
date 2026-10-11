@@ -1,0 +1,319 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/russet_wildsplash"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/russet_wildsplash_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/russet_wildsplash_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/russet_wildsplash_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/russet_wildsplash"
+            }
+          }
+        },
+        "when": {
+          "wildsplash_variant": "fishofthieves:russet"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/sandy_wildsplash"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sandy_wildsplash_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sandy_wildsplash_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/sandy_wildsplash_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/sandy_wildsplash"
+            }
+          }
+        },
+        "when": {
+          "wildsplash_variant": "fishofthieves:sandy"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/ocean_wildsplash"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/ocean_wildsplash_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/ocean_wildsplash_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/ocean_wildsplash_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/ocean_wildsplash"
+            }
+          }
+        },
+        "when": {
+          "wildsplash_variant": "fishofthieves:ocean"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/muddy_wildsplash"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/muddy_wildsplash_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/muddy_wildsplash_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/muddy_wildsplash_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/muddy_wildsplash"
+            }
+          }
+        },
+        "when": {
+          "wildsplash_variant": "fishofthieves:muddy"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/coral_wildsplash"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/coral_wildsplash_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/coral_wildsplash_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/coral_wildsplash_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/coral_wildsplash"
+            }
+          }
+        },
+        "when": {
+          "wildsplash_variant": "fishofthieves:coral"
+        }
+      },
+      {
+        "model": {
+          "type": "minecraft:condition",
+          "property": "minecraft:using_item",
+          "on_false": {
+            "type": "minecraft:model",
+            "model": "fishofthieves:item/calico_wildsplash"
+          },
+          "on_true": {
+            "type": "minecraft:range_dispatch",
+            "property": "minecraft:use_duration",
+            "scale": 0.03,
+            "entries": [
+              {
+                "threshold": 0.3,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/calico_wildsplash_bite0"
+                }
+              },
+              {
+                "threshold": 0.55,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/calico_wildsplash_bite1"
+                }
+              },
+              {
+                "threshold": 0.8,
+                "model": {
+                  "type": "minecraft:model",
+                  "model": "holylois:item/eating/calico_wildsplash_bite2"
+                }
+              }
+            ],
+            "fallback": {
+              "type": "minecraft:model",
+              "model": "fishofthieves:item/calico_wildsplash"
+            }
+          }
+        },
+        "when": {
+          "wildsplash_variant": "fishofthieves:calico"
+        }
+      }
+    ],
+    "component": "minecraft:custom_data",
+    "fallback": {
+      "type": "minecraft:condition",
+      "property": "minecraft:using_item",
+      "on_false": {
+        "type": "minecraft:model",
+        "model": "fishofthieves:item/russet_wildsplash"
+      },
+      "on_true": {
+        "type": "minecraft:range_dispatch",
+        "property": "minecraft:use_duration",
+        "scale": 0.03,
+        "entries": [
+          {
+            "threshold": 0.3,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/russet_wildsplash_bite0"
+            }
+          },
+          {
+            "threshold": 0.55,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/russet_wildsplash_bite1"
+            }
+          },
+          {
+            "threshold": 0.8,
+            "model": {
+              "type": "minecraft:model",
+              "model": "holylois:item/eating/russet_wildsplash_bite2"
+            }
+          }
+        ],
+        "fallback": {
+          "type": "minecraft:model",
+          "model": "fishofthieves:item/russet_wildsplash"
+        }
+      }
+    },
+    "property": "minecraft:component"
+  }
+}

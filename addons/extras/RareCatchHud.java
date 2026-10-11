@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import java.util.Locale;
 
-final class RareCatchHud {
+public final class RareCatchHud {
     private static RareCatchNotice notice;private static long arrived,shown;
     /** Shiny jingle: a rising chime arpeggio after the catch sound (ms after arrival, pitch). */
     private static final float[][] JINGLE={{260,1.19f},{390,1.5f},{520,1.78f},{700,2f}};private static int jingleNext=JINGLE.length;
@@ -37,14 +37,21 @@ final class RareCatchHud {
             if(notice==null||mc.player==null||jingleNext>=JINGLE.length)return;
             if(System.currentTimeMillis()-arrived>=JINGLE[jingleNext][0])mc.player.playSound(net.minecraft.sounds.SoundEvents.NOTE_BLOCK_CHIME.value(),0.9f,JINGLE[jingleNext++][1]);
         });
-        HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR,Identifier.fromNamespaceAndPath("holylois","rare_catch"),(g,t)->{
-            var mc=Minecraft.getInstance();if(notice==null||mc.player==null||mc.level==null)return;long now=System.currentTimeMillis();
-            if(now-arrived>60_000){notice=null;return;}if(mc.gui.hud.isHidden()||mc.gui.screen()!=null)return;
-            if(shown==0)shown=now;long age=now-shown;if(age>LIFE){notice=null;return;}
-            var id=Identifier.tryParse(notice.item());if(id==null||!BuiltInRegistries.ITEM.containsKey(id)){notice=null;return;}
-            draw(g,mc,new ItemStack(BuiltInRegistries.ITEM.getValue(id)),age);
-        });
+        HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR,Identifier.fromNamespaceAndPath("holylois","rare_catch"),(g,t)->{if(!CinematicTweaks.playing())card(g,false);});
     }
+    /**
+     * The card, from the HUD or, while the cinematic camera hides the HUD, from CatchCardCinematicMixin (owner 2026-10-11: you
+     * should see what you caught while the camera films you fishing).
+     */
+    public static void card(net.minecraft.client.gui.GuiGraphicsExtractor g,boolean cinematic){
+        var mc=Minecraft.getInstance();if(notice==null||mc.player==null||mc.level==null)return;long now=System.currentTimeMillis();
+        if(now-arrived>60_000){notice=null;return;}if(!cinematic&&mc.gui.hud.isHidden()||mc.gui.screen()!=null)return;
+        if(shown==0)shown=now;long age=now-shown;if(age>LIFE){notice=null;return;}
+        var id=Identifier.tryParse(notice.item());if(id==null||!BuiltInRegistries.ITEM.containsKey(id)){notice=null;return;}
+        draw(g,mc,new ItemStack(BuiltInRegistries.ITEM.getValue(id)),age);cardsDrawn++;
+    }
+    /** Frames a catch card was drawn (gametest). */
+    public static int cardsDrawn;
     private static final long LIFE=5500;
     /**
      * Loot toast in the style of the WoW toast addons: icon well with a rarity border, rarity label, the name as the main line,

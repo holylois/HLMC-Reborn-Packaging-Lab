@@ -141,5 +141,9 @@
   "item.holylois.holy_lootbox": "Holy Lootbox",
   "item.holylois.holy_lootbox.inside": "Holy Lois dienas dāvana",
   "item.holylois.holy_lootbox.open": "%s, lai atvērtu",
-  "item.holylois.holy_lootbox.tier": "%s. līmeņa dāvana spēlētājam %s"
+  "item.holylois.holy_lootbox.tier": "%s. līmeņa dāvana spēlētājam %s",
+  "holylois.cinematic.status": "Kinokamera: %s. Makšķerēšanas kamera: %s. Pārslēgt: /cinematic on|off, /cinematic fishing on|off",
+  "holylois.cinematic.on": "ieslēgta",
+  "holylois.cinematic.off": "izslēgta",
+  "holylois.cinematic.unavailable": "Kinokameras mods nav pieejams."
 }

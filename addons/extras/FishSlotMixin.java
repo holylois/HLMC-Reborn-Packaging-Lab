@@ -12,7 +12,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Inventory, hotbar, chests and backpacks: a soft rarity glow behind a trophy fish and its weight in the top-left corner. */
+/**
+ * Inventory, hotbar, chests and backpacks: a thin rarity stroke around a trophy fish or fillet (owner 2026-10-11: no filled
+ * background behind it) and its weight in the top-left corner.
+ */
 @Mixin(GuiGraphicsExtractor.class)
 public abstract class FishSlotMixin {
     @Shadow public abstract void fill(int x0, int y0, int x1, int y1, int color);
@@ -24,10 +27,11 @@ public abstract class FishSlotMixin {
         String rarity = FishData.rarity(stack);
         int color = rarity.equals("uncommon") ? 0 : FishData.color(rarity);
         if (color == 0) return;
-        int rgb = color & 0xFFFFFF;
-        fill(x, y, x + 16, y + 16, 0x22000000 | rgb);
-        fill(x + 2, y + 2, x + 14, y + 14, 0x30000000 | rgb);
-        fill(x + 4, y + 4, x + 12, y + 12, 0x30000000 | rgb);
+        int rgb = color & 0xFFFFFF, line = 0xD0000000 | rgb, soft = 0x50000000 | rgb;
+        // A 1 px frame around the item with clipped corners and soft corner dots, so it reads as a stroke, not a box.
+        fill(x + 1, y - 1, x + 15, y, line); fill(x + 1, y + 16, x + 15, y + 17, line);
+        fill(x - 1, y + 1, x, y + 15, line); fill(x + 16, y + 1, x + 17, y + 15, line);
+        fill(x, y, x + 1, y + 1, soft); fill(x + 15, y, x + 16, y + 1, soft); fill(x, y + 15, x + 1, y + 16, soft); fill(x + 15, y + 15, x + 16, y + 16, soft);
     }
 
     @Inject(method = "itemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V", at = @At("TAIL"))

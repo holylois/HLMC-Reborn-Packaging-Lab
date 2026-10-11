@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "holylois:item/eating/cooked_splashtail_bite0"
+  }
+}

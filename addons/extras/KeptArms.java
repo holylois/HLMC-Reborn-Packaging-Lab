@@ -11,7 +11,7 @@ import java.util.WeakHashMap;
 
 /**
  * Fresh Animations (through EMF) rewrites arm angles while a model is drawn, after vanilla and Not Enough Animations have
- * posed them. For poses where the game's own arms matter (holding a map, eating or drinking, bows, crossbows, shields,
+ * posed them. For poses where the game's own arms matter (holding any map, eating or drinking, bows, crossbows, shields,
  * spyglass, horn, lanterns and torches, our two-armed fish carry), the angles from setupAnim are kept per render state and
  * forced back right before each arm is transformed (KeptArmsPartMixin), on the body and on its armor alike.
  * Everything else (walking, idle, legs, head, body) stays Fresh Animations.
@@ -35,7 +35,8 @@ public final class KeptArms {
 
     private static boolean held(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
-        if (stack.is(Items.FILLED_MAP) || stack.is(Items.MAP) || stack.is(Items.TORCH) || stack.is(Items.SOUL_TORCH) || stack.is(Items.REDSTONE_TORCH)) return true;
+        // Every drawn map counts, also 26.3's explorer maps (abandoned_camp_map and friends) that are not filled_map.
+        if (stack.has(net.minecraft.core.component.DataComponents.MAP_ID) || stack.is(Items.MAP) || stack.is(Items.TORCH) || stack.is(Items.SOUL_TORCH) || stack.is(Items.REDSTONE_TORCH)) return true;
         String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
         return path.endsWith("lantern") || path.equals("boombox");
     }

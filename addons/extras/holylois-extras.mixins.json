@@ -79,10 +79,14 @@
     "KeptArmsDrawMixin",
     "KeptArmsPartMixin",
     "NeaLanternSmoothMixin",
+    "NeaMapItemsMixin",
+    "FirstPersonMapItemsMixin",
     "NeaPitchSmoothMixin",
     "PackToastMixin",
     "CinematicMusicQuietMixin",
-    "BoomboxQuietsMusicMixin"
+    "BoomboxQuietsMusicMixin",
+    "CatchCardCinematicMixin",
+    "SingleItemDoubleClickMixin"
   ],
   "injectors": {
     "defaultRequire": 0
