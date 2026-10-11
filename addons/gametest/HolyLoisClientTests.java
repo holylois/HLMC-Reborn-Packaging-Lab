@@ -133,6 +133,24 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         return entries;
     }
     private static void journal(ClientGameTestContext context,TestSingleplayerContext world){
+        context.runOnClient(client->{
+            var key=net.minecraft.client.KeyMapping.get("key.holylois.journal");
+            var saved=net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper.getBoundKeyOf(key);
+            check(key.getDefaultKey().equals(com.mojang.blaze3d.platform.InputConstants.UNKNOWN),"journal default uses SDL's safe unbound key");
+            key.setKey(com.mojang.blaze3d.platform.InputConstants.Type.KEYBOARD.getOrCreate(-1));
+            check(holylois.boombox.JournalClient.repairBinding(key)&&key.isUnbound(),"invalid saved journal binding migrates to unbound");
+            net.minecraft.client.KeyMapping.setAll();
+            check(!holylois.boombox.JournalClient.repairBinding(key),"valid unbound journal preference stays unchanged");
+            key.setKey(com.mojang.blaze3d.platform.InputConstants.Type.KEYBOARD.getOrCreate(com.mojang.blaze3d.platform.InputConstants.KEY_K));
+            check(!holylois.boombox.JournalClient.repairBinding(key),"valid journal binding stays unchanged");
+            key.setKey(saved);
+            net.minecraft.client.KeyMapping.resetMapping();
+        });
+        context.runOnClient(client->{
+            var key=net.minecraft.client.KeyMapping.get("key.holylois.journal");
+            if(key.isUnbound())key.setKey(com.mojang.blaze3d.platform.InputConstants.Type.KEYBOARD.getOrCreate(com.mojang.blaze3d.platform.InputConstants.KEY_K));
+            net.minecraft.client.KeyMapping.resetMapping();
+        });
         context.getInput().pressKey(options->net.minecraft.client.KeyMapping.get("key.holylois.journal"));
         context.waitForScreen(holylois.boombox.JournalScreen.class);
         context.waitTicks(12);

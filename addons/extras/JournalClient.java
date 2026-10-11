@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import java.nio.file.Files;
 
 /** The new control is seeded only once, on a free key. Existing bound or unbound choices stay personal. */
-final class JournalClient {
+public final class JournalClient {
     static final String KEY="key.holylois.journal";
     static void register(){
         boolean existing=true;
@@ -21,18 +21,26 @@ final class JournalClient {
             existing=Files.exists(file)&&Files.readAllLines(file).stream().anyMatch(line->line.startsWith("key_"+KEY+":"));
         }catch(Exception ignored){/* Do not change a preference we cannot read. */}
         boolean seed=!existing;
-        var key=KeyMappingHelper.registerKeyMapping(new KeyMapping(KEY,InputConstants.Type.KEYBOARD,-1,KeyMapping.Category.register(Identifier.fromNamespaceAndPath("holylois","journal"))));
+        var key=KeyMappingHelper.registerKeyMapping(new KeyMapping(KEY,InputConstants.Type.KEYBOARD,InputConstants.UNKNOWN.getValue(),KeyMapping.Category.register(Identifier.fromNamespaceAndPath("holylois","journal"))));
         ClientLifecycleEvents.CLIENT_STARTED.register(client->{
+            boolean repaired=repairBinding(key);
             var candidate=InputConstants.Type.KEYBOARD.getOrCreate(InputConstants.KEY_K);
             if(seed&&key.isUnbound()&&java.util.Arrays.stream(client.options.keyMappings).noneMatch(other->other!=key&&!other.getName().startsWith("key.debug.")&&other.matches(candidate))){
                 key.setKey(candidate);KeyMapping.resetMapping();client.options.save();
             }
+            else if(repaired){KeyMapping.resetMapping();client.options.save();}
         });
         ClientTickEvents.END_CLIENT_TICK.register(client->{while(key.consumeClick())if(client.player!=null&&client.gui.screen()==null)open(1);});
         ClientPlayNetworking.registerGlobalReceiver(JournalState.TYPE,(state,context)->{
             if(context.client().gui.screen() instanceof JournalScreen screen)screen.update(state);
             else context.client().gui.setScreen(new JournalScreen(state));
         });
+    }
+    /** Migrate only our invalid pre-SDL unbound value; preserve all valid player choices. */
+    public static boolean repairBinding(KeyMapping key){
+        if(!key.saveString().equals("key.keyboard.-1"))return false;
+        key.setKey(InputConstants.UNKNOWN);
+        return true;
     }
     static void open(int tab){
         if(request(new JournalRequest(tab,0,0,6,"")))Minecraft.getInstance().gui.setScreen(new JournalScreen(tab));
