@@ -24,6 +24,8 @@ jobs:
           distribution: temurin
           java-version: '25'
       - uses: gradle/actions/setup-gradle@v4
+      - name: Test private client file preparation
+        run: python3 test-fetch-client-files.py
       - name: Cache locked mod jars
         uses: actions/cache@v4
         with:
