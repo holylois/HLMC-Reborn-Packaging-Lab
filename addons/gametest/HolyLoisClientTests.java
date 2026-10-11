@@ -72,6 +72,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "held maps", context, world, HolyLoisClientTests::heldMaps);
             run(failed, "water by camera height", context, world, HolyLoisClientTests::waterByHeight);
             run(failed, "item cards", context, world, HolyLoisClientTests::itemCards);
+            run(failed, "hooked school fish arrives as an item", context, world, HolyLoisClientTests::schoolCatch);
             run(failed, "fish tooltips", context, world, HolyLoisClientTests::fishTooltips);
             run(failed, "fish of thieves eating frames", context, world, HolyLoisClientTests::fishEatingFrames);
             run(failed, "armor 3d", context, world, HolyLoisClientTests::armor3d);
@@ -626,6 +627,29 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         server.runCommand("execute at @p run summon item ~ ~ ~ {Item:{id:\"minecraft:diamond_sword\",count:1,components:{\"minecraft:enchantments\":{\"minecraft:sharpness\":5}}},PickupDelay:0}");
         context.waitTicks(120);
         check(context.computeOnClient(client -> holylois.boombox.ItemCardsTestHook.shown()) == after, "the same sword again within 30 s shows no second card");
+        server.runCommand("clear @a");
+    }
+
+    /** A hooked swimming Fish of Thieves fish turns into its item with the variant, a weight roll and no bucket data. */
+    private static void schoolCatch(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        var server = world.getServer();
+        server.runCommand("clear @a");
+        server.runOnServer(s -> {
+            var player = s.getPlayerList().getPlayers().getFirst();
+            var level = (net.minecraft.server.level.ServerLevel) player.level();
+            var type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getValue(net.minecraft.resources.Identifier.parse("fishofthieves:splashtail"));
+            var fish = (net.minecraft.world.entity.animal.fish.AbstractFish) type.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            fish.setPos(player.getX(), player.getY(), player.getZ());
+            level.addFreshEntity(fish);
+            var item = holylois.boombox.SchoolCatch.itemFor(fish);
+            check(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item.getItem()).toString().equals("fishofthieves:splashtail"), "a hooked Splashtail becomes the Splashtail item (" + item + ")");
+            check(!item.has(net.minecraft.core.component.DataComponents.BUCKET_ENTITY_DATA), "no bucket data on the caught fish");
+            check(holylois.boombox.SchoolCatch.reel(player, fish) && !fish.isAlive(), "reeling the hooked fish removes the mob");
+            boolean got = false;
+            for (int i = 0; i < player.getInventory().getContainerSize(); i++)
+                got |= net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(player.getInventory().getItem(i).getItem()).toString().equals("fishofthieves:splashtail");
+            check(got, "the caught Splashtail is in the inventory");
+        });
         server.runCommand("clear @a");
     }
 
