@@ -14,16 +14,16 @@ public final class JournalBookTest {
     private static int checked;
     public static void main(String[] args)throws Exception{
         var book=new JournalBook();
-        book.caught("minecraft:cod",1,0,"","minecraft:overworld",1,64,2,100);
-        book.caught("minecraft:cod",1,8.5,"epic","minecraft:overworld",3,65,4,101);
+        check(book.caught("minecraft:cod",1,0,"","minecraft:overworld",1,64,2,100),"First species earns one private hint");
+        check(!book.caught("minecraft:cod",1,8.5,"epic","minecraft:overworld",3,65,4,101),"Repeat species stay quiet");
         book.caught("minecraft:cod",1,2,"rare","minecraft:overworld",5,66,6,102);
         var cod=book.fish.get("minecraft:cod");
         check(cod.count==3&&cod.heaviest==8.5&&cod.rarities==(1|4|8),"Catches accumulate species, best measured weight and all rarity bands");
         book.caught("minecraft:salmon",1,Double.NaN,"common","minecraft:overworld",0,64,0,103);
         check(book.fish.get("minecraft:salmon").heaviest==0,"Unweighed catches do not invent a weight");
         check(book.visit("spire",100)&&!book.visit("spire",200)&&book.places.get("spire")==100,"Repeat visits keep the personal first visit");
-        book.killed("minecraft:zombie",20,"minecraft:overworld",1,64,2,100);
-        book.killed("minecraft:zombie",10,"minecraft:the_nether",3,65,4,200);
+        check(book.killed("minecraft:zombie",20,"minecraft:overworld",1,64,2,100),"First personal creature defeat earns a hint");
+        check(!book.killed("minecraft:zombie",10,"minecraft:the_nether",3,65,4,200),"Repeat creature defeats stay quiet");
         check(book.kills.get("minecraft:zombie").level==20&&book.kills.get("minecraft:zombie").time==200,"Kills retain the best level and the latest location");
         var alice=UUID.randomUUID();var bob=UUID.randomUUID();var state=new Discoveries.State();state.journals.put(alice,book);state.journals.put(bob,new JournalBook());
         var restored=new Gson().fromJson(new Gson().toJson(state),Discoveries.State.class);

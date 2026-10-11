@@ -21,6 +21,10 @@ public final class OnboardingTest {
         check(Discoveries.name("epic:small_plains_dungeon").equals("Small Plains Dungeon")&&Discoveries.name("epic:large_ice_dungeon").equals("Large Ice Dungeon")&&Discoveries.name("epic:sand_obelisk").equals("Sand Obelisk"),"Epic Dungeons are announced with their size");
         check(Discoveries.name("nova_structures:small_undead_crypt").equals("Small Undead Crypt")&&Discoveries.name("nova_structures:small_conduit_ruin_cold")==null,"Small crypts are announced, small ruins stay quiet");
         check(Discoveries.name("nova_structures:tavern_spruce").equals("Tavern")&&Discoveries.name("minecraft:ancient_city").equals("Ancient City"),"Notable structures get friendly names");
+        check(Discoveries.name("hopo:mineshaft/oak_mineshaft").equals("Oak Mineshaft")
+            &&Discoveries.name("mvs:castle_ruins").equals("Castle Ruins")
+            &&Discoveries.name("structory:abandoned_chapel").equals("Abandoned Chapel")
+            &&Discoveries.name("structory_towers:engineer_tower").equals("Engineer Tower"),"Staged structure namespaces work with the generic journal labels");
         check(Discoveries.name("towns_and_towers:exclusives/pillager_outpost_tudor").equals("Pillager Outpost")&&Discoveries.name("nova_structures:illager_manor").equals("Illager Manor"),"Modded names are cleaned");
         check(Discoveries.name("nova_structures:village_birch")==null&&Discoveries.name("minecraft:village_plains")==null&&Discoveries.name("nova_structures:well_oak")==null
             &&Discoveries.name("nova_structures:remnant_graveyard")==null&&Discoveries.name("minecraft:shipwreck")==null&&Discoveries.name("nova_structures:stray_camp")==null,"Villages and small structures stay quiet");

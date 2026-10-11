@@ -74,6 +74,7 @@ public final class HolyLoisAuthScreen extends Screen {
         ActionButton(int x, int y, int width, String text, AuthUi.Kind kind, OnPress action) {
             super(x, y, width, 24, Component.literal(text), action, DEFAULT_NARRATION); this.kind = kind;
         }
+        @Override protected void handleCursor(GuiGraphicsExtractor graphics) { if (active) super.handleCursor(graphics); }
         @Override protected void extractContents(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
             AuthUi.button(graphics, font, getX(), getY(), getWidth(), getHeight(), getMessage(), isHovered(), isFocused(), active, kind);
         }

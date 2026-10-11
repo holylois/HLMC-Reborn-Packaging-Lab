@@ -82,7 +82,7 @@ public final class Discoveries {
     private final Map<String, First> firsts = new LinkedHashMap<>();
     private final Map<String, Integer> counts = new HashMap<>();
     private final Map<UUID,JournalBook> journals = new HashMap<>();
-    private final Map<UUID,Long> nextPage = new HashMap<>();
+    private final holylois.boombox.JournalRequestQueue pages = new holylois.boombox.JournalRequestQueue();
     private boolean dirty;
     private Path file;
 
@@ -90,24 +90,34 @@ public final class Discoveries {
         ServerPlayNetworking.registerGlobalReceiver(JournalRequest.TYPE,(request,context)->open(context.player(),request));
         FishCaught.EVENT.register((player,fish)->{
             if(file==null||!PartySupport.ready(player))return;
-            book(player).caught(BuiltInRegistries.ITEM.getKey(fish.getItem()).toString(),fish.getCount(),FishData.kilograms(fish),FishData.rarity(fish),
+            boolean fresh=book(player).caught(BuiltInRegistries.ITEM.getKey(fish.getItem()).toString(),fish.getCount(),FishData.kilograms(fish),FishData.rarity(fish),
                 player.level().dimension().identifier().toString(),player.getBlockX(),player.getBlockY(),player.getBlockZ(),now());
+            if(fresh)hint(player,JournalState.FISH);
             dirty=true;
         });
-        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server->{if(dirty&&server.getTickCount()%400==0)save();});
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server->{
+            for(var entry:pages.drain(System.currentTimeMillis()).entrySet()){
+                var player=server.getPlayerList().getPlayer(entry.getKey());
+                if(player!=null&&PartySupport.ready(player))sendPage(player,entry.getValue());
+            }
+            if(dirty&&server.getTickCount()%400==0)save();
+        });
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPING.register(server->{if(dirty)save();});
-        net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register((handler,server)->nextPage.remove(handler.player.getUUID()));
+        net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register((handler,server)->pages.forget(handler.player.getUUID()));
     }
     private static long now(){return System.currentTimeMillis()/1000;}
+    private static void hint(ServerPlayer player,int kind){
+        if(ServerPlayNetworking.canSend(player,holylois.boombox.JournalUpdate.TYPE))ServerPlayNetworking.send(player,new holylois.boombox.JournalUpdate(kind));
+    }
     private JournalBook book(ServerPlayer player){return journals.computeIfAbsent(player.getUUID(),id->new JournalBook());}
     int open(ServerPlayer player,JournalRequest request) {
         if(file==null||!PartySupport.ready(player))return 0;
-        long now=System.currentTimeMillis();
-        if(now<nextPage.getOrDefault(player.getUUID(),0L))return 0;
-        nextPage.put(player.getUUID(),now+150);
+        if(pages.submit(player.getUUID(),request,System.currentTimeMillis()))sendPage(player,request);
+        return 1;
+    }
+    private void sendPage(ServerPlayer player,JournalRequest request){
         if(ServerPlayNetworking.canSend(player,JournalState.TYPE))ServerPlayNetworking.send(player,snapshot(player,request));
         else player.sendSystemMessage(Component.literal("Update your pack to open the Holy Lois Journal.").withStyle(ChatFormatting.YELLOW));
-        return 1;
     }
     JournalState snapshot(ServerPlayer player,JournalRequest request){
         var entries=new ArrayList<JournalState.Entry>();
@@ -176,7 +186,7 @@ public final class Discoveries {
     static String article(String name) { return "AEIOU".indexOf(Character.toUpperCase(name.charAt(0))) >= 0 ? "an" : "a"; }
 
     void load(MinecraftServer server, Path worldRoot) {
-        found.clear();firsts.clear();counts.clear();journals.clear();nextPage.clear();dirty=false;
+        found.clear();firsts.clear();counts.clear();journals.clear();pages.clear();dirty=false;
         file = worldRoot.resolve("holylois/discoveries.json");
         try {
             if (Files.exists(file)) {
@@ -228,7 +238,7 @@ public final class Discoveries {
             var start = manager.getStructureWithPieceAt(pos.getX(), pos.getY(), pos.getZ(), structure);
             if (start == null || !start.isValid()) continue;
             String key = level.dimension().identifier() + "|" + id + "|" + start.getChunkPos().x() + "," + start.getChunkPos().z();
-            if(book(player).visit(key,now()))dirty=true;
+            if(book(player).visit(key,now())){dirty=true;hint(player,JournalState.PLACE);}
             if (found.containsKey(key)) continue;
             var entry = new Found();
             entry.key = key; entry.structure = id.toString(); entry.name = name;
@@ -265,7 +275,9 @@ public final class Discoveries {
         String type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
         int[] rune = Runeforged.levelAndElite(entity);
         int level=rune==null?0:rune[0];
-        book(player).killed(type,level,entity.level().dimension().identifier().toString(),entity.getBlockX(),entity.getBlockY(),entity.getBlockZ(),now());
+        if(type.equals("minecraft:player"))return;
+        boolean fresh=book(player).killed(type,level,entity.level().dimension().identifier().toString(),entity.getBlockX(),entity.getBlockY(),entity.getBlockZ(),now());
+        if(fresh&&player.getStats().getValue(net.minecraft.stats.Stats.ENTITY_KILLED,entity.getType())<=1)hint(player,JournalState.KILL);
         dirty=true;
         String boss = BOSSES.get(type);
         if (boss == null && entity.getType().builtInRegistryHolder().is(BOSS_TAG)) boss = entity.getName().getString();

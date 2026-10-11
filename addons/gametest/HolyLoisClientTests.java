@@ -116,12 +116,21 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
 
     /** Test-only journal peer exercises the real request/response codecs and client receiver, without owner data. */
     private static void journalFixture(){
+        var queue=new holylois.boombox.JournalRequestQueue();
         net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.registerGlobalReceiver(holylois.boombox.JournalRequest.TYPE,(request,context)->{
-            var all=journalEntries(request.tab());
-            var entries=all.stream().filter(e->request.filter()==0||e.kind()==request.filter()).filter(e->e.name().toLowerCase(java.util.Locale.ROOT).contains(request.search().toLowerCase(java.util.Locale.ROOT))).toList();
-            int pages=Math.max(1,(entries.size()+request.size()-1)/request.size()),page=Math.min(request.page(),pages-1),start=page*request.size();
-            net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(context.player(),new holylois.boombox.JournalState(request.tab(),request.filter(),page,pages,entries.size(),request.size(),request.search(),entries.subList(start,Math.min(entries.size(),start+request.size()))));
+            if(queue.submit(context.player().getUUID(),request,System.currentTimeMillis()))journalReply(context.player(),request);
         });
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server->{
+            for(var entry:queue.drain(System.currentTimeMillis()).entrySet()){
+                var player=server.getPlayerList().getPlayer(entry.getKey());if(player!=null)journalReply(player,entry.getValue());
+            }
+        });
+    }
+    private static void journalReply(net.minecraft.server.level.ServerPlayer player,holylois.boombox.JournalRequest request){
+        var all=journalEntries(request.tab());
+        var entries=all.stream().filter(e->request.filter()==0||e.kind()==request.filter()).filter(e->e.name().toLowerCase(java.util.Locale.ROOT).contains(request.search().toLowerCase(java.util.Locale.ROOT))).toList();
+        int pages=Math.max(1,(entries.size()+request.size()-1)/request.size()),page=Math.min(request.page(),pages-1),start=page*request.size();
+        net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,new holylois.boombox.JournalState(request.tab(),request.filter(),page,pages,entries.size(),request.size(),request.search(),entries.subList(start,Math.min(entries.size(),start+request.size()))));
     }
     private static List<holylois.boombox.JournalState.Entry> journalEntries(int tab){
         var entries=new ArrayList<holylois.boombox.JournalState.Entry>();
@@ -133,6 +142,8 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         return entries;
     }
     private static void journal(ClientGameTestContext context,TestSingleplayerContext world){
+        // A preceding auth test closes through the screenshot fade, which is asynchronous.
+        context.waitFor(client->client.gui.screen()==null,100);
         context.runOnClient(client->{
             var key=net.minecraft.client.KeyMapping.get("key.holylois.journal");
             var saved=net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper.getBoundKeyOf(key);
@@ -191,6 +202,20 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.waitTicks(8);context.takeScreenshot("52-journal-small");
         context.runOnClient(client->client.gui.setScreen(null));
         check(context.computeOnClient(client->client.gui.screen()==null),"journal closes without trapping the cursor");
+        context.runOnClient(client->{
+            var screen=new holylois.boombox.JournalScreen(1);client.gui.setScreen(screen);
+            try{var requested=screen.getClass().getDeclaredField("requestedAt");requested.setAccessible(true);requested.setLong(screen,System.currentTimeMillis()-6000);}
+            catch(ReflectiveOperationException error){throw new AssertionError(error);}
+            screen.tick();
+            check((boolean)field(screen,"timedOut")&&!(boolean)field(screen,"loading"),"unanswered journal requests offer Retry instead of an endless spinner");
+        });
+        context.takeScreenshot("52-journal-retry");
+        context.clickScreenButton("holylois.journal.retry");context.waitTicks(20);
+        context.runOnClient(client->{
+            check(field(client.gui.screen(),"state")!=null,"Retry receives a real bounded page through the throttled peer");
+            client.gui.setScreen(null);holylois.boombox.JournalHints.added();holylois.boombox.JournalHints.added();
+        });
+        context.waitTicks(5);context.takeScreenshot("52-journal-hint");
     }
     private static int waypointCount(){
         var session=BuiltInHudModules.MINIMAP.getCurrentSession();var root=session==null?null:session.getWorldManager().getCurrentRootContainer();
@@ -1782,7 +1807,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         check(sideways > 0.05 && sideways > 3 * forward, "the boombox swings out from the body and back in, not forward (" + sideways + " vs " + forward + ")");
         float size = context.computeOnClient(client -> holylois.boombox.BoomboxPulse.lastScale);
         log("held boombox note size: " + size);
-        check(size > 0.6f && size <= 1.45f, "loud music draws bigger notes (" + size + ")");
+        check(size > 0.2f && size <= 1.45f/3f, "held notes are one third of the placed-note scale (" + size + ")");
         // First person (owner 2026-10-10): the boombox in your own hand pulses, but throws no notes into your view.
         context.runOnClient(client -> { client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); client.player.setXRot(65); });
         int conesBefore = context.computeOnClient(client -> holylois.boombox.BoomboxPulse.ownCones);

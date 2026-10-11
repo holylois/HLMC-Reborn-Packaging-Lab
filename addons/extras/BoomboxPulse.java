@@ -137,12 +137,15 @@ public final class BoomboxPulse {
      * Louder music throws it further and draws it bigger. Skipped with Particles: Minimal.
      */
     private static void hop(Minecraft mc, double x, double y, double z, double sx, double sz, float loud) {
+        hop(mc,x,y,z,sx,sz,loud,1);
+    }
+    private static void hop(Minecraft mc, double x, double y, double z, double sx, double sz, float loud,float size) {
         if (mc.options.particles().get() == net.minecraft.server.level.ParticleStatus.MINIMAL) return;
         var note = mc.particleEngine.createParticle(net.minecraft.core.particles.ParticleTypes.NOTE, x, y, z, (beats++ % 25) / 24.0, 0, 0);
         if (note == null) return;
         double push = 0.07 + loud * 0.13;
         note.setParticleSpeed(sx * push, 0.07 + loud * 0.07, sz * push);
-        lastScale = 0.55f + loud * 0.9f;
+        lastScale = (0.55f + loud * 0.9f)*size;
         note.scale(lastScale);
         note.setLifetime(12);
     }
@@ -178,14 +181,14 @@ public final class BoomboxPulse {
                     var cone = first ? speakers.left() : speakers.right();
                     var away = cone.subtract(first ? speakers.right() : speakers.left()).normalize();
                     var push = speakers.front().scale(0.8).add(away.scale(0.6));
-                    hop(mc, cone.x, cone.y, cone.z, push.x, push.z, loud);
+                    hop(mc, cone.x, cone.y, cone.z, push.x, push.z, loud,1f/3f);
                     break;
                 }
                 // Not drawn this frame (out of view): about where the box hangs, on the hand's side, out from the body.
                 boolean right = (player.getMainArm() == net.minecraft.world.entity.HumanoidArm.RIGHT) == main;
                 double yaw = Math.toRadians(player.yBodyRot), sideways = right ? -0.45 : 0.45;
                 double rx = Math.cos(yaw), rz = Math.sin(yaw), out = right ? -1 : 1;
-                hop(mc, player.getX() + rx * sideways, player.getY() + 0.35, player.getZ() + rz * sideways, rx * out, rz * out, loud);
+                hop(mc, player.getX() + rx * sideways, player.getY() + 0.35, player.getZ() + rz * sideways, rx * out, rz * out, loud,1f/3f);
                 break;
             }
         }

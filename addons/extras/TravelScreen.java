@@ -45,6 +45,7 @@ abstract class TravelScreen extends Screen {
         private final Ui.Kind kind;boolean leftLabel;
         TravelButton(int x,int y,int w,Component label,OnPress press,Ui.Kind kind){this(x,y,w,22,label,press,kind);}
         TravelButton(int x,int y,int w,int h,Component label,OnPress press,Ui.Kind kind){super(x,y,w,h,label,press,DEFAULT_NARRATION);this.kind=kind;}
+        @Override protected void handleCursor(GuiGraphicsExtractor g){if(active)super.handleCursor(g);}
         @Override protected void extractContents(GuiGraphicsExtractor g,int x,int y,float delta){
             if(!leftLabel){Ui.button(g,font,getX(),getY(),getWidth(),getHeight(),getMessage(),isHovered(),isFocused(),active,kind);return;}
             Ui.button(g,font,getX(),getY(),getWidth(),getHeight(),Component.empty(),isHovered(),isFocused(),active,kind);

@@ -1,4 +1,12 @@
 {
+  "holylois.journal.retry": "Retry",
+  "holylois.journal.timeout": "The server did not respond. Try again.",
+  "holylois.journal.updated": "Journal updated",
+  "holylois.journal.updated_many": "Journal updated - %s new entries",
+  "holylois.journal.open_hint": "Open with %s",
+  "holylois.journal.alerts_on": "Journal notices on.",
+  "holylois.journal.alerts_off": "Journal notices off.",
+  "holylois.journal.alerts_save_error": "Could not save your Journal notice setting.",
   "item.holylois.boombox": "Boombox",
   "item.holylois.boombox.tip1": "Right-click: play or next station. Sneak + right-click: off",
   "item.holylois.boombox.tip2": "Sneak + scroll: volume. Use on a block to set it down",

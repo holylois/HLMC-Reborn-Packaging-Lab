@@ -1,4 +1,12 @@
 {
+  "holylois.journal.retry": "Mēģināt vēlreiz",
+  "holylois.journal.timeout": "Serveris neatbildēja. Mēģini vēlreiz.",
+  "holylois.journal.updated": "Žurnāls papildināts",
+  "holylois.journal.updated_many": "Žurnāls papildināts - %s jauni ieraksti",
+  "holylois.journal.open_hint": "Atvērt: %s",
+  "holylois.journal.alerts_on": "Žurnāla paziņojumi ieslēgti.",
+  "holylois.journal.alerts_off": "Žurnāla paziņojumi izslēgti.",
+  "holylois.journal.alerts_save_error": "Neizdevās saglabāt žurnāla paziņojumu iestatījumu.",
   "item.holylois.boombox": "Skaļrunis",
   "item.holylois.boombox.tip1": "Labais klikšķis: ieslēgt vai nākamā stacija. Pietupies + labais klikšķis: izslēgt",
   "item.holylois.boombox.tip2": "Shift + peles ritenis: skaļums. Lieto uz bloka, lai noliktu",

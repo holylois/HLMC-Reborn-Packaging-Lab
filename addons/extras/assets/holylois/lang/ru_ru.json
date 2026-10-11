@@ -1,4 +1,12 @@
 {
+  "holylois.journal.retry": "Повторить",
+  "holylois.journal.timeout": "Сервер не ответил. Попробуйте ещё раз.",
+  "holylois.journal.updated": "Журнал обновлён",
+  "holylois.journal.updated_many": "Журнал обновлён - новых записей: %s",
+  "holylois.journal.open_hint": "Открыть: %s",
+  "holylois.journal.alerts_on": "Уведомления журнала включены.",
+  "holylois.journal.alerts_off": "Уведомления журнала выключены.",
+  "holylois.journal.alerts_save_error": "Не удалось сохранить настройку уведомлений журнала.",
   "item.holylois.boombox": "Бумбокс",
   "item.holylois.boombox.tip1": "ПКМ: включить или следующая станция. Присесть + ПКМ: выключить",
   "item.holylois.boombox.tip2": "Shift + колесо мыши: громкость. Используйте на блоке, чтобы поставить",

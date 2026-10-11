@@ -15,6 +15,8 @@ import java.nio.file.Files;
 public final class JournalClient {
     static final String KEY="key.holylois.journal";
     static void register(){
+        JournalHints.register();
+        ClientPlayNetworking.registerGlobalReceiver(JournalUpdate.TYPE,(notice,context)->JournalHints.added());
         boolean existing=true;
         try{
             var file=Minecraft.getInstance().gameDirectory.toPath().resolve("options.txt");
