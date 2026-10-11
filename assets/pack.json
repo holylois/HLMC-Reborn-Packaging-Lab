@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "1.9.0",
+  "version": "1.10.0",
   "minecraft": "26.3",
   "fabric": "0.19.5",
   "java": 25,
@@ -42,10 +42,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/architectury-fabric-22.0.4.jar",
-      "url": "https://cdn.modrinth.com/data/lhGA9TYQ/versions/WYttntbU/architectury-fabric-22.0.4.jar",
-      "size": 622449,
-      "sha256": "99dc6e8950b3665595298328384e5f86b7b6341556dc8183282aea7007e552de",
+      "path": "mods/architectury-fabric-22.0.5.jar",
+      "url": "https://cdn.modrinth.com/data/lhGA9TYQ/versions/1pMaB6So/architectury-fabric-22.0.5.jar",
+      "size": 622542,
+      "sha256": "c6a60979f75fdf07a97971711b42529bc84cd7e4c873625d2ce0faf34278ecda",
       "policy": "managed"
     },
     {
@@ -84,10 +84,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/Controlling-fabric-26.3-26.3.3.jar",
-      "url": "https://cdn.modrinth.com/data/xv94TkTM/versions/4QeVlQxd/Controlling-fabric-26.3-26.3.3.jar",
-      "size": 86861,
-      "sha256": "d28a8a95c4f9a560f96ed7eb88bcb4fa54ae43e1e7e187aaffab758716d0999b",
+      "path": "mods/Controlling-fabric-26.3-26.3.4.jar",
+      "url": "https://cdn.modrinth.com/data/xv94TkTM/versions/V6AbRm67/Controlling-fabric-26.3-26.3.4.jar",
+      "size": 87230,
+      "sha256": "5035cb0b29ad3b2e8513b3de061d90c00cd1e5d3a816f9ef22efd6cff74e0611",
       "policy": "managed"
     },
     {
@@ -116,6 +116,20 @@
       "url": "https://cdn.modrinth.com/data/uCdwusMi/versions/TGgEbP9A/DistantHorizons-3.3.4-26.3-fabric-neoforge.jar",
       "size": 28476894,
       "sha256": "ba3e5c85a765a109219831df99b99ef5cfcdee05b2dfa6796116993bd48d3947",
+      "policy": "managed"
+    },
+    {
+      "path": "mods/easyanvils-v26.3.1-mc26.3.x+fabric.jar",
+      "url": "https://cdn.modrinth.com/data/OZBR5JT5/versions/Unluz4cP/easyanvils-v26.3.1-mc26.3.x%2Bfabric.jar",
+      "size": 115499,
+      "sha256": "a676c7175d8c9c2ac2d663a0597ec99bb382ef44df9076f5cffe394c7f9ebb13",
+      "policy": "managed"
+    },
+    {
+      "path": "mods/easymagic-v26.3.0-mc26.3.x+fabric.jar",
+      "url": "https://cdn.modrinth.com/data/9hx3AbJM/versions/JvKuwM5d/easymagic-v26.3.0-mc26.3.x%2Bfabric.jar",
+      "size": 123328,
+      "sha256": "14457d1a32fb2080428746f79cc6b531ad30fad3c4fbc59539b1a1a791184de7",
       "policy": "managed"
     },
     {
@@ -175,10 +189,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/fabric-language-kotlin-1.14.1+kotlin.2.4.20.jar",
-      "url": "https://cdn.modrinth.com/data/Ha28R6CL/versions/eRRZzGMc/fabric-language-kotlin-1.14.1%2Bkotlin.2.4.20.jar",
-      "size": 8142858,
-      "sha256": "620c2709be2a262b837cf976f6f85f6eda80a56af2ba4242e0bdc83a60fee7a5",
+      "path": "mods/fabric-language-kotlin-1.14.2+kotlin.2.4.21.jar",
+      "url": "https://cdn.modrinth.com/data/Ha28R6CL/versions/SKW1BTL3/fabric-language-kotlin-1.14.2%2Bkotlin.2.4.21.jar",
+      "size": 8142878,
+      "sha256": "fbdbf5286ab9d65fedb49e6e01c15e338ae303eb7b9d8c7423d0a9bcfe526ef9",
       "policy": "managed"
     },
     {
@@ -238,17 +252,17 @@
       "policy": "managed"
     },
     {
-      "path": "mods/holylois-auth-ui-1.1.0+26.3.jar",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.9.0/holylois-auth-ui-1.1.0+26.3.jar",
-      "size": 6539316,
-      "sha256": "1eac09eec01803204fb057fa3ff4f5f24414b48fa78e9bcf0e93f41435c8ba2b",
+      "path": "mods/holylois-auth-ui-1.1.1+26.3.jar",
+      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.9.1/holylois-auth-ui-1.1.1+26.3.jar",
+      "size": 6540267,
+      "sha256": "75069144a22766da93430be806f3b08c80a1688a42e87584bdc1f17c9288b681",
       "policy": "managed"
     },
     {
-      "path": "mods/holylois-extras-1.7.0+26.3.jar",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.9.0/holylois-extras-1.7.0+26.3.jar",
-      "size": 710416,
-      "sha256": "f29fbaab2ada360bf20d83d2eed1514a814469a174187bb0cb3d1923ba86bc55",
+      "path": "mods/holylois-extras-1.8.0+26.3.jar",
+      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.10.0/holylois-extras-1.8.0+26.3.jar",
+      "size": 862382,
+      "sha256": "db2715c5c76c846c1b27ee2cd1642097d92fbc59570a1be7886c3e31f4d622e5",
       "policy": "managed"
     },
     {
@@ -322,10 +336,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/konfig-fabric-0.9.0+26.3.jar",
-      "url": "https://cdn.modrinth.com/data/pp7kIrlM/versions/GoZd8Dpx/konfig-fabric-0.9.0%2B26.3.jar",
-      "size": 1488645,
-      "sha256": "2d9730c6723b181defc6ca7578745948b661a1a3cfdb995b0ab3f31149e75959",
+      "path": "mods/konfig-fabric-0.10.2+26.3.jar",
+      "url": "https://cdn.modrinth.com/data/pp7kIrlM/versions/paD1v6Rg/konfig-fabric-0.10.2%2B26.3.jar",
+      "size": 1469290,
+      "sha256": "ef720ca5dd06ba89011b66e552c34ea3e3a85594fed3c787aaffa5422b06885a",
       "policy": "managed"
     },
     {
@@ -455,6 +469,13 @@
       "policy": "managed"
     },
     {
+      "path": "mods/resourcepackoverrides-v26.3.0-mc26.3.x+fabric.jar",
+      "url": "https://cdn.modrinth.com/data/YsFycamt/versions/SpIS4iHy/resourcepackoverrides-v26.3.0-mc26.3.x%2Bfabric.jar",
+      "size": 57703,
+      "sha256": "b87dc2a73e5c7dd6cd91355a52b137f0ce260adc8f5ab4ba25cf4b002fe6a7c0",
+      "policy": "managed"
+    },
+    {
       "path": "mods/RoughlyEnoughItems-26.3.824.jar",
       "url": "https://cdn.modrinth.com/data/nfn13YXA/versions/rKsAE6bX/RoughlyEnoughItems-26.3.824.jar",
       "size": 2421605,
@@ -476,10 +497,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/Searchables-fabric-26.3-1.0.2.jar",
-      "url": "https://cdn.modrinth.com/data/fuuu3xnx/versions/RlPMfNdS/Searchables-fabric-26.3-1.0.2.jar",
-      "size": 79608,
-      "sha256": "00f9d7f18e7edeb19b843266209d8aaceb591492ad594b8769360cc48297ea4e",
+      "path": "mods/Searchables-fabric-26.3-1.0.3.jar",
+      "url": "https://cdn.modrinth.com/data/fuuu3xnx/versions/wV79bLRS/Searchables-fabric-26.3-1.0.3.jar",
+      "size": 79857,
+      "sha256": "63747116b8903a6ea877c89fc5930c8e366a2abeabc376dc8c00e1b64b05c6b0",
       "policy": "managed"
     },
     {
@@ -560,6 +581,20 @@
       "policy": "managed"
     },
     {
+      "path": "resourcepacks/EatingAnimation-1.0.1.zip",
+      "url": "https://cdn.modrinth.com/data/o962rBDR/versions/mOXIOI4W/Eating%20Animation%5B1.0.1%5D.zip",
+      "size": 168994,
+      "sha256": "3aae79298db75956530eb47950c26facecddd2142a7bd769f472224b4b5cf2c7",
+      "policy": "managed"
+    },
+    {
+      "path": "resourcepacks/EatingAnimation-FarmersDelight-1.20-26.x.zip",
+      "url": "https://cdn.modrinth.com/data/qIicOWvm/versions/xLlO5p7G/EatAnimation%20Farmer%27s%20Delight%27s%20Compat%201.20-26.x.zip",
+      "size": 551726,
+      "sha256": "4e6c99aded78479deee33dd73ed46a2849c44ae6d1f0e23d3e45929c93ff0edb",
+      "policy": "managed"
+    },
+    {
       "path": "resourcepacks/FA+Objects-v2.1.2.zip",
       "url": "https://cdn.modrinth.com/data/23O9JVMV/versions/AIGgXNdl/FA%2BObjects-v2.1.2.zip",
       "size": 142277,
@@ -579,6 +614,14 @@
       "size": 645816,
       "sha256": "cf9f17a2977e171b33cb0b598bc4357dd0383e09c10d5f768ff17c12d0a028ee",
       "policy": "managed"
+    },
+    {
+      "path": "resourcepacks/HolyLois-FishEating.zip",
+      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.10.0/HolyLois-FishEating.zip",
+      "size": 200986,
+      "sha256": "a79d9e47abbae91a759fbafed3189bf9694482279a04a19456785ee61a6d11fb",
+      "policy": "managed",
+      "autoEnable": true
     },
     {
       "path": "resourcepacks/JustExpressions_v1.2.1.zip",
@@ -616,10 +659,10 @@
       "policy": "managed"
     },
     {
-      "path": "shaderpacks/MakeUp-UltraFast-9.5f.zip",
-      "url": "https://cdn.modrinth.com/data/izsIPI7a/versions/IUFkxmHz/MakeUp-UltraFast-9.5f.zip",
-      "size": 403666,
-      "sha256": "afbf622b983d29ffa5fe5f15197f321d3921915bd44584d85f14bc11b5e0e5e8",
+      "path": "shaderpacks/MakeUp-UltraFast-9.5g.zip",
+      "url": "https://cdn.modrinth.com/data/izsIPI7a/versions/pgb0JjoN/MakeUp-UltraFast-9.5g.zip",
+      "size": 405096,
+      "sha256": "0036da17e0c7158e1c669593e6322d53fce3f5a42fb5124b935e9e21a5719db8",
       "policy": "managed"
     },
     {
@@ -690,12 +733,96 @@
   ],
   "defaults": {
     "path": "defaults.zip",
-    "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.9.0/defaults.zip",
-    "size": 53046,
-    "sha256": "fff4f18d365943e0f07707660965b81a97cc6b5d17b98e8dd97e92101509e847",
+    "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.10.0/defaults.zip",
+    "size": 54091,
+    "sha256": "5c110d89575d4118fe3982ef75141193d6966ef6a3c94aac63ece107336d6fd9",
     "policy": "seed"
   },
   "history": [
+    {
+      "version": "1.10.0",
+      "date": "2026-10-11",
+      "summary": "Your adventures have a journal. New places, better catches and a cleaner look.",
+      "added": [
+        "Open /journal for your fish collection, visited places and lifetime creature defeats. Search entries and add a personal waypoint or open their recorded location on the map.",
+        "World firsts has its own Journal tab: first discoveries, bosses, elites and the first defeat of each creature type. Ordinary creature firsts get a quiet gold chat line.",
+        "Fish collections remember the species, rarities and heaviest measured trophy you have caught. Personal records stay with your profile after a name change.",
+        "Notable pickups get a short item card. Use /itemcards on or off to choose whether to show them.",
+        "Easy Anvils and Easy Magic keep items in their blocks and improve repairs and enchanting. Enchantment re-rolls have a cost.",
+        "More mineshafts, ruins, towers, towns and other structures await in newly generated land. Their treasure chests can hold legends and Runeforged loot."
+      ],
+      "updated": [
+        "Fish and fillets have a thin rarity outline around their inventory picture. Legendary and Mythic names and outlines shimmer in their colours.",
+        "Fish tooltips show their own colour palette and variant name. Fish of Thieves fish shrink bite by bite while eaten.",
+        "Cooked trophy fish give stronger, longer effects; fillets can be eaten even when you are full. Rarer trophy fish take longer to eat.",
+        "Hooked swimming fish arrive as fish items with a weight and rarity roll, including when fishing from a boat.",
+        "Explorer maps use the proper holding pose and first-person map view. Held boomboxes sway more gently.",
+        "Use /cinematic on or off and /cinematic fishing on or off to control the idle and fishing cameras.",
+        "Shader names are shorter and sorted from light to heavy. Required animation packs stay enabled while your own resource packs remain available.",
+        "The website has a cleaner background, and daily-coins help now explains that coins arrive when you join.",
+        "Placing a one-item fish back into its slot no longer leaves it stuck on your cursor after a quick double-click.",
+        "Login and registration forms hide the game HUD until the transition finishes.",
+        "Uploaded song links must contain real MP3 or WAV audio. BlueMap's updated renderer fixes lost low-resolution tile writes."
+      ],
+      "removed": []
+    },
+    {
+      "version": "1.9.4",
+      "date": "2026-10-11",
+      "summary": "A fishing cinematic with real camera work, and boombox music without anything playing over it.",
+      "added": [],
+      "removed": [],
+      "updated": [
+        "Minecraft's background music pauses while boombox or music disc music reaches you, like it does for a jukebox.",
+        "While fishing, the cinematic no longer repeats one shot on a loop: every shot is a new angle on you and your bobber until a fish bites, then it stays on the catch until you reel it in or it gets away, and changes angle 3 seconds after you reel in.",
+        "The cinematic no longer starts its own soundtrack over a playing boombox or music disc, so that music plays clearly in your ears."
+      ]
+    },
+    {
+      "version": "1.9.3",
+      "date": "2026-10-10",
+      "summary": "The carried boombox swings the right way and its notes come out of the speakers.",
+      "added": [],
+      "removed": [],
+      "updated": [
+        "Notes from a carried boombox now pop out of its speakers, low at your hand, instead of floating up by your hip.",
+        "A carried boombox swings out from your body and back in, like a real weight on a handle, instead of forward and out."
+      ]
+    },
+    {
+      "version": "1.9.2",
+      "date": "2026-10-10",
+      "summary": "Boombox music now plays in your ears during the cinematic camera.",
+      "added": [],
+      "removed": [],
+      "updated": [
+        "With a boombox or music disc playing nearby, stand still for a minute: the cinematic camera fades in and the music moves into your ears, then back to the speaker when you move. Just standing close no longer does it."
+      ]
+    },
+    {
+      "version": "1.9.1",
+      "date": "2026-10-10",
+      "summary": "Boombox music right in your ears, your death loot back in its slots and a smarter cinematic camera.",
+      "added": [
+        "Stand next to a playing boombox or music disc and the music moves right into your ears, then fades back to normal as you walk away.",
+        "Pick your own death loot back up and every stack goes into the slot it came from, armor and off-hand too, as long as that slot is still free.",
+        "The boombox in your own hand now pulses with the music and only sways side to side. Notes hop out sideways, bigger when the music is louder, and stay out of your first-person view.",
+        "The cinematic camera stays out of walls, films you instead of cave walls indoors and underground, and stays on you while you fish.",
+        "Stand still for a minute while a boombox plays and the cinematic camera fades in.",
+        "The idle cinematic now waits 15 minutes on a fresh install too, instead of 30 seconds.",
+        "The Holy Lootbox tooltip is short: what it is and which key opens it.",
+        "Punching loot out of an invisible item frame in a dungeon no longer drops a spare item frame.",
+        "A chest you had open no longer looks open when you come back after a teleport.",
+        "A boombox in your off hand is no longer set down by accident when you right-click a block.",
+        "R on an empty slot sorts without showing a recipe, even when the sorted item lands there a moment later.",
+        "Cancel buttons are grey now, so only the dangerous choice is red.",
+        "The Tab list is tidier, with lines of even width.",
+        "Food now shrinks bite by bite while you eat it, Farmer's Delight meals included (two resource packs, on by default).",
+        "Respawning after a death no longer fades in through the panorama."
+      ],
+      "removed": [],
+      "updated": []
+    },
     {
       "version": "1.9.0",
       "date": "2026-10-09",
@@ -966,82 +1093,6 @@
         "Recipe viewer: the item list appears only while you search, and the developer Tags tab is hidden",
         "Plain tools are used until they break and then swapped; enchanted gear is swapped just before it breaks, with an alert",
         "First-person body sits a little further back, so looking down no longer shows the inside of your neck"
-      ]
-    },
-    {
-      "version": "1.7.1",
-      "date": "2026-10-03",
-      "summary": "Fixes chests showing a second lid or flickering.",
-      "added": [],
-      "removed": [],
-      "updated": [
-        "Chests use vanilla rendering again, so the lid opens cleanly with or without shaders"
-      ]
-    },
-    {
-      "version": "1.7.0",
-      "date": "2026-10-03",
-      "summary": "Boombox radio, daily gifts and the Holy Lootbox, achievements, an auction house, holiday decorations, recipe viewer and many fixes.",
-      "added": [
-        "Holy Lois Extras: a boombox that plays internet radio to everyone nearby through voice chat",
-        "Macaw's Holidays: Christmas trees, lights, garlands, presents and Halloween decorations",
-        "Roughly Enough Items: look up any recipe, including cooking and furniture",
-        "Legendary Tooltips, LambDynamicLights, Falling Leaves, Continuity, Status Effect Bars, Shulker Box Tooltip, Controlling and Clumps",
-        "Server: daily login gifts with a Holy Lootbox every 7th day, a Holy Lois achievement tab, an auction house (/ah), Tab leaderboards, structure discoveries, holiday events and death coordinates"
-      ],
-      "removed": [
-        "Server: quote of the day and the bot wall page in Tab",
-        "Vein mining shapes other than shapeless"
-      ],
-      "updated": [
-        "Descriptions for 19 modded enchantments",
-        "Minimap uses vanilla map colors and removes a death point when you reach it",
-        "Fixed chest flicker with shaders, key clashes (J opens the world map again) and the mod count on the title screen",
-        "Time and weather pause while nobody is online; the player locator bar is off"
-      ]
-    },
-    {
-      "version": "1.6.1",
-      "date": "2026-10-03",
-      "summary": "New dungeons, taverns and towns to explore, custom music discs and small fixes.",
-      "added": [
-        "Server: Dungeons and Taverns plus Towns and Towers in newly explored land, with Runeforged loot in their chests",
-        "Server: custom music on discs and goat horns with /audioplayer (plays through voice chat)"
-      ],
-      "removed": [],
-      "updated": [
-        "MoreCulling 1.9.0 (final release) and CreativeCore 2.14.19",
-        "One sleeping player now skips the night",
-        "Tab list: Latvian name days and the daily bot wall"
-      ]
-    },
-    {
-      "version": "1.6.0",
-      "date": "2026-10-03",
-      "summary": "Cooking, furniture, maps and a new look for the player list.",
-      "added": [
-        "Farmer's Delight: cutting board, knife, cooking pot, burgers, sushi rolls, pumpkin slices and new crops",
-        "Macaw's Furniture: chairs you can sit on, tables, drawers, wardrobes and kitchen cabinets",
-        "Xaero's Minimap and World Map (J opens the map, Y minimap settings, U waypoints, Z larger minimap)",
-        "Jade: shows what you are looking at, including crop growth and container contents"
-      ],
-      "removed": [],
-      "updated": [
-        "Hold Tab for server stats, ping, playtime and the quote of the day",
-        "Right-click ripe crops to harvest and replant them"
-      ]
-    },
-    {
-      "version": "1.5.4",
-      "date": "2026-10-03",
-      "summary": "Shader-aware distant terrain, consistent first-person controls and quieter inventory defaults.",
-      "added": [],
-      "removed": [],
-      "updated": [
-        "Distant Horizons uses automatic shader-aware overdraw prevention.",
-        "PageDown switches between the visible first-person body and the normal hand view.",
-        "Inventory profile selectors and matching-item highlights are hidden; sorting stays available.",
-        "Durability tooltips show remaining/max without enabling advanced tooltips."
       ]
     }
   ],

@@ -1,0 +1,560 @@
+{
+  "latest": "1.10.0",
+  "releases": {
+    "1.10.0": {
+      "version": "1.10.0",
+      "date": "2026-10-11",
+      "locales": {
+        "en": {
+          "summary": "Your adventures have a journal. New places, better catches and a cleaner look.",
+          "teaser": "Your adventures, collected",
+          "added": [
+            "Open /journal for your fish collection, visited places and lifetime creature defeats. Search entries and add a personal waypoint or open their recorded location on the map.",
+            "World firsts has its own Journal tab: first discoveries, bosses, elites and the first defeat of each creature type. Ordinary creature firsts get a quiet gold chat line.",
+            "Fish collections remember the species, rarities and heaviest measured trophy you have caught. Personal records stay with your profile after a name change.",
+            "Notable pickups get a short item card. Use /itemcards on or off to choose whether to show them.",
+            "Easy Anvils and Easy Magic keep items in their blocks and improve repairs and enchanting. Enchantment re-rolls have a cost.",
+            "More mineshafts, ruins, towers, towns and other structures await in newly generated land. Their treasure chests can hold legends and Runeforged loot."
+          ],
+          "changed": [
+            "Fish and fillets have a thin rarity outline around their inventory picture. Legendary and Mythic names and outlines shimmer in their colours.",
+            "Fish tooltips show their own colour palette and variant name. Fish of Thieves fish shrink bite by bite while eaten.",
+            "Cooked trophy fish give stronger, longer effects; fillets can be eaten even when you are full. Rarer trophy fish take longer to eat.",
+            "Hooked swimming fish arrive as fish items with a weight and rarity roll, including when fishing from a boat.",
+            "Explorer maps use the proper holding pose and first-person map view. Held boomboxes sway more gently.",
+            "Use /cinematic on or off and /cinematic fishing on or off to control the idle and fishing cameras.",
+            "Shader names are shorter and sorted from light to heavy. Required animation packs stay enabled while your own resource packs remain available.",
+            "The website has a cleaner background, and daily-coins help now explains that coins arrive when you join."
+          ],
+          "fixed": [
+            "Placing a one-item fish back into its slot no longer leaves it stuck on your cursor after a quick double-click.",
+            "Login and registration forms hide the game HUD until the transition finishes.",
+            "Uploaded song links must contain real MP3 or WAV audio. BlueMap's updated renderer fixes lost low-resolution tile writes."
+          ]
+        },
+        "ru": {
+          "summary": "У приключений появился журнал. Новые места, лучший улов и более чистый вид.",
+          "teaser": "Ваши приключения в журнале",
+          "added": [
+            "Команда /journal открывает коллекцию рыб, посещённых мест и побед над существами. Ищите записи, добавляйте личные метки или открывайте записанные места на карте.",
+            "Вкладка «Первые в мире» хранит первые открытия, победы над боссами, элитными врагами и каждым видом существ. Для обычных существ появляется короткая золотая строка в чате.",
+            "Коллекция рыб запоминает виды, редкости и самый тяжёлый измеренный трофей. Личные записи сохраняются после смены имени.",
+            "Для примечательной добычи появляется короткая карточка. Включайте или выключайте её командами /itemcards on и /itemcards off.",
+            "Easy Anvils и Easy Magic сохраняют предметы в своих блоках и улучшают ремонт и зачарование. Смена предложенных чар имеет цену.",
+            "В новых землях появятся дополнительные шахты, руины, башни, поселения и другие структуры. В их сундуках можно найти легенды и добычу Runeforged."
+          ],
+          "changed": [
+            "Рыба и филе получили тонкую обводку редкости вокруг изображения в инвентаре. Легендарные и мифические названия и обводки переливаются своими цветами.",
+            "Подсказки рыб показывают их палитру и название варианта. Рыба Fish of Thieves уменьшается с каждым укусом.",
+            "Приготовленные трофеи дают более сильные и долгие эффекты; филе можно есть при полной сытости. Более редкая трофейная рыба съедается дольше.",
+            "Пойманная плавающая рыба сразу становится предметом с весом и редкостью, в том числе при ловле из лодки.",
+            "Карты исследователя правильно держатся в руках и отображаются от первого лица. Бумбокс в руке качается мягче.",
+            "Команды /cinematic on|off и /cinematic fishing on|off управляют кинокамерой в покое и при рыбалке.",
+            "Названия шейдеров короче, список идёт от лёгких к тяжёлым. Обязательные пакеты анимаций остаются включёнными, а свои ресурс-паки можно добавлять.",
+            "Фон сайта стал чище, а помощь по ежедневным монетам объясняет, что они приходят при входе."
+          ],
+          "fixed": [
+            "Быстрый двойной клик больше не оставляет одиночную рыбу на курсоре при возврате в слот.",
+            "Формы входа и регистрации скрывают игровой интерфейс до завершения перехода.",
+            "Ссылки на песни должны содержать настоящий звук MP3 или WAV. Обновлённый BlueMap исправляет потерю записей плиток низкого разрешения."
+          ]
+        },
+        "lv": {
+          "summary": "Taviem piedzīvojumiem ir žurnāls. Jaunas vietas, labāki lomi un tīrāks izskats.",
+          "teaser": "Tavi piedzīvojumi, apkopoti",
+          "added": [
+            "Komanda /journal atver zivju, apmeklēto vietu un uzvarēto radību kolekciju. Meklē ierakstus, pievieno personīgas atzīmes vai atver ierakstītās vietas kartē.",
+            "Cilne «Pirmie pasaulē» glabā pirmos atklājumus, bosu, elites un katra radību veida pirmās uzvaras. Parastām radībām parādās īsa zelta rinda čatā.",
+            "Zivju kolekcija atceras sugas, retumus un smagāko izmērīto trofeju. Personīgie ieraksti saglabājas pēc vārda maiņas.",
+            "Ievērojamam laupījumam parādās īsa priekšmeta kartīte. Ieslēdz vai izslēdz to ar /itemcards on un /itemcards off.",
+            "Easy Anvils un Easy Magic saglabā priekšmetus savos blokos un uzlabo labošanu un buršanu. Burvju piedāvājuma maiņai ir cena.",
+            "Jaunās zemēs gaida papildu raktuves, drupas, torņi, apdzīvotas vietas un citas būves. To lādēs var būt leģendas un Runeforged laupījums."
+          ],
+          "changed": [
+            "Zivīm un filejām ir plāna retuma kontūra ap attēlu inventārā. Leģendārie un mītiskie nosaukumi un kontūras mirdz savās krāsās.",
+            "Zivju apraksti rāda to krāsu paleti un varianta nosaukumu. Fish of Thieves zivis ēdot sarūk ar katru kumosu.",
+            "Gatavotas trofejas dod stiprākus un ilgākus efektus; filejas var ēst arī ar pilnu izsalkuma joslu. Retākas trofejas apēst prasa ilgāk.",
+            "Uz āķa noķerta peldoša zivs uzreiz kļūst par priekšmetu ar svaru un retumu, arī makšķerējot no laivas.",
+            "Pētnieku kartes tiek turētas pareizi un rāda karti pirmās personas skatā. Boombox rokā šūpojas maigāk.",
+            "Komandas /cinematic on|off un /cinematic fishing on|off vada kameru dīkstāvē un makšķerējot.",
+            "Īsāki šeideru nosaukumi, saraksts no viegliem līdz smagiem. Obligātās animāciju pakotnes paliek ieslēgtas; savas resursu pakotnes var pievienot.",
+            "Vietnes fons ir tīrāks, un ikdienas monētu palīdzība skaidro, ka tās pienāk, pievienojoties spēlei."
+          ],
+          "fixed": [
+            "Ātrs dubultklikšķis vairs neatstāj vienu zivi uz kursora, ieliekot to atpakaļ vietā.",
+            "Pieteikšanās un reģistrācijas logi slēpj spēles saskarni līdz pārejas beigām.",
+            "Dziesmu saitēm jāsatur īsts MP3 vai WAV audio. Atjauninātais BlueMap novērš zemas izšķirtspējas karšu daļu ierakstīšanas zudumus."
+          ]
+        }
+      }
+    },
+    "1.8.0": {
+      "version": "1.8.0",
+      "date": "2026-10-06",
+      "locales": {
+        "en": {
+          "summary": "New fish, trophy catches and hidden relics.",
+          "teaser": "Fishing and hidden relics",
+          "changes": [
+            "Catch ten kinds of fish in different waters, weather and times of day.",
+            "Fish range from Common to Legendary in size. Rare catches keep their weight and your name as trophies.",
+            "Reel in loot crates, messages in bottles and buried treasure maps.",
+            "Find named relics in dungeon, tavern and town chests. Complete their sets to earn achievements."
+          ]
+        },
+        "ru": {
+          "summary": "Новые рыбы, трофейные уловы и скрытые реликвии.",
+          "teaser": "Рыбалка и реликвии",
+          "changes": [
+            "Ловите десять видов рыб в разных водоёмах, при разной погоде и в разное время суток.",
+            "Размеры рыб варьируются от обычных до легендарных. Редкие уловы сохраняют вес и ваше имя как трофеи.",
+            "Вылавливайте ящики с добычей, послания в бутылках и карты сокровищ.",
+            "Находите именные реликвии в сундуках подземелий, таверн и городов. Собирайте наборы для достижений."
+          ]
+        },
+        "lv": {
+          "summary": "Jaunas zivis, trofeju lomi un paslēptas relikvijas.",
+          "teaser": "Makšķerēšana un relikvijas",
+          "changes": [
+            "Ķeriet desmit zivju veidus dažādos ūdeņos, laikapstākļos un diennakts laikos.",
+            "Zivju izmēri ir no parasta līdz leģendāram. Reti lomi saglabā svaru un jūsu vārdu kā trofejas.",
+            "Izvelciet laupījuma kastes, vēstules pudelēs un aprakto dārgumu kartes.",
+            "Atrodiet nosauktas relikvijas pazemes, tavernu un pilsētu lādēs. Savāciet komplektus, lai iegūtu sasniegumus."
+          ]
+        }
+      }
+    },
+    "1.8.1": {
+      "version": "1.8.1",
+      "date": "2026-10-07",
+      "locales": {
+        "en": {
+          "summary": "Relics, fishing and first-person fixes.",
+          "teaser": "Relics and fishing fixes",
+          "changes": [
+            "Placed relics keep their name and lore.",
+            "Fishing crates give their proper enchanted rewards.",
+            "Bows, maps and fishing rods work better with the first-person body view.",
+            "Combat teleports and land protection behave more reliably."
+          ]
+        },
+        "ru": {
+          "summary": "Исправления реликвий, рыбалки и вида от первого лица.",
+          "teaser": "Реликвии и рыбалка",
+          "changes": [
+            "Установленные реликвии сохраняют имя и описание.",
+            "Рыболовные ящики дают положенные зачарованные награды.",
+            "Лук, карты и удочка лучше работают с видом от первого лица с телом.",
+            "Телепортация в бою и защита земли работают надёжнее."
+          ]
+        },
+        "lv": {
+          "summary": "Relikviju, makšķerēšanas un pirmās personas skata labojumi.",
+          "teaser": "Relikvijas un makšķerēšana",
+          "changes": [
+            "Novietotas relikvijas saglabā nosaukumu un aprakstu.",
+            "Makšķerēšanas kastes dod paredzētās apburtās balvas.",
+            "Loks, kartes un makšķere labāk darbojas ar redzamu ķermeni pirmās personas skatā.",
+            "Teleportācija kaujā un zemes aizsardzība darbojas drošāk."
+          ]
+        }
+      }
+    },
+    "1.8.2": {
+      "version": "1.8.2",
+      "date": "2026-10-07",
+      "locales": {
+        "en": {
+          "summary": "Party up, find your friends, and get back to the adventure.",
+          "teaser": "Better adventures together",
+          "changes": [
+            "Party members are protected from friendly fire, with an optional health and food panel.",
+            "Use /rally to share a meeting point with your party for 90 seconds.",
+            "Daily supplies appear in a clear reward card, with daily coins claimed through their existing reward system.",
+            "Voice chat can recover its connection after login; /voicefix requests another attempt.",
+            "Cleaner login messages and matching release news across the website and launcher."
+          ]
+        },
+        "ru": {
+          "summary": "Соберите группу, найдите друзей и возвращайтесь к приключениям.",
+          "teaser": "Приключения лучше вместе",
+          "changes": [
+            "Участники группы защищены от дружеского огня; здоровье и еду можно видеть на небольшой панели.",
+            "/rally показывает вашей группе точку сбора на 90 секунд.",
+            "Ежедневные подарки видны на карточке награды; монеты выдаются через существующую систему ежедневных наград.",
+            "Голосовой чат может восстановить связь после входа; /voicefix повторяет попытку.",
+            "Меньше лишних сообщений при входе и согласованные новости на сайте и в лаунчере."
+          ]
+        },
+        "lv": {
+          "summary": "Izveido komandu, atrodi draugus un atgriezies piedzīvojumos.",
+          "teaser": "Piedzīvojumi ir labāki kopā",
+          "changes": [
+            "Komandas biedri ir pasargāti no draudzīgās uguns; veselību un ēdienu rāda neliels, izvēles panelis.",
+            "/rally kopīgo pulcēšanās punktu ar komandu uz 90 sekundēm.",
+            "Dienas dāvanas rāda atlīdzības kartīte; monētas saņem caur esošo dienas atlīdzības sistēmu.",
+            "Balss čats var atjaunot savienojumu pēc pieteikšanās; /voicefix mēģina vēlreiz.",
+            "Mazāk lieku ziņu pieslēdzoties, un vienādi jaunumi vietnē un palaidējā."
+          ]
+        }
+      }
+    },
+    "1.8.3": {
+      "version": "1.8.3",
+      "date": "2026-10-08",
+      "locales": {
+        "en": {
+          "summary": "Keep your name and progress, with smoother login and inventory controls.",
+          "teaser": "Your name, your progress",
+          "changes": [
+            "Quick start accepts valid names without a Minecraft ownership check. Existing Holy Lois accounts still need their server password.",
+            "Launcher setup keeps every shortcut option reachable while you enter your name.",
+            "Admin-requested name changes keep your inventory, homes and progress. Previous names stay protected.",
+            "Recover a server password through a private form and one-use code from an admin.",
+            "Login no longer triggers false flying kicks, and account changes cannot bypass combat restrictions.",
+            "R sorts from an empty slot without opening a recipe when an item moves under the cursor.",
+            "Matching runestones stack more reliably when taken from chests. Different special variants stay separate."
+          ]
+        },
+        "ru": {
+          "summary": "Сохраняй имя и прогресс с удобным входом и управлением инвентарём.",
+          "teaser": "Твоё имя, твой прогресс",
+          "changes": [
+            "Быстрый старт принимает допустимые имена без проверки владельца Minecraft. Для существующего аккаунта Holy Lois нужен пароль сервера.",
+            "Все настройки ярлыков доступны при установке, даже во время ввода имени.",
+            "По запросу админа смени имя, сохранив инвентарь, дома и прогресс. Старые имена останутся защищены.",
+            "Восстанови пароль сервера в личной форме с одноразовым кодом от админа.",
+            "Вход больше не вызывает ложное отключение за полёт. Смена данных аккаунта не обходит ограничения боя.",
+            "R сортирует на пустом слоте и не открывает рецепт, если под курсором появился предмет.",
+            "Одинаковые рунные камни надёжнее объединяются при переносе из сундука. Разные особые варианты остаются отдельно."
+          ]
+        },
+        "lv": {
+          "summary": "Saglabā vārdu un progresu ar ērtāku pieteikšanos un inventāra vadību.",
+          "teaser": "Tavs vārds, tavs progress",
+          "changes": [
+            "Ātrais starts pieņem derīgus vārdus bez Minecraft īpašnieka pārbaudes. Esošam Holy Lois kontam vajadzīga servera parole.",
+            "Visas saīsņu izvēles instalācijā ir sasniedzamas arī vārda ievades laikā.",
+            "Pēc administratora pieprasījuma maini vārdu, saglabājot inventāru, mājas un progresu. Iepriekšējie vārdi paliek aizsargāti.",
+            "Atjauno servera paroli privātā formā ar vienreizēju administratora kodu.",
+            "Pieteikšanās vairs neizraisa kļūdainu atvienošanu par lidošanu. Konta izmaiņas neapiet kaujas ierobežojumus.",
+            "R kārto no tukša lauciņa, neatverot recepti, ja zem kursora parādās priekšmets.",
+            "Vienādi rūnu akmeņi drošāk apvienojas, pārvietojot tos no lādes. Atšķirīgi īpašie varianti paliek atsevišķi."
+          ]
+        }
+      }
+    },
+    "1.9.0": {
+      "version": "1.9.0",
+      "date": "2026-10-09",
+      "locales": {
+        "en": {
+          "summary": "Homes, parties, trophy fish you can see and a fresh new look.",
+          "teaser": "Your homes, your party",
+          "changes": [
+            "Open /homes to save, rename or visit your three starter homes.",
+            "Use /party or /group to manage your party and see your teammates' health on wide, easy-to-read bars.",
+            "Click a rally card with chat open to request travel to its author. They choose whether to accept.",
+            "Relic lanterns, the travel staff and the wanderer's circlet now have useful bonuses.",
+            "Trophy fish look as big as they weigh, from a hand-sized Rare to a huge Legendary, and take on their rarity colour: in your hand, on the ground, in frames and on the cutting board, with a rarity glow and the weight right on the inventory icon. Fish of 10 kg and more are lifted over your head with both hands, so the off hand stays free of anything else meanwhile.",
+            "New ultra-rare Mythic fish: 40 kg and up, a red name, and the whole server hears about it.",
+            "Legendary and Mythic names shimmer in chat, in tooltips and even in death messages when someone finishes you off with a fish.",
+            "Fish weigh by rarity: Rare 1-2.99 kg, Epic 3-19.99 kg, Legendary 20-40 kg. About one trophy in 250 comes up Shiny, with stronger effects, its own jingle and extra sparkles.",
+            "Rare catches get a personal card above the hotbar with a chime. Use /catchcards off to silence them.",
+            "Boomboxes work in water and stay on the same station after a meal. Six can be powered per chunk, with six audio streams across the server.",
+            "Armor now looks 3D on you and everyone else, dyes and trims included (3D Armor). Gameplay stays the same.",
+            "Saved skins return on rejoin; maps and statistics use your selected skin with clearer guides and layouts.",
+            "Celebration fireworks from events, daily gifts and secret codes look and sound the same but never hurt anyone.",
+            "The secret code of the day changes at midnight Riga time and needs 20 minutes of active play that day (new players: 2 hours in total first).",
+            "On the world map, right-click a player to send them a /tpa request; admin-only teleports stay hidden.",
+            "Your death marker on the map disappears by itself once all the items you dropped are picked up or gone.",
+            "Each kind of trophy fish does its own thing: effects when eaten (some bite back) and bonuses while held, all listed in the tooltip. Cooking keeps the stats and makes effects last longer. On the cutting board heavier fish give more slices over several cuts (the board shows how many cuts are left, and a half-cut fish fills you up less), and every slice keeps the rarity, the Shiny star and a share of the effects. Bigger fish fill you up more.",
+            "Fresh boombox: a flat icon in your inventory, a 3D boombox you carry at your hip by the handle that swings as you walk and turn, speakers that pulse with the music and notes that pop on the beat.",
+            "Entering a structure (villages, dungeons, Ancient Cities) shows its name; zone titles are colour-coded and easier to read.",
+            "Login screen, party panel, catch and reward cards and menus share a sharper black-and-gold Holy Lois look: yes-buttons are green, cancel and delete are red, menus fit their content, and the daily reward card fades in above the hotbar with the Holy Lootbox in sight all week.",
+            "Smoother animations: maps held up in front of you, food at your mouth while eating and lanterns that swing smoothly, in first and third person.",
+            "The AFK camera now starts a few seconds after you cast a line or when you are marked AFK, not after 30 seconds of standing still.",
+            "Chests no longer replay their closing animation when you look back at them.",
+            "Your party's marker through walls sits on their head, and elytra flight feels smoother.",
+            "Enter confirms login, register, home names and party invites; alt-tab no longer pauses the game.",
+            "Joining shows the resource download on the loading bar with a short status line instead of a corner popup.",
+            "Fish of Thieves tropical islands and fruit trees no longer appear in new land, so the world keeps its vanilla look.",
+            "Fishy Business counts Fish of Thieves fish too, and the illager camp achievement is now called Find an Illager Camp.",
+            "The way in is one smooth scene: our own panorama on the title screen, while connecting and behind the login form, then a soft fade into the world. The title screen has a Holy Lois: Reborn button that joins straight away.",
+            "Enter works in every form again, and Esc on the login screen asks whether to leave the server.",
+            "The day-7 Holy Lootbox is its own gold block with the Holy Lois logo, like the one on the website, and bursts open with gold sparks.",
+            "A boombox playing in your hand pumps its speakers and pops notes on the beat too, and lanterns in hand swing smoothly like the boombox."
+          ]
+        },
+        "ru": {
+          "summary": "Дома, группы, трофейная рыба, которую видно, и новый облик.",
+          "teaser": "Ваши дома, ваша группа",
+          "changes": [
+            "Откройте /homes, чтобы сохранить, переименовать или посетить три начальных дома.",
+            "Управляйте группой через /party или /group и следите за здоровьем участников на широких понятных полосках.",
+            "Откройте чат и нажмите на точку сбора, чтобы запросить телепорт к её автору. Он решает, принять ли запрос.",
+            "Реликтовые фонари, посох путешественника и обруч странника получили полезные эффекты.",
+            "Трофейная рыба выглядит на свой вес, от редкой рыбки в ладонь до огромной легендарной, и окрашена в цвет редкости: в руке, на земле, в рамке и на разделочной доске, с подсветкой редкости и весом прямо на значке в инвентаре. Рыбу от 10 кг поднимают над головой двумя руками, поэтому во второй руке в это время ничего нет.",
+            "Новая сверхредкая мифическая рыба: от 40 кг, красное имя, и об этом узнаёт весь сервер.",
+            "Имена легендарной и мифической рыбы переливаются в чате, в подсказках и даже в сообщении о смерти, если вас прикончили рыбой.",
+            "Вес рыбы зависит от редкости: редкая 1-2,99 кг, эпическая 3-19,99 кг, легендарная 20-40 кг. Примерно один трофей из 250 попадается сияющим, с более сильными эффектами, своей мелодией и дополнительными искрами.",
+            "Редкий улов показывает личную карточку над панелью быстрого доступа и звук. /catchcards off отключает их.",
+            "Бумбоксы работают в воде и не переключают станцию после еды. В чанке можно включить до шести, при шести одновременных потоках на сервере.",
+            "Броня теперь объёмная на вас и на всех остальных, вместе с красками и отделкой (3D Armor). Игровой процесс не меняется.",
+            "Сохранённый скин возвращается при повторном входе; карта и статистика используют выбранный скин. Руководства и интерфейс стали понятнее.",
+            "Праздничные фейерверки событий, ежедневных подарков и секретных кодов выглядят и звучат как прежде, но никого не ранят.",
+            "Секретный код дня меняется в полночь по рижскому времени и требует 20 минут активной игры в этот день (новым игрокам сначала 2 часа всего).",
+            "На карте мира нажмите правой кнопкой на игрока, чтобы отправить ему запрос /tpa; телепорты только для администраторов скрыты.",
+            "Метка смерти на карте исчезает сама, когда все выпавшие предметы подобраны или пропали.",
+            "Каждый вид трофейной рыбы действует по-своему: эффекты при еде (некоторые вредят) и бонусы, пока рыба в руке, всё видно в подсказке. Приготовленная рыба сохраняет свойства, а эффекты длятся дольше. На разделочной доске тяжёлая рыба даёт больше кусков за несколько разрезов (доска показывает, сколько разрезов осталось, а надрезанная рыба насыщает меньше), и каждый кусок сохраняет редкость, звезду сияния и часть эффектов. Крупная рыба лучше насыщает.",
+            "Новый бумбокс: плоский значок в инвентаре, 3D-бумбокс, который носят у бедра за ручку и который раскачивается при ходьбе и поворотах, динамики пульсируют в такт музыке, а ноты вылетают в ритм.",
+            "При входе в строение (деревни, подземелья, древние города) показывается его название; заголовки зон окрашены по типу и лучше читаются.",
+            "Экран входа, панель группы, карточки улова и наград и меню получили более контрастный чёрно-золотой стиль Holy Lois: кнопки согласия зелёные, отмены и удаления красные, меню подстраиваются под содержимое, а карточка ежедневной награды плавно появляется над панелью быстрого доступа, и Holy Lootbox видна всю неделю.",
+            "Плавные анимации: карту держат перед собой, еду подносят ко рту, а фонарь плавно раскачивается, от первого и третьего лица.",
+            "AFK-камера теперь включается через несколько секунд после заброса удочки или когда вас отмечают как AFK, а не после 30 секунд без движения.",
+            "Сундуки больше не повторяют анимацию закрытия, когда вы снова смотрите на них.",
+            "Метка участника группы сквозь стены теперь у головы, а полёт на элитрах стал плавнее.",
+            "Enter подтверждает вход, регистрацию, имя дома и приглашение в группу; Alt+Tab больше не ставит игру на паузу.",
+            "При входе загрузка ресурсов видна на полосе загрузки с короткой подписью вместо всплывающего окна в углу.",
+            "Тропические острова и фруктовые деревья Fish of Thieves больше не появляются в новых землях, мир сохраняет ванильный вид.",
+            "Достижение за ловлю рыбы засчитывает и рыбу Fish of Thieves, а достижение лагеря теперь называется «Найдите лагерь разбойников».",
+            "Вход стал одной плавной сценой: наша панорама на титульном экране, при подключении и за формой входа, затем мягкий переход в мир. На титульном экране есть кнопка Holy Lois: Reborn для входа сразу на сервер.",
+            "Enter снова работает во всех формах, а Esc на экране входа спрашивает, покинуть ли сервер.",
+            "Holy Lootbox на 7-й день теперь собственный золотой блок с логотипом Holy Lois, как на сайте, и раскрывается золотыми искрами.",
+            "Бумбокс, играющий в руке, тоже качает динамиками и выпускает ноты в такт, а фонари в руке плавно качаются, как бумбокс."
+          ]
+        },
+        "lv": {
+          "summary": "Mājas, komanda, redzamas trofeju zivis un jauns izskats.",
+          "teaser": "Tavas mājas, tava komanda",
+          "changes": [
+            "Atver /homes, lai saglabātu, pārdēvētu vai apmeklētu trīs sākuma mājas.",
+            "Ar /party vai /group pārvaldi komandu un redzi biedru veselību platās, viegli lasāmās joslās.",
+            "Atver čatu un klikšķini pulcēšanās kartīti, lai pieprasītu ceļošanu pie tās autora. Viņš izvēlas, vai piekrist.",
+            "Relikviju laternām, ceļotāja spieķim un klejotāja galvas rotai tagad ir noderīgi efekti.",
+            "Trofeju zivis izskatās tik lielas, cik sver, no plaukstas lieluma retas zivs līdz milzīgai leģendārai, un iekrāsojas retuma krāsā: rokā, uz zemes, rāmī un uz griešanas dēļa, ar retuma mirdzumu un svaru tieši uz inventāra ikonas. Zivis no 10 kg paceļ virs galvas ar abām rokām, tāpēc otrā rokā tikmēr nekā nav.",
+            "Jauna ļoti reta mītiska zivs: no 40 kg, sarkans nosaukums, un par to uzzina viss serveris.",
+            "Leģendāro un mītisko zivju nosaukumi zaigo čatā, aprakstos un pat nāves ziņā, ja kāds tevi pieveic ar zivi.",
+            "Zivju svars atkarīgs no retuma: reta 1-2,99 kg, episka 3-19,99 kg, leģendāra 20-40 kg. Aptuveni viena trofeja no 250 ir mirdzoša, ar spēcīgākiem efektiem, savu melodiju un papildu dzirkstelēm.",
+            "Rets loms parāda personīgu kartīti virs ātrās piekļuves joslas un skaņu. /catchcards off tās izslēdz.",
+            "Boomboksi darbojas ūdenī un pēc maltītes nepārslēdz staciju. Vienā čunkā var ieslēgt sešus, serverī vienlaikus līdz sešām straumēm.",
+            "Bruņas tagad ir 3D uz tevis un visiem citiem, ieskaitot krāsas un rotājumus (3D Armor). Spēles noteikumi nemainās.",
+            "Saglabātais izskats atgriežas pēc atkārtotas pieslēgšanās; karte un statistika izmanto izvēlēto izskatu. Pamācības un izkārtojums ir skaidrāki.",
+            "Svētku uguņošana no notikumiem, dienas dāvanām un slepenajiem kodiem izskatās un skan kā agrāk, bet nevienu nesavaino.",
+            "Dienas slepenais kods mainās pusnaktī pēc Rīgas laika, un tam vajag 20 minūtes aktīvas spēles tajā dienā (jauniem spēlētājiem vispirms 2 stundas kopā).",
+            "Pasaules kartē ar labo klikšķi uz spēlētāja nosūti /tpa pieprasījumu; tikai administratoru teleporti paliek paslēpti.",
+            "Nāves atzīme kartē pazūd pati, kad visas izkritušās lietas ir paceltas vai pazudušas.",
+            "Katra trofeju zivju suga darbojas savādāk: efekti apēdot (dažas kaitē) un bonusi, kamēr zivs ir rokā, un to visu rāda apraksts. Pagatavota zivs saglabā īpašības un efekti ilgst ilgāk. Uz griešanas dēļa smagāka zivs dod vairāk šķēļu vairākos griezienos (dēlis rāda, cik griezienu palicis, un iegriezta zivs paēdina mazāk), un katra šķēle saglabā retumu, mirdzuma zvaigzni un daļu efektu. Lielāka zivs labāk paēdina.",
+            "Jauns boomboks: plakana ikona inventārā, 3D boomboks, ko nes pie gurna aiz roktura un kas šūpojas ejot un pagriežoties, skaļruņi pulsē līdzi mūzikai, un notis parādās ritmā.",
+            "Ieejot būvē (ciemos, pazemes cietokšņos, senajās pilsētās), parādās tās nosaukums; zonu virsraksti ir krāsoti pēc veida un vieglāk lasāmi.",
+            "Ielogošanās ekrāns, komandas panelis, loma un balvu kartītes un izvēlnes ieguva kontrastaināku melni zelta Holy Lois stilu: piekrišanas pogas ir zaļas, atcelšanas un dzēšanas sarkanas, izvēlnes pielāgojas saturam, un dienas balvas kartīte plūstoši parādās virs ātrās piekļuves joslas, ar Holy Lootbox redzamu visu nedēļu.",
+            "Plūdenākas animācijas: karti tur sev priekšā, ēdienu pieliek pie mutes, un laterna plūdeni šūpojas, gan no pirmās, gan no trešās personas.",
+            "AFK kamera tagad ieslēdzas dažas sekundes pēc makšķeres iemešanas vai kad tevi atzīmē kā AFK, nevis pēc 30 sekundēm bez kustības.",
+            "Lādes vairs neatkārto aizvēršanas animāciju, kad uz tām paskaties atkal.",
+            "Komandas biedra atzīme cauri sienām tagad ir pie galvas, un lidojums ar elytrām ir plūdenāks.",
+            "Enter apstiprina ielogošanos, reģistrāciju, mājas nosaukumu un komandas uzaicinājumu; Alt+Tab vairs neaptur spēli.",
+            "Pievienojoties resursu lejupielāde redzama ielādes joslā ar īsu statusa rindu, nevis uznirstošā logā stūrī.",
+            "Fish of Thieves tropiskās salas un augļu koki vairs neparādās jaunās zemēs, tāpēc pasaule saglabā vanilla izskatu.",
+            "Zvejas sasniegums ieskaita arī Fish of Thieves zivis, un nometnes sasniegums tagad saucas „Atrodi laupītāju nometni”.",
+            "Ieeja tagad ir viena vienota aina: mūsu panorāma titulekrānā, savienojoties un aiz pieteikšanās formas, tad maiga pāreja pasaulē. Titulekrānā ir poga Holy Lois: Reborn, kas uzreiz pievieno serverim.",
+            "Enter atkal darbojas visās formās, un Esc pieteikšanās ekrānā jautā, vai atstāt serveri.",
+            "7. dienas Holy Lootbox tagad ir savs zelta bloks ar Holy Lois logo, tāds pats kā mājaslapā, un atveras ar zelta dzirkstelēm.",
+            "Boomboks, kas spēlē rokā, arī pumpē skaļruņus un laiž notis ritmā, un laternas rokā šūpojas vienmērīgi kā boomboks."
+          ]
+        }
+      }
+    },
+    "1.9.1": {
+      "version": "1.9.1",
+      "date": "2026-10-10",
+      "locales": {
+        "en": {
+          "summary": "Your death loot back in its slots, food that shrinks as you eat and a smarter cinematic camera.",
+          "teaser": "Music up close",
+          "added": [
+            "Pick up your death loot and every stack goes back to its old slot, armor and off-hand too, if that slot is still free.",
+            "Food shrinks bite by bite while you eat, Farmer's Delight meals included.",
+            "Stand still for a minute while a boombox or music disc plays nearby and the cinematic camera fades in.",
+            "Standing right next to a playing boombox or music disc plays the music in your ears instead of from the speaker."
+          ],
+          "changed": [
+            "The boombox in your hand pulses with the music and only sways side to side. Notes hop out sideways, bigger when the music is louder, and never in your first-person view.",
+            "The cinematic camera stays out of walls, films you instead of cave walls, and stays on you while you fish.",
+            "The idle cinematic waits 15 minutes on a fresh install too, instead of 30 seconds.",
+            "The Holy Lootbox tooltip is short: what it is and which key opens it.",
+            "Cancel buttons are grey, so only the dangerous choice is red.",
+            "The Tab list is tidier, with lines of even width."
+          ],
+          "fixed": [
+            "Invisible item frames in dungeons no longer drop a spare frame when you punch the loot out.",
+            "A chest you had open no longer looks open when you come back after a teleport.",
+            "A boombox in your off hand is no longer placed by accident.",
+            "R on an empty slot sorts without opening a recipe.",
+            "Respawning no longer fades in through the panorama."
+          ],
+          "removed": [
+            "/spawn: Holy Lois is an open world without a spawn hub."
+          ]
+        },
+        "ru": {
+          "summary": "Вещи после смерти возвращаются в свои слоты, еда уменьшается при еде, а кинокамера стала умнее.",
+          "teaser": "Музыка вблизи",
+          "added": [
+            "Подбери свои вещи после смерти, и каждый стак вернётся в свой слот, включая броню и вторую руку, если слот свободен.",
+            "Еда уменьшается с каждым укусом, включая блюда Farmer's Delight.",
+            "Постой минуту рядом с играющим бумбоксом или пластинкой, и включится кинокамера.",
+            "Рядом с играющим бумбоксом или пластинкой музыка звучит прямо в ушах, а не из колонки."
+          ],
+          "changed": [
+            "Бумбокс в руке пульсирует под музыку и качается только из стороны в сторону. Ноты выпрыгивают в стороны, чем громче, тем больше, и никогда не мешают виду от первого лица.",
+            "Кинокамера не заходит в стены, снимает тебя, а не стены пещер, и не отходит от тебя во время рыбалки.",
+            "Кинокамера и на новой установке ждёт 15 минут, а не 30 секунд.",
+            "Подсказка Holy Lootbox короткая: что это и какой клавишей открыть.",
+            "Кнопки «Отмена» серые, красной осталась только опасная кнопка.",
+            "Список Tab аккуратнее, строки одной ширины."
+          ],
+          "fixed": [
+            "Невидимые рамки в подземельях больше не выпадают лишней рамкой, когда выбиваешь добычу.",
+            "Открытый сундук больше не выглядит открытым, когда возвращаешься после телепорта.",
+            "Бумбокс во второй руке больше не ставится случайно.",
+            "R на пустом слоте сортирует, не открывая рецепт.",
+            "Возрождение больше не проходит через затухающую панораму."
+          ],
+          "removed": [
+            "/spawn: Holy Lois открытый мир без спавн-хаба."
+          ]
+        },
+        "lv": {
+          "summary": "Lietas pēc nāves atgriežas savās vietās, ēdiens sarūk, to ēdot, un kinokamera ir gudrāka.",
+          "teaser": "Mūzika tuvumā",
+          "added": [
+            "Paceļ savas lietas pēc nāves, un katra kaudze atgriežas savā vietā, arī bruņas un otrā roka, ja vieta vēl ir brīva.",
+            "Ēdiens sarūk ar katru kodienu, arī Farmer's Delight ēdieni.",
+            "Pastāvi minūti blakus skanošam bumboksam vai platei, un ieslēdzas kinokamera.",
+            "Blakus skanošam bumboksam vai platei mūzika skan tieši ausīs, nevis no skaļruņa."
+          ],
+          "changed": [
+            "Bumbokss rokā pulsē līdz ar mūziku un šūpojas tikai uz sāniem. Notis izlec uz sāniem, jo skaļāk, jo lielākas, un nekad netraucē pirmās personas skatam.",
+            "Kinokamera neiet sienās, filmē tevi, nevis alu sienas, un makšķerējot paliek pie tevis.",
+            "Kinokamera arī jaunā instalācijā gaida 15 minūtes, nevis 30 sekundes.",
+            "Holy Lootbox padoms ir īss: kas tas ir un ar kuru taustiņu to atvērt.",
+            "Atcelšanas pogas ir pelēkas, sarkana paliek tikai bīstamā izvēle.",
+            "Tab saraksts ir kārtīgāks, rindas vienā platumā."
+          ],
+          "fixed": [
+            "Neredzami rāmji cietokšņos vairs neizmet lieku rāmi, kad izsit laupījumu.",
+            "Atvērta lāde vairs neizskatās atvērta, kad atgriezies pēc teleporta.",
+            "Bumbokss otrā rokā vairs netiek nejauši nolikts.",
+            "R uz tukšas vietas sakārto, neatverot recepti.",
+            "Atdzimstot vairs nav panorāmas izbalēšanas."
+          ],
+          "removed": [
+            "/spawn: Holy Lois ir atvērta pasaule bez spawn centra."
+          ]
+        }
+      }
+    },
+    "1.9.2": {
+      "version": "1.9.2",
+      "date": "2026-10-10",
+      "locales": {
+        "en": {
+          "summary": "Boombox music now plays in your ears during the cinematic camera.",
+          "teaser": "Music in the cinematic",
+          "changed": [
+            "With a boombox or music disc playing nearby, stand still for a minute: the cinematic camera fades in and the music moves into your ears, then back to the speaker when you move. Just standing close no longer does it."
+          ]
+        },
+        "ru": {
+          "summary": "Музыка бумбокса теперь звучит в ушах во время кинокамеры.",
+          "teaser": "Музыка в кино",
+          "changed": [
+            "Рядом с играющим бумбоксом или пластинкой постой минуту: включится кинокамера, и музыка переместится тебе в уши, а когда двинешься, вернётся к колонке. Просто стоять рядом для этого больше не нужно."
+          ]
+        },
+        "lv": {
+          "summary": "Bumboksa mūzika tagad skan ausīs kinokameras laikā.",
+          "teaser": "Mūzika kino",
+          "changed": [
+            "Blakus skanošam bumboksam vai platei pastāvi minūti: ieslēdzas kinokamera un mūzika pārceļas tev ausīs, bet, kad pakusties, atgriežas pie skaļruņa. Vienkārši stāvēt blakus vairs nepietiek."
+          ]
+        }
+      }
+    },
+    "1.9.3": {
+      "version": "1.9.3",
+      "date": "2026-10-10",
+      "locales": {
+        "en": {
+          "summary": "The carried boombox swings the right way and its notes come out of the speakers.",
+          "teaser": "Boombox swing fixed",
+          "changed": [
+            "Notes from a carried boombox now pop out of its speakers, low at your hand, instead of floating up by your hip."
+          ],
+          "fixed": [
+            "A carried boombox swings out from your body and back in, like a real weight on a handle, instead of forward and out."
+          ]
+        },
+        "ru": {
+          "summary": "Бумбокс в руке качается правильно, а ноты вылетают из колонок.",
+          "teaser": "Качание бумбокса исправлено",
+          "changed": [
+            "Ноты бумбокса в руке теперь вылетают из его колонок, внизу у руки, а не всплывают у бедра."
+          ],
+          "fixed": [
+            "Бумбокс в руке качается от тела и обратно, как настоящий груз на ручке, а не вперёд и в сторону."
+          ]
+        },
+        "lv": {
+          "summary": "Bumbokss rokā šūpojas pareizi, un notis nāk no skaļruņiem.",
+          "teaser": "Bumboksa šūpošanās labota",
+          "changed": [
+            "Notis no bumboksa rokā tagad izlec no tā skaļruņiem, zemu pie rokas, nevis uzpeld pie gurna."
+          ],
+          "fixed": [
+            "Bumbokss rokā šūpojas prom no ķermeņa un atpakaļ kā īsts svars uz roktura, nevis uz priekšu un sāniem."
+          ]
+        }
+      }
+    },
+    "1.9.4": {
+      "version": "1.9.4",
+      "date": "2026-10-11",
+      "locales": {
+        "en": {
+          "summary": "A fishing cinematic with real camera work, and boombox music without anything playing over it.",
+          "teaser": "Fishing cinematic fixed",
+          "changed": [
+            "Minecraft's background music pauses while boombox or music disc music reaches you, like it does for a jukebox."
+          ],
+          "fixed": [
+            "While fishing, the cinematic no longer repeats one shot on a loop: every shot is a new angle on you and your bobber until a fish bites, then it stays on the catch until you reel it in or it gets away, and changes angle 3 seconds after you reel in.",
+            "The cinematic no longer starts its own soundtrack over a playing boombox or music disc, so that music plays clearly in your ears."
+          ]
+        },
+        "ru": {
+          "summary": "Кинокамера на рыбалке снимает как надо, а музыке бумбокса больше ничего не мешает.",
+          "teaser": "Рыбалка в кино исправлена",
+          "changed": [
+            "Фоновая музыка Minecraft замолкает, пока до тебя доносится музыка бумбокса или пластинки, как с проигрывателем."
+          ],
+          "fixed": [
+            "На рыбалке кинокамера больше не повторяет один кадр по кругу: каждый кадр показывает тебя и поплавок с нового ракурса, пока не клюнет, потом держит улов, пока не вытащишь или рыба не сорвётся, и меняет ракурс через 3 секунды после того, как вытащишь.",
+            "Кинокамера больше не включает свою музыку поверх играющего бумбокса или пластинки, и их музыка звучит в ушах чисто."
+          ]
+        },
+        "lv": {
+          "summary": "Makšķerēšanas kinokamera filmē kā nākas, un bumboksa mūzikai vairs nekas netraucē.",
+          "teaser": "Makšķerēšanas kino labots",
+          "changed": [
+            "Minecraft fona mūzika apklust, kamēr līdz tev nāk bumboksa vai plates mūzika, tāpat kā ar mūzikas atskaņotāju."
+          ],
+          "fixed": [
+            "Makšķerējot kinokamera vairs neatkārto vienu kadru pa riņķi: katrs kadrs rāda tevi un pludiņu no jauna leņķa, līdz paķer zivs, tad tur lomu, līdz izvelc vai zivs aizbēg, un maina leņķi 3 sekundes pēc izvilkšanas.",
+            "Kinokamera vairs nesāk savu mūziku pāri skanošam bumboksam vai platei, tāpēc tā mūzika skan ausīs tīri."
+          ]
+        }
+      }
+    }
+  }
+}

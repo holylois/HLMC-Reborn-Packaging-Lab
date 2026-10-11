@@ -74,7 +74,7 @@ public final class BoomboxPulse {
     /** Set while a held boombox is drawn; FishLayerMixin then hands over the finished model pose (0..1 model space). */
     public static boolean capture;
     private static PoseStack.Pose captured;
-    public static void capture(PoseStack.Pose pose) { captured = pose.copy(); }
+    public static void capture(PoseStack.Pose pose) { captured = RenderedRodTip.shadowPass() ? null : pose.copy(); }
 
     /** After the held boombox model: its cones, pushed out by the music, in the model's own pose. */
     public static void submitHeld(net.minecraft.client.renderer.entity.state.ArmedEntityRenderState holder, PoseStack pose,
@@ -99,6 +99,7 @@ public final class BoomboxPulse {
 
     private static boolean heldCones(java.util.UUID id, PoseStack.Pose model, PoseStack pose, net.minecraft.client.renderer.SubmitNodeCollector collector, int light) {
         var mc = Minecraft.getInstance();
+        if(RenderedRodTip.shadowPass())return false;
         var heard = heldLevels.get(id);
         if (heard == null || System.currentTimeMillis() - heard.at() > 400) return false;
         try {
@@ -111,8 +112,8 @@ public final class BoomboxPulse {
             var cam = mc.gameRenderer.mainCamera().position();
             var at = new net.minecraft.world.phys.Vec3[2];
             for (int i = 0; i < 2; i++) {
-                var v = model.pose().transformPosition(0.5f + (i == 0 ? -3.5f : 3.5f) / 16f, 3.5f / 16f, 4.5f / 16f, new org.joml.Vector3f());
-                at[i] = cam.add(v.x(), v.y(), v.z());
+                var v = model.pose().transformPosition(0.5f + (i == 0 ? -3.5f : 3.5f) / 16f,3.5f / 16f,4.5f / 16f,new org.joml.Vector3f());
+                at[i] = cam.add(v.x(),v.y(),v.z());
             }
             var front = model.pose().transformDirection(0, 0, -1, new org.joml.Vector3f()).normalize();
             heldSpeakers.put(id, new Speakers(at[0], at[1], new net.minecraft.world.phys.Vec3(front.x(), front.y(), front.z()), System.currentTimeMillis()));

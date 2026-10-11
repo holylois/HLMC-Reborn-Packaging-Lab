@@ -34,12 +34,20 @@ public abstract class FishLayerMixin {
             }
             pose.translate(-0.5f, -0.72f, -0.5f);
         }
-        if (holylois.boombox.BoomboxPulse.capture) { holylois.boombox.BoomboxPulse.capture = false; holylois.boombox.BoomboxPulse.capture(pose); }
         float scale = FishLook.current;
         if (scale == 1) return;
         pose.translate(0.5f, 0.5f + FishLook.lift, 0.5f);
         if (FishLook.carry) pose.rotate(com.mojang.math.Axis.ZP.rotationDegrees(FishLook.CARRY_TURN));
         pose.scale(scale, scale, scale);
         pose.translate(-0.5f, -0.5f, -0.5f);
+    }
+
+    /** Speaker coordinates need the final item transform, including its centring matrix. */
+    @Inject(method = "applyTransform", at = @At("TAIL"), require = 1)
+    private void holyLoisFinishedSpeakerPose(PoseStack.Pose pose, CallbackInfo info) {
+        if (holylois.boombox.BoomboxPulse.capture) {
+            holylois.boombox.BoomboxPulse.capture = false;
+            holylois.boombox.BoomboxPulse.capture(pose);
+        }
     }
 }

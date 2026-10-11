@@ -93,9 +93,9 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
     }
 
     private static void run(List<String> failed, String name, ClientGameTestContext context, TestSingleplayerContext world, Test test) {
-        // HOLYLOIS_TEST_ONLY=word runs only the tests whose name contains it (quick loops while fixing one thing).
+        // HOLYLOIS_TEST_ONLY=word (or comma-separated words) runs only matching tests.
         String only = System.getenv("HOLYLOIS_TEST_ONLY");
-        if (only != null && !only.isBlank() && !name.contains(only)) return;
+        if (only != null && !only.isBlank() && java.util.Arrays.stream(only.split(",")).map(String::strip).filter(s->!s.isEmpty()).noneMatch(name::contains)) return;
         try {
             test.run(context, world);
             log("TEST OK: " + name);
@@ -870,7 +870,8 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             // Hold-to-eat time grows with rarity; Mythics add a second per 20 kg (8 s at most); plain fish stay at 1.6 s.
             int ticks = context.computeOnClient(client -> client.player.getInventory().getItem(20).getUseDuration(client.player));
             double kg = context.computeOnClient(client -> holylois.boombox.FishData.kilograms(client.player.getInventory().getItem(20)));
-            int expected = switch (kind) { case "rare" -> 40; case "epic" -> 52; case "legendary", "shiny" -> 64;
+            String rolled=context.computeOnClient(client->holylois.boombox.FishData.rarity(client.player.getInventory().getItem(20)));
+            int expected = switch (rolled) { case "rare" -> 40; case "epic" -> 52; case "legendary" -> 64;
                 case "mythic" -> (int) Math.round(Math.min(8, 3.2 + kg / 20) * 20); default -> 32; };
             check(ticks == expected, kind + " eats in " + ticks + " ticks (expected " + expected + ")");
             // A swatch row right under the name; Fish of Thieves' variant name moves into it, in color, exactly once.
@@ -1079,6 +1080,12 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
      */
     private static void rOverFillet(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
         var server = world.getServer();
+        // Earlier screen tests can leave a native container open behind a client-only screen.
+        log("R fixture previous menu: client="+context.computeOnClient(client->client.player.containerMenu.containerId)
+            +" server="+server.computeOnServer(s->s.getPlayerList().getPlayers().getFirst().containerMenu.containerId));
+        context.runOnClient(client->client.player.closeContainer());
+        server.runOnServer(s->s.getPlayerList().getPlayers().getFirst().closeContainer());
+        context.waitTicks(5);
         server.runCommand("clear @a");
         server.runOnServer(s -> {
             var player = s.getPlayerList().getPlayers().getFirst();
@@ -1130,6 +1137,12 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.waitTicks(20);
         String clientSorted = context.computeOnClient(client -> inventoryState(client.player.containerMenu.getCarried(), client.player.getInventory()));
         String serverSorted = server.computeOnServer(s -> { var p = s.getPlayerList().getPlayers().getFirst(); return inventoryState(p.containerMenu.getCarried(), p.getInventory()); });
+        // IPN sends a queued click sequence. A loaded full-suite run can still be flushing it after twenty ticks.
+        for(int settle=0;!clientSorted.equals(serverSorted)&&settle<16;settle++){
+            context.waitTicks(5);
+            clientSorted=context.computeOnClient(client->inventoryState(client.player.containerMenu.getCarried(),client.player.getInventory()));
+            serverSorted=server.computeOnServer(s->{var p=s.getPlayerList().getPlayers().getFirst();return inventoryState(p.containerMenu.getCarried(),p.getInventory());});
+        }
         log("R over empty slot:\n client " + clientSorted + "\n server " + serverSorted);
         check(clientSorted.equals(serverSorted) && serverSorted.startsWith("cursor=empty"), "sorting leaves nothing on the cursor and client and server agree");
         context.runOnClient(client -> client.gui.setScreen(null));

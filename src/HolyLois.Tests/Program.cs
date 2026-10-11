@@ -8,6 +8,20 @@ var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "test-output"
 Directory.CreateDirectory(root);
 var tests = new List<(string Name, Func<Task> Run)>();
 var passed = 0;
+tests.Add(("Player notes translate presentation while retaining signed identity and a safe fallback", () => {
+    var note = new ReleaseNote("1.10.0", "2026-10-11", "Signed summary", ["Signed addition"], [], ["Signed change"]);
+    var bytes = Encoding.UTF8.GetBytes("""
+        {"releases":{"1.10.0":{"version":"1.10.0","date":"wrong","locales":{"en":{"summary":"English","added":["English addition"]},"ru":{"summary":"Russian","added":["Russian addition"],"fixed":["Russian fix"]}}}}}
+        """);
+    var notes = new PlayerNotes(bytes);
+    var russian = notes.For(note, "ru");
+    Check(russian.Summary == "Russian" && russian.Added.SequenceEqual(["Russian addition"]) && russian.Fixed!.SequenceEqual(["Russian fix"]), "Authored release text was not localized.");
+    Check(russian.Version == note.Version && russian.Date == note.Date, "Unsigned presentation changed signed release identity.");
+    Check(notes.For(note, "lv").Summary == "English", "Missing locale should use authored English.");
+    Check(ReferenceEquals(new PlayerNotes(Encoding.UTF8.GetBytes("invalid")).For(note,"ru"), note), "Malformed notes should keep signed text.");
+    var future = note with { Version = "future" }; Check(ReferenceEquals(notes.For(future,"ru"),future), "Unknown versions should keep signed text.");
+    return Task.CompletedTask;
+}));
 tests.Add(("Release history reads an optional fixed list and omits it when empty, so older launchers keep parsing", () => {
     var with = JsonSerializer.Deserialize<ReleaseNote>("{\"version\":\"1.9.3\",\"date\":\"2026-10-11\",\"summary\":\"s\",\"added\":[],\"removed\":[],\"updated\":[\"c\"],\"fixed\":[\"f\"]}", JsonSettings.Options)!;
     Check(with.Fixed is ["f"] && with.Updated is ["c"], "The fixed list was not read.");

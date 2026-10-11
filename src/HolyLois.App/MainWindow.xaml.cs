@@ -137,8 +137,9 @@ public partial class MainWindow : ThemedWindow
         RefreshNews(step == Step.Update);
         // One card per release: gold version, summary, then one bullet per change so long notes stay readable.
         HistoryPanel.Children.Clear();
-        foreach (var item in context.Manifest.History ?? [])
+        foreach (var signed in context.Manifest.History ?? [])
         {
+            var item = Localize.Note(signed);
             var card = new StackPanel();
             var head = new TextBlock { FontSize = 14, FontWeight = FontWeights.SemiBold };
             head.Inlines.Add(new System.Windows.Documents.Run(item.Version) { Foreground = (Brush)FindResource("Text") });
@@ -175,6 +176,7 @@ public partial class MainWindow : ThemedWindow
         var latest = context.Manifest.History?.FirstOrDefault();
         NewsCard.Visibility = latest is null ? Visibility.Collapsed : Visibility.Visible;
         if (latest is null) return;
+        latest = Localize.Note(latest);
         NewsEyebrow.Text = (available ? string.Format(T("UpdateReady"), context.Manifest.Version) : T("LatestNews") + "  -  " + latest.Version) + "  -  " + latest.Date;
         NewsTitle.Text = latest.Summary;
         NewsCard.BorderBrush = (Brush)FindResource(available ? "Gold" : "Line");
