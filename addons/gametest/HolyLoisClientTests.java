@@ -71,6 +71,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "fish picked up and put back in the same slot", context, world, HolyLoisClientTests::fishSameSlot);
             run(failed, "held maps", context, world, HolyLoisClientTests::heldMaps);
             run(failed, "water by camera height", context, world, HolyLoisClientTests::waterByHeight);
+            run(failed, "item cards", context, world, HolyLoisClientTests::itemCards);
             run(failed, "fish tooltips", context, world, HolyLoisClientTests::fishTooltips);
             run(failed, "fish of thieves eating frames", context, world, HolyLoisClientTests::fishEatingFrames);
             run(failed, "armor 3d", context, world, HolyLoisClientTests::armor3d);
@@ -605,6 +606,27 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.getInput().pressKey(options -> options.keyToggleGui);
         for (String c : new String[] {"gamemode survival @a", "gamerule advance_time true", "fill 0 -63 0 63 -56 63 air", "fill 0 -63 0 63 -62 63 dirt", "fill 0 -61 0 63 -61 63 grass_block", "tp @p 0 -60 0"}) server.runCommand(c);
         context.waitTicks(20);
+    }
+
+    /** Picking up an enchanted sword shows an item card; a plain stick does not; the same sword again within 30 s stays quiet. */
+    private static void itemCards(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        var server = world.getServer();
+        server.runCommand("gamemode survival @a");
+        server.runCommand("clear @a");
+        int before = context.computeOnClient(client -> holylois.boombox.ItemCardsTestHook.shown());
+        server.runCommand("execute at @p run summon item ~ ~ ~ {Item:{id:\"minecraft:stick\",count:1},PickupDelay:0}");
+        context.waitTicks(30);
+        check(context.computeOnClient(client -> holylois.boombox.ItemCardsTestHook.shown()) == before, "a plain stick shows no card");
+        server.runCommand("execute at @p run summon item ~ ~ ~ {Item:{id:\"minecraft:diamond_sword\",count:1,components:{\"minecraft:enchantments\":{\"minecraft:sharpness\":5,\"minecraft:looting\":3}}},PickupDelay:0}");
+        context.waitTicks(12);
+        context.takeScreenshot("51-item-card-enchanted");
+        int after = context.computeOnClient(client -> holylois.boombox.ItemCardsTestHook.shown());
+        check(after == before + 1, "an enchanted sword shows an item card (" + before + " -> " + after + ")");
+        server.runCommand("clear @a");
+        server.runCommand("execute at @p run summon item ~ ~ ~ {Item:{id:\"minecraft:diamond_sword\",count:1,components:{\"minecraft:enchantments\":{\"minecraft:sharpness\":5}}},PickupDelay:0}");
+        context.waitTicks(120);
+        check(context.computeOnClient(client -> holylois.boombox.ItemCardsTestHook.shown()) == after, "the same sword again within 30 s shows no second card");
+        server.runCommand("clear @a");
     }
 
     /** The owner's repro: standing on a 4-block pillar out of the water, F5, tilting so the camera passes the pillar top. */

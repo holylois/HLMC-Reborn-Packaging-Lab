@@ -145,5 +145,12 @@
   "holylois.cinematic.status": "Кинокамера: %s. Камера на рыбалке: %s. Переключить: /cinematic on|off, /cinematic fishing on|off",
   "holylois.cinematic.on": "вкл",
   "holylois.cinematic.off": "выкл",
-  "holylois.cinematic.unavailable": "Мод кинокамеры недоступен."
+  "holylois.cinematic.unavailable": "Мод кинокамеры недоступен.",
+  "holylois.card.holylois": "Предмет Holy Lois",
+  "holylois.card.crate": "Ящик с добычей",
+  "holylois.card.enchanted": "Зачаровано",
+  "holylois.card.epic": "Эпическая находка",
+  "holylois.card.rare": "Редкая находка",
+  "holylois.card.enabled": "Карточки предметов включены.",
+  "holylois.card.disabled": "Карточки предметов выключены."
 }

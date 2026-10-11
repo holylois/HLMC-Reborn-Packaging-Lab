@@ -32,34 +32,39 @@ public final class RareCatchHud {
                 default->p.playSound(net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME,1f,1f);
             }
         });
-        ClientPlayConnectionEvents.DISCONNECT.register((h,c)->notice=null);
+        ClientPlayConnectionEvents.DISCONNECT.register((h,c)->{notice=null;ItemCards.clear();});
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(mc->{
             if(notice==null||mc.player==null||jingleNext>=JINGLE.length)return;
             if(System.currentTimeMillis()-arrived>=JINGLE[jingleNext][0])mc.player.playSound(net.minecraft.sounds.SoundEvents.NOTE_BLOCK_CHIME.value(),0.9f,JINGLE[jingleNext++][1]);
         });
         HudElementRegistry.attachElementAfter(VanillaHudElements.HOTBAR,Identifier.fromNamespaceAndPath("holylois","rare_catch"),(g,t)->{if(!CinematicTweaks.playing())card(g,false);});
+        ItemCards.register();
     }
     /**
      * The card, from the HUD or, while the cinematic camera hides the HUD, from CatchCardCinematicMixin (owner 2026-10-11: you
      * should see what you caught while the camera films you fishing).
      */
     public static void card(net.minecraft.client.gui.GuiGraphicsExtractor g,boolean cinematic){
-        var mc=Minecraft.getInstance();if(notice==null||mc.player==null||mc.level==null)return;long now=System.currentTimeMillis();
+        var mc=Minecraft.getInstance();if(notice==null){ItemCards.card(g,mc,cinematic);return;}if(mc.player==null||mc.level==null)return;long now=System.currentTimeMillis();
         if(now-arrived>60_000){notice=null;return;}if(!cinematic&&mc.gui.hud.isHidden()||mc.gui.screen()!=null)return;
         if(shown==0)shown=now;long age=now-shown;if(age>LIFE){notice=null;return;}
         var id=Identifier.tryParse(notice.item());if(id==null||!BuiltInRegistries.ITEM.containsKey(id)){notice=null;return;}
-        draw(g,mc,new ItemStack(BuiltInRegistries.ITEM.getValue(id)),age);cardsDrawn++;
+        String rarity=notice.rarity();
+        String label=Component.translatable("holylois.catch."+rarity).getString().toUpperCase(Locale.ROOT)+(notice.shiny()?"  ✧ "+Component.translatable("holylois.catch.shiny").getString().toUpperCase(Locale.ROOT):"");
+        draw(g,mc,new ItemStack(BuiltInRegistries.ITEM.getValue(id)),age,rarity,label,String.format(Locale.ROOT,"%.2f kg",notice.kilograms()),notice.shiny());cardsDrawn++;
     }
+    /** A fish catch card is up (item cards wait for it). */
+    static boolean busy(){return notice!=null;}
     /** Frames a catch card was drawn (gametest). */
     public static int cardsDrawn;
-    private static final long LIFE=5500;
+    static final long LIFE=5500;
     /**
      * Loot toast in the style of the WoW toast addons: icon well with a rarity border, rarity label, the name as the main line,
      * weight quiet underneath, a time bar. Slides up and fades in; Epic and up get a shine sweep, Mythic a pulsing border and a
      * repeating sweep, Shiny twinkles around the icon. Centred above the health and food rows.
      */
-    private static void draw(net.minecraft.client.gui.GuiGraphicsExtractor g,Minecraft mc,ItemStack stack,long age){
-        var font=mc.font;String rarity=notice.rarity();
+    static void draw(net.minecraft.client.gui.GuiGraphicsExtractor g,Minecraft mc,ItemStack stack,long age,String rarity,String label,String sub,boolean shiny){
+        var font=mc.font;
         int sw=mc.getWindow().getGuiScaledWidth(),sh=mc.getWindow().getGuiScaledHeight();
         int w=Math.min(224,sw-20),h=46,x=(sw-w)/2;
         float in=Math.min(1,age/180f),fade=Math.min(in,Math.min(1,(LIFE-age)/450f));if(fade<=0.04f)return;
@@ -85,18 +90,17 @@ public final class RareCatchHud {
             }
         }
         // Shiny: small stars twinkling around the icon well.
-        if(notice.shiny()){
+        if(shiny){
             for(int i=0;i<5;i++){
                 double phase=age/260.0+i*1.3;float tw=(float)Math.max(0,Math.sin(phase));if(tw<0.2f)continue;
                 int sx=x+7+(int)(16+17*Math.cos(i*1.26+age/900.0)),sy=y+7+(int)(16+17*Math.sin(i*1.26+age/900.0));
                 g.text(font,"✦",sx-2,sy-4,Ui.alpha(0xFFFFFFFF,tw*fade),false);
             }
         }
-        String label=Component.translatable("holylois.catch."+rarity).getString().toUpperCase(Locale.ROOT)+(notice.shiny()?"  ✧ "+Component.translatable("holylois.catch.shiny").getString().toUpperCase(Locale.ROOT):"");
         g.text(font,font.plainSubstrByWidth(label,w-56),x+47,y+7,Ui.alpha(color,fade),false);
         var name=Component.literal(font.plainSubstrByWidth(stack.getHoverName().getString(),w-56)).withStyle(s->FishData.shine(s,rarity));
         g.text(font,name,x+47,y+19,Ui.alpha(Ui.TEXT,fade),false);
-        g.text(font,String.format(Locale.ROOT,"%.2f kg",notice.kilograms()),x+47,y+31,Ui.alpha(Ui.MUTED,fade),false);
+        g.text(font,font.plainSubstrByWidth(sub,w-56),x+47,y+31,Ui.alpha(Ui.MUTED,fade),false);
         // Time left.
         int bar=Math.round((w-2)*(1-Math.min(1,age/(float)LIFE)));
         g.fill(x+1,y+h-2,x+1+bar,y+h-1,Ui.alpha(color,0.6f*fade));

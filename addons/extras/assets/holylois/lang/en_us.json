@@ -145,5 +145,12 @@
   "holylois.cinematic.status": "Cinematic camera: %s. Fishing camera: %s. Switch: /cinematic on|off, /cinematic fishing on|off",
   "holylois.cinematic.on": "on",
   "holylois.cinematic.off": "off",
-  "holylois.cinematic.unavailable": "The cinematic camera mod is not available."
+  "holylois.cinematic.unavailable": "The cinematic camera mod is not available.",
+  "holylois.card.holylois": "Holy Lois item",
+  "holylois.card.crate": "Loot crate",
+  "holylois.card.enchanted": "Enchanted",
+  "holylois.card.epic": "Epic find",
+  "holylois.card.rare": "Rare find",
+  "holylois.card.enabled": "Item cards enabled.",
+  "holylois.card.disabled": "Item cards disabled."
 }

@@ -145,5 +145,12 @@
   "holylois.cinematic.status": "Kinokamera: %s. Makšķerēšanas kamera: %s. Pārslēgt: /cinematic on|off, /cinematic fishing on|off",
   "holylois.cinematic.on": "ieslēgta",
   "holylois.cinematic.off": "izslēgta",
-  "holylois.cinematic.unavailable": "Kinokameras mods nav pieejams."
+  "holylois.cinematic.unavailable": "Kinokameras mods nav pieejams.",
+  "holylois.card.holylois": "Holy Lois priekšmets",
+  "holylois.card.crate": "Laupījuma kaste",
+  "holylois.card.enchanted": "Apburts",
+  "holylois.card.epic": "Episks atradums",
+  "holylois.card.rare": "Rets atradums",
+  "holylois.card.enabled": "Priekšmetu kartītes ieslēgtas.",
+  "holylois.card.disabled": "Priekšmetu kartītes izslēgtas."
 }

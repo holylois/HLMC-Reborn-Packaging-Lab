@@ -87,6 +87,7 @@
     "RarityOutlineMixin$Extract",
     "RarityOutlineMixin$State",
     "RarityOutlineMixin$Draw",
+    "ItemCardPickupMixin",
     "FirstPersonMapItemsMixin",
     "NeaPitchSmoothMixin",
     "PackToastMixin",
