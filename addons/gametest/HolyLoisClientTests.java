@@ -382,6 +382,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.runOnClient(client -> client.gui.setScreen(new holylois.auth.HolyLoisAuthScreen(new holylois.auth.AuthStatus(2, 6))));
         context.waitTicks(5);
         context.takeScreenshot("27-register");
+        boolean hudHidden = context.computeOnClient(client -> client.gui.hud.isHidden());
         // Signed in: the form's last frame fades out over the world instead of cutting to it.
         context.runOnClient(client -> client.gui.setScreen(null));
         context.waitTicks(4);
@@ -390,6 +391,8 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.waitTicks(30);
         boolean done = context.computeOnClient(client -> !holylois.auth.PanoramaFade.fading());
         check(fading && done, "the login backdrop fades into the world (" + fading + ", " + done + ")");
+        boolean hudBack = context.computeOnClient(client -> !client.gui.hud.isHidden());
+        check(hudHidden && hudBack, "the HUD hides behind the login panorama and comes back after (" + hudHidden + ", " + hudBack + ")");
         // The resource pack download on the loading bar, text under it, no toast.
         holylois.boombox.PackLoadingBar.downloadStart(java.util.OptionalLong.of(1000));
         holylois.boombox.PackLoadingBar.downloaded(450);
@@ -555,11 +558,19 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         if (only == null || !only.contains("water by camera")) { log("water by camera height: diagnostic, skipped"); return; }
         var server = world.getServer();
         for (String c : new String[] {"gamemode spectator @a", "time set noon", "weather clear", "gamerule advance_time false",
-                                      "fill 0 -63 0 63 -63 63 white_concrete", "fill 0 -62 0 63 -61 63 water"}) server.runCommand(c);
+                                      "fill 0 -63 0 63 -63 63 white_concrete", "fill 0 -62 0 63 -56 63 water"}) server.runCommand(c);
         for (int tx = 0; tx < 16; tx++) for (int tz = 0; tz < 16; tz++)
             if ((tx + tz) % 2 == 1) server.runCommand("fill " + tx * 4 + " -63 " + tz * 4 + " " + (tx * 4 + 3) + " -63 " + (tz * 4 + 3) + " black_concrete");
+        // The shader list with our names and strain colours (ShaderPackNamesMixin / ShaderPackListMixin).
+        context.setScreen(() -> {
+            try { return (net.minecraft.client.gui.screens.Screen) Class.forName("net.irisshaders.iris.gui.screen.ShaderPackScreen").getConstructor(net.minecraft.client.gui.screens.Screen.class).newInstance((Object) null); }
+            catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
+        });
+        context.waitTicks(20);
+        context.takeScreenshot("47-shader-list");
+        context.setScreen(() -> null);
         context.getInput().pressKey(options -> options.keyToggleGui);
-        double[] heights = {0.6, 2, 5, 12, 30};
+        double[] heights = {2.5, 3.5, 3.9, 4.1, 4.5, 6, 12};
         for (boolean shaders : new boolean[] {false, true}) {
             context.runOnClient(client -> {
                 try {
@@ -569,17 +580,18 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
                 } catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
             });
             context.waitTicks(shaders ? 300 : 40);
-            for (String mode : shaders ? new String[] {"dh", "nodh", "dhnoref", "dhstyle1"} : new String[] {"dh", "nodh"}) {
+            for (String mode : System.getenv("HOLYLOIS_WATER_PILLAR") != null ? new String[] {"dh"} : new String[] {"dh", "nodh"}) {
                 // Iris cannot rebuild its pipeline while Distant Horizons renders: set the option first, then turn DH on.
                 if (shaders) { dhRendering(context, false); context.waitTicks(10); shaderOption(context, switch (mode) { case "dhnoref" -> "WATER_REFLECT_QUALITY=-1"; case "dhstyle1" -> "WATER_STYLE_DEFINE=1"; default -> ""; }); }
                 dhRendering(context, !mode.equals("nodh"));
                 context.waitTicks(mode.equals("nodh") ? 40 : 200);
-                for (double h : heights) {
-                    server.runCommand(String.format(java.util.Locale.ROOT, "tp @p 32 %.1f 4 facing 32 -60 40", -60 + h));
+                for (double h : System.getenv("HOLYLOIS_WATER_PILLAR") != null ? new double[] {4.5} : heights) {
+                    server.runCommand(String.format(java.util.Locale.ROOT, "tp @p 32 %.2f 4 facing 32 -55 40", -55 + h - 1.62));
                     context.waitTicks(25);
                     context.takeScreenshot(String.format(java.util.Locale.ROOT, "48-water-%s-%s-h%04.1f", shaders ? "shaders" : "plain", mode, h));
                 }
             }
+            pillarCamera(context, server, shaders ? "shaders" : "plain");
             if (shaders) { dhRendering(context, false); context.waitTicks(10); shaderOption(context, ""); }
         }
         dhRendering(context, true);
@@ -591,8 +603,28 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             } catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
         });
         context.getInput().pressKey(options -> options.keyToggleGui);
-        for (String c : new String[] {"gamemode survival @a", "gamerule advance_time true", "fill 0 -63 0 63 -62 63 dirt", "fill 0 -61 0 63 -61 63 grass_block", "tp @p 0 -60 0"}) server.runCommand(c);
+        for (String c : new String[] {"gamemode survival @a", "gamerule advance_time true", "fill 0 -63 0 63 -56 63 air", "fill 0 -63 0 63 -62 63 dirt", "fill 0 -61 0 63 -61 63 grass_block", "tp @p 0 -60 0"}) server.runCommand(c);
         context.waitTicks(20);
+    }
+
+    /** The owner's repro: standing on a 4-block pillar out of the water, F5, tilting so the camera passes the pillar top. */
+    private static void pillarCamera(ClientGameTestContext context, net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext server, String tag) {
+        // A real ocean's height (surface y 63) and the pack's render distance 12, as in the owner's world.
+        context.runOnClient(client -> client.options.renderDistance().set(12));
+        for (String c : new String[] {"gamemode survival @a", "fill 0 55 0 63 55 63 sand", "fill 0 56 0 63 62 63 water",
+                                      "fill 32 56 20 32 66 20 stone", "tp @p 32.5 67 20.5 0 0"}) server.runCommand(c);
+        context.waitTicks(200);
+        for (float pitch : new float[] {10, -10, -21, -23, -24, -25, -27, -30}) {
+            context.runOnClient(client -> { client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK); client.player.setYRot(0); client.player.setXRot(pitch); });
+            context.waitTicks(15);
+            String where = context.computeOnClient(client -> String.format(java.util.Locale.ROOT, "cam%+.2f",
+                client.gameRenderer.mainCamera().position().y - 63));
+            log("water pillar " + tag + " pitch " + pitch + ": camera " + where + " over the water");
+            context.takeScreenshot(String.format(java.util.Locale.ROOT, "49-pillar-%s-p%+03d-%s", tag, (int) pitch, where));
+        }
+        context.runOnClient(client -> client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+        context.runOnClient(client -> client.options.renderDistance().set(5));
+        for (String c : new String[] {"fill 0 55 0 63 66 63 air", "gamemode spectator @a"}) server.runCommand(c);
     }
 
     /** Writes the Complementary Unbound + Euphoria settings file (like its menu does) and reloads the shader pack. */

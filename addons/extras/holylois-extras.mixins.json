@@ -81,6 +81,8 @@
     "KeptArmsPartMixin",
     "NeaLanternSmoothMixin",
     "NeaMapItemsMixin",
+    "ShaderPackNamesMixin",
+    "ShaderPackListMixin",
     "FirstPersonMapItemsMixin",
     "NeaPitchSmoothMixin",
     "PackToastMixin",

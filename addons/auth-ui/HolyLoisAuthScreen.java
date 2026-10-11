@@ -91,7 +91,16 @@ public final class HolyLoisAuthScreen extends Screen {
         notice = "Checking with the server...";
     }
     private void clearPasswords() { if (password != null) password.setValue(""); if (confirm != null) confirm.setValue(""); }
-    @Override public void removed() { clearPasswords(); }
+    /** The HUD and every mod overlay (hotbar, chat, minimap...) stay hidden behind the panorama while the form is open (owner 2026-10-11). */
+    private static boolean hudHiddenByUs;
+    @Override public void added() {
+        if (!minecraft.gui.hud.isHidden()) { minecraft.gui.hud.toggle(); hudHiddenByUs = true; }
+    }
+    @Override public void removed() {
+        clearPasswords();
+        if (hudHiddenByUs && minecraft.gui.hud.isHidden()) minecraft.gui.hud.toggle();
+        hudHiddenByUs = false;
+    }
     @Override public void tick() {
         if (waiting && ++submittedTicks >= 60) {
             waiting = false; if (submit != null) submit.active = true;
