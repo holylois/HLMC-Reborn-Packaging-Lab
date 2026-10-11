@@ -290,13 +290,13 @@ public final class Legends {
             if (rarity.name().equals("Legendary") && angler != null)
                 level.getServer().getPlayerList().broadcastSystemMessage(Component.literal(angler).withStyle(ChatFormatting.YELLOW)
                     .append(Component.literal(" caught a ").withStyle(ChatFormatting.GRAY))
-                    .append(gradient("Legendary " + fishName, 0xFFE24D, 0xFFB52E, false, "legendary"))
+                    .append(gradient("Legendary " + fishName, 0xFFE58C, 0xFF9E1C, false, "legendary"))
                     .append(Component.literal(" of " + LootRules.kg(kilograms) + "!").withStyle(ChatFormatting.GRAY)), false);
             if (mythic && angler != null) {
                 var server = level.getServer();
                 server.getPlayerList().broadcastSystemMessage(Component.literal(angler).withStyle(ChatFormatting.YELLOW)
                     .append(Component.literal(" pulled up a ").withStyle(ChatFormatting.GRAY))
-                    .append(gradient("MYTHIC " + fishName, 0xFF2E2E, 0xFFB000, true, "mythic"))
+                    .append(gradient("MYTHIC " + fishName, 0xFF3333, 0xFF6BCC, true, "mythic"))
                     .append(Component.literal(" of " + LootRules.kg(kilograms) + "!").withStyle(ChatFormatting.GRAY)), false);
                 var fanfare = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(net.minecraft.sounds.SoundEvents.UI_TOAST_CHALLENGE_COMPLETE);
                 for (var player : server.getPlayerList().getPlayers())

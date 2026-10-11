@@ -96,14 +96,17 @@ public final class FishData {
         return id == null ? style : style.withFont(new net.minecraft.network.chat.FontDescription.Resource(id));
     }
 
-    /** Rarity colour, as in the item name (launcher palette for the light tiers). */
+    /**
+     * Rarity colour (owner 2026-10-11): the familiar green/blue/purple/gold/red, tuned to read at 6.7:1 or better on the dark
+     * tooltip background (WoW's own blue and purple are only 4.2:1). Common is F2F2F2 where a tier needs a colour.
+     */
     public static int color(String rarity) {
         return switch (rarity) {
-            case "uncommon" -> 0xFF7ED3A0;
-            case "rare" -> 0xFF8DD8FF;
-            case "epic" -> 0xFFD49EFF;
-            case "legendary" -> 0xFFFFE24D;
-            case "mythic" -> 0xFFFF4A3D;
+            case "uncommon" -> 0xFF5BE37D;
+            case "rare" -> 0xFF4AA8FF;
+            case "epic" -> 0xFFC27CFF;
+            case "legendary" -> 0xFFFFB43D;
+            case "mythic" -> 0xFFFF5A5A;
             default -> 0;
         };
     }

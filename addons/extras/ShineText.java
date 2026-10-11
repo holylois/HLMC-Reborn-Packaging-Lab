@@ -26,7 +26,7 @@ public final class ShineText {
         if (kind == 0) return color;
         boolean mythic = kind == 2;
         float t = seconds();
-        int from = mythic ? 0xFF2E2E : 0xFFB52E, to = mythic ? 0xFFB000 : 0xFFE24D;
+        int from = mythic ? 0xFF3333 : 0xFF9E1C, to = mythic ? 0xFF6BCC : 0xFFE58C;
         int rgb = mix(from, to, 0.5f + 0.5f * (float) Math.sin(x * 0.09f - t * (mythic ? 4.5f : 3f)));
         // A white glint sweeps from left to right every 2.4 s (Mythic every 1.6 s).
         float period = mythic ? 1.6f : 2.4f, at = (t % period) / period * 300 - 40;
