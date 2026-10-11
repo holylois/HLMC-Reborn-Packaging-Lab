@@ -25,6 +25,9 @@ public abstract class FishLayerMixin {
                 double yaw = Math.toRadians(FishLook.swingYaw);
                 var axis = new org.joml.Matrix3f(pose.normal()).invert().transform(new org.joml.Vector3f((float) -Math.sin(yaw), 0, (float) Math.cos(yaw)));
                 if (axis.lengthSquared() > 1e-8f) pose.rotate(new org.joml.Quaternionf().rotateAxis((float) Math.toRadians(FishLook.swingZ), axis.normalize()));
+                // The small front/back part: about the holder's right axis (a positive angle swings the bottom forward).
+                var right = new org.joml.Matrix3f(pose.normal()).invert().transform(new org.joml.Vector3f((float) -Math.cos(yaw), 0, (float) -Math.sin(yaw)));
+                if (FishLook.swingX != 0 && right.lengthSquared() > 1e-8f) pose.rotate(new org.joml.Quaternionf().rotateAxis((float) Math.toRadians(FishLook.swingX), right.normalize()));
             } else {
                 pose.rotate(com.mojang.math.Axis.ZP.rotationDegrees(FishLook.swingZ));
                 pose.rotate(com.mojang.math.Axis.XP.rotationDegrees(FishLook.swingX));

@@ -1,6 +1,7 @@
 package holylois.boombox;
 
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import java.util.Locale;
@@ -70,6 +71,19 @@ public final class FishData {
     public static boolean twoHanded(ItemStack stack) {
         var fish = tag(stack);
         return fish != null && fish.getDoubleOr("kg", 0) >= TWO_HANDED_KG;
+    }
+
+    /**
+     * Ticks to eat a trophy fish (owner 2026-10-11): Rare 2 s, Epic 2.6 s, Legendary 3.2 s, Mythic 3.2 s plus 1 s per 20 kg,
+     * 8 s at most. Fillets and plain fish keep the normal time.
+     */
+    public static int eatTicks(ItemStack stack, int normal) {
+        String rarity = rarity(stack);
+        if (rarity.isEmpty() || !weighed(stack) || BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().endsWith("_slice")) return normal;
+        double seconds = switch (rarity) {
+            case "rare" -> 2.0; case "epic" -> 2.6; case "legendary" -> 3.2;
+            case "mythic" -> 3.2 + kilograms(stack) / 20; default -> 0; };
+        return (int) Math.round(Math.max(normal / 20.0, Math.min(8, seconds)) * 20);
     }
 
     /** Fonts that draw like the default one; the client gives their glyphs a moving shine (ShineText). */

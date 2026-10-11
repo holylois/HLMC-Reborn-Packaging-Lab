@@ -19,6 +19,7 @@
     "CookedFishMixin",
     "FishDeathMessageMixin",
     "FishHandsClickMixin",
+    "FishEatTimeMixin",
     "FishHandsSlotMixin",
     "FishHandsSwapMixin",
     "InvisibleFrameDropMixin",
@@ -86,7 +87,8 @@
     "CinematicMusicQuietMixin",
     "BoomboxQuietsMusicMixin",
     "CatchCardCinematicMixin",
-    "SingleItemDoubleClickMixin"
+    "SingleItemDoubleClickMixin",
+    "FishEatFramesMixin"
   ],
   "injectors": {
     "defaultRequire": 0

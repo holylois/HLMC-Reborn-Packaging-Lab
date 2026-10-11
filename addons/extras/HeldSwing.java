@@ -53,7 +53,7 @@ public final class HeldSwing {
             float walk = Math.min(1, player.walkAnimation.speed()), phase = player.walkAnimation.position() * 0.6662f;
             p.lastSide = p.side; p.lastTilt = p.tilt;
             p.sideSpeed += -SPRING * p.side - DAMPING * p.sideSpeed - (float) right * SIDE + turn * TURN + Mth.sin(phase) * walk * STEP;
-            p.tiltSpeed += -SPRING * p.tilt - DAMPING * p.tiltSpeed - (float) forward * FORWARD;
+            p.tiltSpeed += -SPRING * p.tilt - DAMPING * p.tiltSpeed - (float) forward * FORWARD + Mth.cos(phase * 2) * walk * STEP * 0.4f;
             p.side = Mth.clamp(p.side + p.sideSpeed, -32, 32);
             p.tilt = Mth.clamp(p.tilt + p.tiltSpeed, -20, 20);
         }
@@ -72,6 +72,9 @@ public final class HeldSwing {
     public static float tiltNow(int id) { var p = SWINGS.get(id); return p == null ? 0 : Mth.lerp(partial(), p.lastTilt, p.tilt); }
     private static float partial() { return Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false); }
 
+    /** Share of the forward/back swing a boombox shows: just enough that it does not look stiff (owner 2026-10-11). */
+    static final float BOOMBOX_TILT = 0.45f;
+
     /** Sets FishLook.swingZ/swingX (degrees) for the boombox about to be drawn in this entity's hand. */
     public static void apply(LivingEntityRenderState state) {
         var p = state instanceof AvatarRenderState avatar ? SWINGS.get(avatar.id) : null;
@@ -80,8 +83,10 @@ public final class HeldSwing {
         float t = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         float side = testSide != null ? testSide : Mth.lerp(t, p.lastSide, p.side);
         // Out from the body and back in (owner 2026-10-10), about the body's forward axis: a negative side (pushed by moving
-        // right) lets the box lag out to the left, like a real weight on a handle. No forward tilt; that is for free lanterns.
+        // right) lets the box lag out to the left, like a real weight on a handle. A little front/back too (2026-10-11): it
+        // lags back as you set off and swings forward when you stop, about the body's right axis.
         FishLook.swingZ = -side;
+        if (p != null && testSide == null) FishLook.swingX = Mth.lerp(t, p.lastTilt, p.tilt) * BOOMBOX_TILT;
         FishLook.swingYaw = state.bodyRot;
     }
 }

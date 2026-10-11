@@ -70,6 +70,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "fishing cinematic angles and quiet soundtrack", context, world, HolyLoisClientTests::fishingCinematicAngles);
             run(failed, "fish picked up and put back in the same slot", context, world, HolyLoisClientTests::fishSameSlot);
             run(failed, "held maps", context, world, HolyLoisClientTests::heldMaps);
+            run(failed, "water by camera height", context, world, HolyLoisClientTests::waterByHeight);
             run(failed, "fish tooltips", context, world, HolyLoisClientTests::fishTooltips);
             run(failed, "fish of thieves eating frames", context, world, HolyLoisClientTests::fishEatingFrames);
             run(failed, "armor 3d", context, world, HolyLoisClientTests::armor3d);
@@ -542,6 +543,103 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
      * Not Enough Animations with the FirstPerson body and Fresh Animations (KeptArms): a map held up in view, eating at the
      * mouth and a lantern, in first person (body arms, no vanilla hands) and from the front.
      */
+    /**
+     * Owner report: water looks darker and less clear the closer the camera is to it. A lake over a black and white checker floor
+     * is shot from the same spot at five heights, shaders off/on, Distant Horizons off/on, and with Complementary's reflections
+     * off or its Reimagined water style (shots 48-water-*). Result 2026-10-11: with DH on, Unbound water reflects DH's dark far
+     * terrain at low angles; the Reimagined water style stays light at every height.
+     */
+    private static void waterByHeight(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        // A diagnostic (it switches shaders and takes minutes): only with HOLYLOIS_TEST_ONLY="water by camera".
+        String only = System.getenv("HOLYLOIS_TEST_ONLY");
+        if (only == null || !only.contains("water by camera")) { log("water by camera height: diagnostic, skipped"); return; }
+        var server = world.getServer();
+        for (String c : new String[] {"gamemode spectator @a", "time set noon", "weather clear", "gamerule advance_time false",
+                                      "fill 0 -63 0 63 -63 63 white_concrete", "fill 0 -62 0 63 -61 63 water"}) server.runCommand(c);
+        for (int tx = 0; tx < 16; tx++) for (int tz = 0; tz < 16; tz++)
+            if ((tx + tz) % 2 == 1) server.runCommand("fill " + tx * 4 + " -63 " + tz * 4 + " " + (tx * 4 + 3) + " -63 " + (tz * 4 + 3) + " black_concrete");
+        context.getInput().pressKey(options -> options.keyToggleGui);
+        double[] heights = {0.6, 2, 5, 12, 30};
+        for (boolean shaders : new boolean[] {false, true}) {
+            context.runOnClient(client -> {
+                try {
+                    var api = Class.forName("net.irisshaders.iris.api.v0.IrisApi").getMethod("getInstance").invoke(null);
+                    var config = api.getClass().getMethod("getConfig").invoke(api);
+                    config.getClass().getMethod("setShadersEnabledAndApply", boolean.class).invoke(config, shaders);
+                } catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
+            });
+            context.waitTicks(shaders ? 300 : 40);
+            for (String mode : shaders ? new String[] {"dh", "nodh", "dhnoref", "dhstyle1"} : new String[] {"dh", "nodh"}) {
+                // Iris cannot rebuild its pipeline while Distant Horizons renders: set the option first, then turn DH on.
+                if (shaders) { dhRendering(context, false); context.waitTicks(10); shaderOption(context, switch (mode) { case "dhnoref" -> "WATER_REFLECT_QUALITY=-1"; case "dhstyle1" -> "WATER_STYLE_DEFINE=1"; default -> ""; }); }
+                dhRendering(context, !mode.equals("nodh"));
+                context.waitTicks(mode.equals("nodh") ? 40 : 200);
+                for (double h : heights) {
+                    server.runCommand(String.format(java.util.Locale.ROOT, "tp @p 32 %.1f 4 facing 32 -60 40", -60 + h));
+                    context.waitTicks(25);
+                    context.takeScreenshot(String.format(java.util.Locale.ROOT, "48-water-%s-%s-h%04.1f", shaders ? "shaders" : "plain", mode, h));
+                }
+            }
+            if (shaders) { dhRendering(context, false); context.waitTicks(10); shaderOption(context, ""); }
+        }
+        dhRendering(context, true);
+        context.runOnClient(client -> {
+            try {
+                var api = Class.forName("net.irisshaders.iris.api.v0.IrisApi").getMethod("getInstance").invoke(null);
+                var config = api.getClass().getMethod("getConfig").invoke(api);
+                config.getClass().getMethod("setShadersEnabledAndApply", boolean.class).invoke(config, false);
+            } catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
+        });
+        context.getInput().pressKey(options -> options.keyToggleGui);
+        for (String c : new String[] {"gamemode survival @a", "gamerule advance_time true", "fill 0 -63 0 63 -62 63 dirt", "fill 0 -61 0 63 -61 63 grass_block", "tp @p 0 -60 0"}) server.runCommand(c);
+        context.waitTicks(20);
+    }
+
+    /** Writes the Complementary Unbound + Euphoria settings file (like its menu does) and reloads the shader pack. */
+    private static void shaderOption(ClientGameTestContext context, String line) {
+        context.runOnClient(client -> {
+            try {
+                var file = client.gameDirectory.toPath().resolve("shaderpacks/ComplementaryUnbound_r5.9.3 + EuphoriaPatches_1.10.5.txt");
+                if (line.isEmpty()) java.nio.file.Files.deleteIfExists(file); else java.nio.file.Files.writeString(file, line + System.lineSeparator());
+                var api = Class.forName("net.irisshaders.iris.api.v0.IrisApi").getMethod("getInstance").invoke(null);
+                var config = api.getClass().getMethod("getConfig").invoke(api);
+                config.getClass().getMethod("setShadersEnabledAndApply", boolean.class).invoke(config, false);
+            } catch (Exception error) { throw new IllegalStateException(error); }
+        });
+        // Off and on in the same tick fails to build the pipeline; give it a moment between.
+        context.waitTicks(40);
+        context.runOnClient(client -> {
+            try {
+                var api = Class.forName("net.irisshaders.iris.api.v0.IrisApi").getMethod("getInstance").invoke(null);
+                var config = api.getClass().getMethod("getConfig").invoke(api);
+                config.getClass().getMethod("setShadersEnabledAndApply", boolean.class).invoke(config, true);
+            } catch (Exception error) { throw new IllegalStateException(error); }
+        });
+        context.waitTicks(300);
+    }
+
+    private static void dhSetting(ClientGameTestContext context, String name, Object value) {
+        context.runOnClient(client -> {
+            try {
+                var configs = Class.forName("com.seibel.distanthorizons.api.DhApi$Delayed").getField("configs").get(null);
+                var graphics = configs.getClass().getMethod("graphics").invoke(configs);
+                var setting = graphics.getClass().getMethod(name).invoke(graphics);
+                for (var m : setting.getClass().getMethods()) if (m.getName().equals("setValue") && m.getParameterCount() == 1) { m.invoke(setting, value); break; }
+            } catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
+        });
+    }
+
+    private static void dhRendering(ClientGameTestContext context, boolean on) {
+        context.runOnClient(client -> {
+            try {
+                var configs = Class.forName("com.seibel.distanthorizons.api.DhApi$Delayed").getField("configs").get(null);
+                var graphics = configs.getClass().getMethod("graphics").invoke(configs);
+                var value = graphics.getClass().getMethod("renderingEnabled").invoke(graphics);
+                for (var m : value.getClass().getMethods()) if (m.getName().equals("setValue") && m.getParameterCount() == 1) { m.invoke(value, on); break; }
+            } catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
+        });
+    }
+
     /** A drawn map and an explorer map (the kind found in camps and chests), held in first person and seen from the front. */
     private static void heldMaps(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
         var server = world.getServer();
@@ -624,6 +722,12 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
                 return holylois.boombox.FishData.rarity(stack) + ": " + colors + " lines" + lines;
             });
             log("fish tooltip " + kind + " -> " + name);
+            // Hold-to-eat time grows with rarity; Mythics add a second per 20 kg (8 s at most); plain fish stay at 1.6 s.
+            int ticks = context.computeOnClient(client -> client.player.getInventory().getItem(20).getUseDuration(client.player));
+            double kg = context.computeOnClient(client -> holylois.boombox.FishData.kilograms(client.player.getInventory().getItem(20)));
+            int expected = switch (kind) { case "rare" -> 40; case "epic" -> 52; case "legendary", "shiny" -> 64;
+                case "mythic" -> (int) Math.round(Math.min(8, 3.2 + kg / 20) * 20); default -> 32; };
+            check(ticks == expected, kind + " eats in " + ticks + " ticks (expected " + expected + ")");
             // A swatch row right under the name; Fish of Thieves' variant name moves into it, in color, exactly once.
             String row = context.computeOnClient(client -> {
                 var lines = client.player.getInventory().getItem(20).getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(client.level), client.player, net.minecraft.world.item.TooltipFlag.NORMAL);
@@ -788,12 +892,16 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.takeScreenshot("15-boombox-held-third-person");
         // Walk, stop and turn: the arm stays at the hip and the box swings from its handle, then settles.
         context.getInput().holdKey(options -> options.keyUp);
-        context.waitTicks(10);
+        context.waitTicks(3);
+        float tiltStart = context.computeOnClient(client -> holylois.boombox.HeldSwing.tilt(client.player.getId()));
+        context.waitTicks(7);
         context.takeScreenshot("15-boombox-walk");
         context.getInput().releaseKey(options -> options.keyUp);
         context.waitTicks(3);
         float afterStop = context.computeOnClient(client -> holylois.boombox.HeldSwing.side(client.player.getId()));
         float tiltStop = context.computeOnClient(client -> holylois.boombox.HeldSwing.tilt(client.player.getId()));
+        // A little front/back (owner 2026-10-11): it lags back as you set off and swings forward when you stop.
+        check(tiltStart < -1 && tiltStop > 1, "the carried boombox lags back on setting off and swings forward on stopping (" + tiltStart + ", " + tiltStop + ")");
         context.takeScreenshot("15-boombox-stop");
         context.runOnClient(client -> client.player.setYRot(client.player.getYRot() + 70));
         context.waitTicks(4);
