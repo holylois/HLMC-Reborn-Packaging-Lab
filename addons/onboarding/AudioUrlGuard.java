@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * AudioPlayer's /audioplayer url (AudioUrlMixin): https only, never to local or internal addresses (also after
- * redirects), one new download per player every 20 seconds, a size cap and timeouts, and a log of who added what
+ * redirects), one new download per player every 20 seconds, a size cap and timeouts, only real mp3/wav bytes kept, and a log of who added what
  * (world/holylois/audio-urls.log). Operators skip the cooldown only.
  */
 public final class AudioUrlGuard {
@@ -73,10 +73,20 @@ public final class AudioUrlGuard {
                     if (out.size() + read > maxBytes) throw new IOException(tooBig(maxBytes));
                     out.write(buffer, 0, read);
                 }
-                return out.toByteArray();
+                byte[] body = out.toByteArray();
+                if (!isAudio(body)) throw new IOException("That link is not an mp3 or wav file.");
+                return body;
             }
         }
         throw new IOException("Too many redirects");
+    }
+
+    /** Only real audio is kept (owner 2026-10-11): a WAV header ("RIFF....WAVE"), an ID3 tag or an MP3 frame sync at the start. */
+    static boolean isAudio(byte[] body) {
+        if (body.length >= 12 && body[0] == 'R' && body[1] == 'I' && body[2] == 'F' && body[3] == 'F'
+            && body[8] == 'W' && body[9] == 'A' && body[10] == 'V' && body[11] == 'E') return true;
+        if (body.length >= 3 && body[0] == 'I' && body[1] == 'D' && body[2] == '3') return true;
+        return body.length >= 2 && (body[0] & 0xFF) == 0xFF && (body[1] & 0xE0) == 0xE0;
     }
 
     static URI parse(String address) {

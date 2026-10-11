@@ -25,6 +25,8 @@ public final class OnboardingTest {
         check(Discoveries.name("nova_structures:village_birch")==null&&Discoveries.name("minecraft:village_plains")==null&&Discoveries.name("nova_structures:well_oak")==null
             &&Discoveries.name("nova_structures:remnant_graveyard")==null&&Discoveries.name("minecraft:shipwreck")==null&&Discoveries.name("nova_structures:stray_camp")==null,"Villages and small structures stay quiet");
         check(Discoveries.name("nova_structures:remnant_taiga_castle").equals("Ruined Taiga Castle")&&Discoveries.article("Ancient City").equals("an"),"Big ruins and articles");
+        check(AudioUrlGuard.isAudio("RIFF\0\0\0\0WAVEfmt ".getBytes())&&AudioUrlGuard.isAudio("ID3\4\0".getBytes())&&AudioUrlGuard.isAudio(new byte[]{(byte)0xFF,(byte)0xFB,0x10})
+            &&!AudioUrlGuard.isAudio("<!DOCTYPE html>".getBytes())&&!AudioUrlGuard.isAudio("PK\3\4".getBytes())&&!AudioUrlGuard.isAudio(new byte[0]),"AudioPlayer links keep only mp3/wav bytes");
         var spire=new Discoveries.Found();spire.dim="minecraft:overworld";spire.biome="minecraft:frozen_peaks";spire.x=1700;spire.z=-1700;
         check(Discoveries.where(spire,true).equals(" in a Frozen Peaks biome, 2.4k blocks NE of spawn")&&Discoveries.where(spire,false).equals(" · Frozen Peaks, 2.4k blocks NE of spawn"),"Discoveries say the biome and where from spawn ("+Discoveries.where(spire,true)+")");
         var deep=new Discoveries.Found();deep.dim="minecraft:the_nether";deep.biome="minecraft:basalt_deltas";
