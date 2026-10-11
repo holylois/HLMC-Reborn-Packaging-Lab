@@ -74,6 +74,15 @@ public final class HolyLois implements ModInitializer {
             Seen.register(dispatcher);
             DailyRewards.registerTest(dispatcher);
             dispatcher.register(net.minecraft.commands.Commands.literal("structures").executes(context -> Discoveries.here(context.getSource().getPlayerOrException())));
+            var page = com.mojang.brigadier.arguments.IntegerArgumentType.integer(1);
+            dispatcher.register(net.minecraft.commands.Commands.literal("discoveries")
+                .executes(context -> discoveries.list(context.getSource().getPlayerOrException(), false, 1))
+                .then(net.minecraft.commands.Commands.argument("page", page)
+                    .executes(context -> discoveries.list(context.getSource().getPlayerOrException(), false, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context, "page"))))
+                .then(net.minecraft.commands.Commands.literal("mine")
+                    .executes(context -> discoveries.list(context.getSource().getPlayerOrException(), true, 1))
+                    .then(net.minecraft.commands.Commands.argument("page", page)
+                        .executes(context -> discoveries.list(context.getSource().getPlayerOrException(), true, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context, "page"))))));
         });
         ServerLifecycleEvents.SERVER_STARTED.register(this::load);
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> { Afk.save(); DeathLoot.save(); });
@@ -96,6 +105,7 @@ public final class HolyLois implements ModInitializer {
         });
         ServerLivingEntityEvents.AFTER_DEATH.register((entity,source) -> {
             if (entity instanceof net.minecraft.server.level.ServerPlayer player) safely("combat death", () -> CombatTag.diedInPvp(player));
+            else if (entity.level() instanceof net.minecraft.server.level.ServerLevel level) safely("world firsts", () -> discoveries.killed(level.getServer(), entity));
         });
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity,source,amount) -> {
             if (entity instanceof net.minecraft.server.level.ServerPlayer player) {

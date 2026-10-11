@@ -25,6 +25,13 @@ public final class OnboardingTest {
         check(Discoveries.name("nova_structures:village_birch")==null&&Discoveries.name("minecraft:village_plains")==null&&Discoveries.name("nova_structures:well_oak")==null
             &&Discoveries.name("nova_structures:remnant_graveyard")==null&&Discoveries.name("minecraft:shipwreck")==null&&Discoveries.name("nova_structures:stray_camp")==null,"Villages and small structures stay quiet");
         check(Discoveries.name("nova_structures:remnant_taiga_castle").equals("Ruined Taiga Castle")&&Discoveries.article("Ancient City").equals("an"),"Big ruins and articles");
+        var spire=new Discoveries.Found();spire.dim="minecraft:overworld";spire.biome="minecraft:frozen_peaks";spire.x=1700;spire.z=-1700;
+        check(Discoveries.where(spire,true).equals(" in a Frozen Peaks biome, 2.4k blocks NE of spawn")&&Discoveries.where(spire,false).equals(" · Frozen Peaks, 2.4k blocks NE of spawn"),"Discoveries say the biome and where from spawn ("+Discoveries.where(spire,true)+")");
+        var deep=new Discoveries.Found();deep.dim="minecraft:the_nether";deep.biome="minecraft:basalt_deltas";
+        check(Discoveries.where(deep,false).equals(" in the Nether (Basalt Deltas)"),"Nether finds name the dimension");
+        var links=Discoveries.links("minecraft:overworld",120,64,-300,"Ice Spire #3").getSiblings();
+        check(links.size()==2&&links.get(0).getStyle().getClickEvent() instanceof net.minecraft.network.chat.ClickEvent.OpenUrl url&&url.uri().toString().equals("https://map.holylois.com/#world:120:64:-300:120:0:0:0:1:flat")
+            &&links.get(1).getStyle().getClickEvent() instanceof net.minecraft.network.chat.ClickEvent.RunCommand run&&run.command().equals("/hlwaypoint minecraft:overworld 120 64 -300 Ice Spire #3"),"Discovery lines link the live map and a minimap waypoint");
         var stats=new java.util.HashMap<String,com.google.gson.JsonObject>();
         stats.put("u1",com.google.gson.JsonParser.parseString("{\"minecraft:mined\":{\"minecraft:diamond_ore\":3,\"minecraft:deepslate_diamond_ore\":4},\"minecraft:custom\":{\"minecraft:play_time\":144000}}").getAsJsonObject());
         stats.put("u2",com.google.gson.JsonParser.parseString("{\"minecraft:mined\":{\"minecraft:diamond_ore\":9}}").getAsJsonObject());

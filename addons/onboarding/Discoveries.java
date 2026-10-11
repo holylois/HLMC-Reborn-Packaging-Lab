@@ -3,26 +3,49 @@ package holylois;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
 import java.util.regex.Pattern;
 
-/** Announces the first time anyone walks into a notable structure. Villages and small ruins stay quiet. */
+/**
+ * Discoveries and world firsts (owner 2026-10-11). Every notable structure instance is remembered once. The first of each kind
+ * (by its shown name) is a gold WORLD FIRST for everyone; later ones are numbered ("Ice Spire #3") with the biome and where it
+ * is, so two "Big Ice Structure" finds no longer look like the same thing. Each line has [Map] (BlueMap at the spot) and
+ * [Waypoint] (adds it to Xaero's minimap on the clicking player's own client). Boss kills and Runeforged elites/levels have
+ * their own world firsts. Villages and small ruins stay quiet. /discoveries lists them, newest first.
+ */
 public final class Discoveries {
     private static final Logger LOG = LoggerFactory.getLogger("HolyLois");
     private static final Gson JSON = new GsonBuilder().setPrettyPrinting().create();
+    static final String MAP = "https://map.holylois.com/";
 
-    public static final class Found { public String key, structure, name, player; public long time; }
-    public static final class State { public int version = 1; public List<Found> found = new ArrayList<>(); }
+    public static final class Found {
+        public String key, structure, name, player, dim, biome;
+        public long time;
+        public int x, y, z, number;
+        public boolean first;
+    }
+    /** A boss or elite world first: key "boss:minecraft:ender_dragon", "elite", "level:50"... */
+    public static final class First { public String key, what, player, dim; public long time; public int x, y, z; }
+    public static final class State { public int version = 2; public List<Found> found = new ArrayList<>(); public List<First> firsts = new ArrayList<>(); }
 
     private static final Map<String, String> VANILLA = Map.ofEntries(
         Map.entry("ancient_city", "Ancient City"), Map.entry("trial_chambers", "Trial Chambers"),
@@ -39,7 +62,14 @@ public final class Discoveries {
     // Small crypts count as dungeons even though other small_ structures stay quiet.
     private static final Pattern CRYPTS = Pattern.compile("^small_(creeping|undead)_crypt$");
 
+    // Bosses get a world first for their first kill (the c:bosses tag adds modded ones).
+    private static final Map<String, String> BOSSES = Map.of("minecraft:ender_dragon", "the Ender Dragon", "minecraft:wither", "the Wither",
+        "minecraft:warden", "a Warden", "minecraft:elder_guardian", "an Elder Guardian");
+    private static final int[] LEVELS = {50, 75, 100};
+
     private final Map<String, Found> found = new HashMap<>();
+    private final Map<String, First> firsts = new LinkedHashMap<>();
+    private final Map<String, Integer> counts = new HashMap<>();
     private Path file;
 
     /** Display name for a structure id, or null when it should not be announced. */
@@ -82,10 +112,35 @@ public final class Discoveries {
         try {
             if (Files.exists(file)) {
                 var state = JSON.fromJson(Files.readString(file), State.class);
-                if (state != null && state.found != null) for (var entry : state.found) found.put(entry.key, entry);
+                if (state != null && state.found != null) {
+                    state.found.sort(Comparator.comparingLong(f -> f.time));
+                    boolean upgrade = state.version < 2;
+                    for (var entry : state.found) {
+                        if (upgrade) upgradeEntry(entry);
+                        found.put(entry.key, entry);
+                        counts.merge(entry.name, 1, Integer::sum);
+                    }
+                    if (upgrade) LOG.info("Holy Lois discoveries: numbered {} older finds (first of each kind = world first)", state.found.size());
+                }
+                if (state != null && state.firsts != null) for (var first : state.firsts) firsts.put(first.key, first);
+                if (state != null && state.version < 2) save();
             }
-            LOG.info("Holy Lois discoveries: {} structures found so far", found.size());
+            LOG.info("Holy Lois discoveries: {} structures found so far, {} world firsts", found.size(),
+                found.values().stream().filter(f -> f.first).count() + firsts.size());
         } catch (Exception error) { LOG.warn("Cannot read discoveries; starting a new list in memory", error); }
+    }
+
+    /** Version 1 kept one entry per find: number them by time, the first of each name is the world first, place from the key. */
+    private void upgradeEntry(Found entry) {
+        entry.number = counts.getOrDefault(entry.name, 0) + 1;
+        entry.first = entry.number == 1;
+        String[] parts = entry.key.split(Pattern.quote("|"));
+        entry.dim = parts.length > 0 ? parts[0] : "minecraft:overworld";
+        if (parts.length > 2) {
+            String[] chunk = parts[2].split(",");
+            try { entry.x = Integer.parseInt(chunk[0]) * 16 + 8; entry.z = Integer.parseInt(chunk[1]) * 16 + 8; entry.y = 64; }
+            catch (RuntimeException ignored) { /* an odd old key: the line just points at 0, 0 */ }
+        }
     }
 
     /** Called every two seconds for each authenticated player. */
@@ -107,18 +162,124 @@ public final class Discoveries {
             var entry = new Found();
             entry.key = key; entry.structure = id.toString(); entry.name = name;
             entry.player = player.getGameProfile().name(); entry.time = System.currentTimeMillis() / 1000;
+            entry.dim = level.dimension().identifier().toString();
+            entry.x = pos.getX(); entry.y = pos.getY(); entry.z = pos.getZ();
+            entry.biome = level.getBiome(pos).unwrapKey().map(k -> k.identifier().toString()).orElse("");
+            entry.number = counts.merge(name, 1, Integer::sum);
+            entry.first = entry.number == 1;
             found.put(key, entry);
             save();
-            String where = level.dimension() == Level.NETHER ? " in the Nether" : level.dimension() == Level.END ? " in the End" : "";
-            server.getPlayerList().broadcastSystemMessage(Component.literal("✦ ").withStyle(ChatFormatting.GOLD)
-                .append(Component.literal(entry.player).withStyle(ChatFormatting.YELLOW))
-                .append(Component.literal(" discovered " + article(name) + " ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(name).withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
-                .append(Component.literal(where + "!").withStyle(ChatFormatting.GRAY)), false);
-            level.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.5f, 1.4f);
+            if (entry.first) {
+                server.getPlayerList().broadcastSystemMessage(worldFirst(entry.player, Component.literal(" discovered the first " + name + where(entry, true) + "!")
+                    .withStyle(ChatFormatting.YELLOW)).append(links(entry.dim, entry.x, entry.y, entry.z, name)), false);
+                ding(server);
+            } else {
+                server.getPlayerList().broadcastSystemMessage(Component.literal("◇ ").withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(entry.player).withStyle(ChatFormatting.WHITE))
+                    .append(Component.literal(" found ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(name + " #" + entry.number).withStyle(ChatFormatting.WHITE))
+                    .append(Component.literal(where(entry, false)).withStyle(ChatFormatting.GRAY))
+                    .append(links(entry.dim, entry.x, entry.y, entry.z, name + " #" + entry.number)), false);
+                level.playSound(null, pos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.5f, 1.4f);
+            }
             Achievements.award(server, player, "explore/discoverer", "done");
-            LOG.info("Discovery: {} found {} ({}) at {}", entry.player, name, id, start.getChunkPos());
+            LOG.info("Discovery: {} found {} #{} ({}) at {} {} {}", entry.player, name, entry.number, id, entry.x, entry.y, entry.z);
         }
+    }
+
+    /** Boss and Runeforged firsts, from the AFTER_DEATH hook. Credit goes to the player who earned the kill. */
+    void killed(MinecraftServer server, LivingEntity entity) {
+        if (file == null || !(entity.getKillCredit() instanceof ServerPlayer player)) return;
+        String type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
+        String boss = BOSSES.get(type);
+        if (boss == null && entity.getType().builtInRegistryHolder().is(BOSS_TAG)) boss = entity.getName().getString();
+        if (boss != null) first(server, player, entity, "boss:" + type, "slew " + boss);
+        int[] rune = Runeforged.levelAndElite(entity);
+        if (rune == null) return;
+        String mob = entity.getName().getString();
+        if (rune[1] > 0) first(server, player, entity, "elite", "slew the first Runeforged elite (" + mob + ", level " + rune[0] + ")");
+        for (int needed : LEVELS)
+            if (rune[0] >= needed) first(server, player, entity, "level:" + needed, "slew the first level " + needed + "+ monster (" + mob + ", level " + rune[0] + ")");
+    }
+
+    private static final TagKey<EntityType<?>> BOSS_TAG = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("c", "bosses"));
+
+    private void first(MinecraftServer server, ServerPlayer player, LivingEntity entity, String key, String what) {
+        if (firsts.containsKey(key)) return;
+        var first = new First();
+        first.key = key; first.what = what; first.player = player.getGameProfile().name(); first.time = System.currentTimeMillis() / 1000;
+        first.dim = entity.level().dimension().identifier().toString();
+        first.x = entity.getBlockX(); first.y = entity.getBlockY(); first.z = entity.getBlockZ();
+        firsts.put(key, first);
+        save();
+        server.getPlayerList().broadcastSystemMessage(worldFirst(first.player, Component.literal(" " + what + "!").withStyle(ChatFormatting.YELLOW)), false);
+        ding(server);
+        LOG.info("World first: {} {} at {} {} {}", first.player, what, first.x, first.y, first.z);
+    }
+
+    /** The challenge chime for every player, each only hearing their own. */
+    private static void ding(MinecraftServer server) {
+        for (var other : server.getPlayerList().getPlayers())
+            other.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(
+                SoundEvents.UI_TOAST_CHALLENGE_COMPLETE), SoundSource.PLAYERS, other.getX(), other.getY(), other.getZ(), 0.45f, 1.1f, other.getRandom().nextLong()));
+    }
+
+    private static MutableComponent worldFirst(String player, Component rest) {
+        return Component.literal("✦ WORLD FIRST ✦ ").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
+            .append(Component.literal(player).withStyle(style -> style.withColor(ChatFormatting.GOLD).withBold(false)))
+            .append(rest.copy().withStyle(style -> style.withBold(false)));
+    }
+
+    /** " in a Frozen Peaks biome, 2.4k blocks NE of spawn" (repeats: " · Frozen Peaks, 2.4k blocks NE of spawn"). */
+    static String where(Found entry, boolean full) {
+        String biome = entry.biome == null || entry.biome.isEmpty() ? "" : title(entry.biome.substring(entry.biome.indexOf(':') + 1));
+        if (entry.dim != null && entry.dim.endsWith("the_nether")) return " in the Nether" + (biome.isEmpty() ? "" : " (" + biome + ")");
+        if (entry.dim != null && entry.dim.endsWith("the_end")) return " in the End";
+        double distance = Math.hypot(entry.x, entry.z);
+        String far = distance < 1000 ? String.valueOf(Math.round(distance / 10) * 10) : String.format(Locale.ROOT, "%.1fk", distance / 1000);
+        String[] compass = {"E", "SE", "S", "SW", "W", "NW", "N", "NE"};
+        String dir = compass[(int) Math.floorMod(Math.round(Math.toDegrees(Math.atan2(entry.z, entry.x)) / 45), 8L)];
+        String place = biome.isEmpty() ? "" : full ? " in " + article(biome) + " " + biome + " biome" : " · " + biome;
+        return place + ", " + far + " blocks " + dir + " of spawn";
+    }
+
+    /** [Map] opens BlueMap at the spot, [Waypoint] adds a Xaero waypoint on the clicking player's client (extras). */
+    static MutableComponent links(String dim, int x, int y, int z, String name) {
+        String map = dim == null || dim.endsWith("overworld") ? "world" : dim.endsWith("the_nether") ? "world_the_nether" : dim.endsWith("the_end") ? "world_the_end" : null;
+        var out = Component.literal("");
+        if (map != null) out.append(Component.literal(" [Map]").withStyle(style -> style.withColor(ChatFormatting.AQUA).withBold(false)
+            .withClickEvent(new ClickEvent.OpenUrl(URI.create(MAP + "#" + map + ":" + x + ":" + y + ":" + z + ":120:0:0:0:1:flat")))
+            .withHoverEvent(new HoverEvent.ShowText(Component.literal("Open the live map at " + x + ", " + z)))));
+        String safe = name.replaceAll("[^A-Za-z0-9 #+-]", "").strip();
+        out.append(Component.literal(" [Waypoint]").withStyle(style -> style.withColor(ChatFormatting.GREEN).withBold(false)
+            .withClickEvent(new ClickEvent.RunCommand("/hlwaypoint " + (dim == null ? "minecraft:overworld" : dim) + " " + x + " " + y + " " + z + " " + safe))
+            .withHoverEvent(new HoverEvent.ShowText(Component.literal("Add " + safe + " to your minimap (" + x + ", " + y + ", " + z + ")")))));
+        return out;
+    }
+
+    /** /discoveries [page] and /discoveries mine [page]: newest first, world firsts in gold, ten per page, with map links. */
+    int list(ServerPlayer viewer, boolean mine, int page) {
+        var all = new ArrayList<Found>(found.values());
+        if (mine) all.removeIf(f -> !viewer.getGameProfile().name().equalsIgnoreCase(f.player));
+        all.sort(Comparator.comparingLong((Found f) -> f.time).reversed());
+        int pages = Math.max(1, (all.size() + 9) / 10);
+        int shown = Math.max(1, Math.min(page, pages));
+        var head = Component.literal((mine ? "Your discoveries" : "Discoveries") + " (" + all.size() + ", page " + shown + "/" + pages + ")")
+            .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD);
+        if (!mine && !firsts.isEmpty()) head.append(Component.literal("  " + firsts.size() + " boss/elite firsts").withStyle(style -> style.withColor(ChatFormatting.YELLOW).withBold(false)));
+        viewer.sendSystemMessage(head);
+        if (all.isEmpty()) viewer.sendSystemMessage(Component.literal("Nothing yet. Notable structures are announced when someone walks in.").withStyle(ChatFormatting.GRAY));
+        for (var f : all.subList((shown - 1) * 10, Math.min(all.size(), shown * 10))) {
+            var line = Component.literal(f.first ? "✦ " : "◇ ").withStyle(f.first ? ChatFormatting.GOLD : ChatFormatting.GRAY)
+                .append(Component.literal(f.name + (f.first ? " (world first)" : " #" + f.number)).withStyle(f.first ? ChatFormatting.GOLD : ChatFormatting.WHITE))
+                .append(Component.literal(" by " + f.player + where(f, false)).withStyle(ChatFormatting.GRAY));
+            viewer.sendSystemMessage(line.append(links(f.dim, f.x, f.y, f.z, f.first ? f.name : f.name + " #" + f.number)));
+        }
+        if (!mine && shown == 1) for (var b : firsts.values())
+            viewer.sendSystemMessage(Component.literal("✦ ").withStyle(ChatFormatting.GOLD).append(Component.literal(b.player + " " + b.what).withStyle(ChatFormatting.GOLD)));
+        if (shown < pages) viewer.sendSystemMessage(Component.literal("[Next page]").withStyle(style -> style.withColor(ChatFormatting.AQUA)
+            .withClickEvent(new ClickEvent.RunCommand("/discoveries " + (mine ? "mine " : "") + (shown + 1)))));
+        return all.size();
     }
 
     /** /structures: which structures the player is standing in, with their ids, so new ones can be named or announced. */
@@ -146,10 +307,32 @@ public final class Discoveries {
             var state = new State();
             state.found.addAll(found.values());
             state.found.sort(Comparator.comparingLong(f -> f.time));
+            state.firsts.addAll(firsts.values());
             Files.createDirectories(file.getParent());
             var temporary = file.resolveSibling("discoveries.json.tmp");
             Files.writeString(temporary, JSON.toJson(state));
             Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception error) { LOG.warn("Cannot save discoveries", error); }
+    }
+
+    /** Runeforged monster level and elite flag by reflection (the mod is optional for this add-on). */
+    static final class Runeforged {
+        private static java.lang.reflect.Method level, elite;
+        private static boolean missing;
+
+        /** {level, elite ? 1 : 0}, or null when Runeforged is absent or the entity has no level. */
+        static int[] levelAndElite(LivingEntity entity) {
+            if (missing) return null;
+            try {
+                if (level == null) {
+                    var access = Class.forName("com.ultimatearpg.monster.ArpgMonsterLevelAccess");
+                    level = access.getMethod("ultimatearpg$getMonsterLevel");
+                    elite = access.getMethod("ultimatearpg$isEliteMonster");
+                }
+                if (!level.getDeclaringClass().isInstance(entity)) return null;
+                int value = (int) level.invoke(entity);
+                return value <= 0 ? null : new int[] {value, (boolean) elite.invoke(entity) ? 1 : 0};
+            } catch (ReflectiveOperationException | LinkageError error) { missing = true; return null; }
+        }
     }
 }
