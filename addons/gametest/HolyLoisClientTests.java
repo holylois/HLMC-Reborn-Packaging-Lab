@@ -130,7 +130,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         var all=journalEntries(request.tab());
         var entries=all.stream().filter(e->request.filter()==0||e.kind()==request.filter()).filter(e->e.name().toLowerCase(java.util.Locale.ROOT).contains(request.search().toLowerCase(java.util.Locale.ROOT))).toList();
         int pages=Math.max(1,(entries.size()+request.size()-1)/request.size()),page=Math.min(request.page(),pages-1),start=page*request.size();
-        net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,new holylois.boombox.JournalState(request.tab(),request.filter(),page,pages,entries.size(),request.size(),request.search(),entries.subList(start,Math.min(entries.size(),start+request.size()))));
+        net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,new holylois.boombox.JournalState(request.tab(),request.filter(),page,pages,entries.size(),request.size(),request.search(),entries.subList(start,Math.min(entries.size(),start+request.size())),request.requestId()));
     }
     private static List<holylois.boombox.JournalState.Entry> journalEntries(int tab){
         var entries=new ArrayList<holylois.boombox.JournalState.Entry>();
@@ -170,6 +170,8 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var screen=(holylois.boombox.JournalScreen)client.gui.screen();
             var state=(holylois.boombox.JournalState)field(screen,"state");
             check(state!=null&&state.tab()==1&&state.total()==21,"journal key opens a server-owned personal collection");
+            screen.update(new holylois.boombox.JournalState(0,0,0,1,0,state.size(),"old result",java.util.List.of(),Integer.MAX_VALUE));
+            check(field(screen,"state")==state,"an unrelated delayed page cannot replace the current filter result");
         });
         context.clickScreenButton("holylois.journal.world");context.waitTicks(12);
         context.takeScreenshot("52-journal-world-firsts");
@@ -200,8 +202,22 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
                 check(widget.getX()>=0&&widget.getY()>=0&&widget.getX()+widget.getWidth()<=360&&widget.getY()+widget.getHeight()<=230,"journal controls fit a small screen");
         });
         context.waitTicks(8);context.takeScreenshot("52-journal-small");
+        var closedState=context.computeOnClient(client->(holylois.boombox.JournalState)field(client.gui.screen(),"state"));
         context.runOnClient(client->client.gui.setScreen(null));
         check(context.computeOnClient(client->client.gui.screen()==null),"journal closes without trapping the cursor");
+        world.getServer().runOnServer(server->net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(server.getPlayerList().getPlayers().getFirst(),closedState));
+        context.waitTicks(8);
+        check(context.computeOnClient(client->client.gui.screen()==null),"a late network reply cannot reopen a closed journal");
+        world.getServer().runOnServer(server->net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(server.getPlayerList().getPlayers().getFirst(),new holylois.boombox.JournalState(
+            closedState.tab(),closedState.filter(),closedState.page(),closedState.pages(),closedState.total(),closedState.size(),closedState.search(),closedState.entries())));
+        context.waitForScreen(holylois.boombox.JournalScreen.class);context.waitTicks(8);
+        check(context.computeOnClient(client->client.gui.screen() instanceof holylois.boombox.JournalScreen),"explicit server command pages still open the journal");
+        context.runOnClient(client->{
+            var screen=(holylois.boombox.JournalScreen)client.gui.screen();
+            int size=(int)field(screen,"rows");
+            screen.update(new holylois.boombox.JournalState(1,1,0,1,0,size,"",java.util.List.of()));
+        });
+        context.takeScreenshot("52-journal-empty-fish");
         context.runOnClient(client->{
             var screen=new holylois.boombox.JournalScreen(1);client.gui.setScreen(screen);
             try{var requested=screen.getClass().getDeclaredField("requestedAt");requested.setAccessible(true);requested.setLong(screen,System.currentTimeMillis()-6000);}

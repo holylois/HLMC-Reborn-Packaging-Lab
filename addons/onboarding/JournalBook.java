@@ -39,6 +39,6 @@ final class JournalBook {
             .filter(e->query.isEmpty()||(e.name()+" "+e.by()).toLowerCase(Locale.ROOT).contains(query))
             .sorted(Comparator.comparingLong(JournalState.Entry::time).reversed().thenComparing(JournalState.Entry::key)).toList();
         int pages=Math.max(1,(all.size()+request.size()-1)/request.size()),page=Math.min(request.page(),pages-1),start=page*request.size();
-        return new JournalState(request.tab(),request.filter(),page,pages,all.size(),request.size(),request.search(),all.subList(start,Math.min(all.size(),start+request.size())));
+        return new JournalState(request.tab(),request.filter(),page,pages,all.size(),request.size(),request.search(),all.subList(start,Math.min(all.size(),start+request.size())),request.requestId());
     }
 }

@@ -1,4 +1,12 @@
 {
+  "holylois.journal.empty_world": "В этой категории ещё нет первых открытий.",
+  "holylois.journal.empty1": "Поймайте рыбу удочкой, чтобы начать коллекцию.",
+  "holylois.journal.empty2": "Посетите подземелье или примечательную структуру, чтобы записать место.",
+  "holylois.journal.empty3": "Победите существо, чтобы начать коллекцию. Победы над игроками не учитываются.",
+  "holylois.journal.first_on": "Первые в мире: %s",
+  "holylois.journal.caught_on": "Последний улов: %s",
+  "holylois.journal.defeated_on": "Последняя победа: %s",
+  "holylois.journal.visited_on": "Первый визит: %s",
   "holylois.journal.retry": "Повторить",
   "holylois.journal.timeout": "Сервер не ответил. Попробуйте ещё раз.",
   "holylois.journal.updated": "Журнал обновлён",

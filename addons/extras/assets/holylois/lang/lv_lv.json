@@ -1,4 +1,12 @@
 {
+  "holylois.journal.empty_world": "Šajā kategorijā vēl nav pasaules pirmo atklājumu.",
+  "holylois.journal.empty1": "Noķer zivi ar makšķeri, lai sāktu zivju kolekciju.",
+  "holylois.journal.empty2": "Apmeklē pazemi vai ievērojamu būvi, lai ierakstītu vietu.",
+  "holylois.journal.empty3": "Uzvari radījumu, lai sāktu kolekciju. Uzvaras pār spēlētājiem netiek skaitītas.",
+  "holylois.journal.first_on": "Pirmais pasaulē: %s",
+  "holylois.journal.caught_on": "Pēdējais loms: %s",
+  "holylois.journal.defeated_on": "Pēdējā uzvara: %s",
+  "holylois.journal.visited_on": "Pirmais apmeklējums: %s",
   "holylois.journal.retry": "Mēģināt vēlreiz",
   "holylois.journal.timeout": "Serveris neatbildēja. Mēģini vēlreiz.",
   "holylois.journal.updated": "Žurnāls papildināts",

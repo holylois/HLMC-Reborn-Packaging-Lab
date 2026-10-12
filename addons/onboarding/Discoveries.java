@@ -87,7 +87,9 @@ public final class Discoveries {
     private Path file;
 
     void registerJournal() {
-        ServerPlayNetworking.registerGlobalReceiver(JournalRequest.TYPE,(request,context)->open(context.player(),request));
+        ServerPlayNetworking.registerGlobalReceiver(JournalRequest.TYPE,(request,context)->{
+            if(request.requestId()>0)open(context.player(),request);
+        });
         FishCaught.EVENT.register((player,fish)->{
             if(file==null||!PartySupport.ready(player))return;
             boolean fresh=book(player).caught(BuiltInRegistries.ITEM.getKey(fish.getItem()).toString(),fish.getCount(),FishData.kilograms(fish),FishData.rarity(fish),

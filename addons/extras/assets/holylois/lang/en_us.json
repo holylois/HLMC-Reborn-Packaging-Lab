@@ -1,4 +1,12 @@
 {
+  "holylois.journal.empty_world": "No world firsts in this category yet.",
+  "holylois.journal.empty1": "Catch a fish with a rod to start your fish collection.",
+  "holylois.journal.empty2": "Visit a dungeon or notable structure to record a place.",
+  "holylois.journal.empty3": "Defeat a creature to start this collection. Player defeats do not count.",
+  "holylois.journal.first_on": "World first: %s",
+  "holylois.journal.caught_on": "Last caught: %s",
+  "holylois.journal.defeated_on": "Last defeated: %s",
+  "holylois.journal.visited_on": "First visited: %s",
   "holylois.journal.retry": "Retry",
   "holylois.journal.timeout": "The server did not respond. Try again.",
   "holylois.journal.updated": "Journal updated",

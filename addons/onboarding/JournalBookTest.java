@@ -38,16 +38,18 @@ public final class JournalBookTest {
         var page=JournalBook.page(entries,new JournalRequest(0,2,999,6,""));
         check(page.total()==18&&page.page()==2&&page.pages()==3&&page.entries().size()==6,"Filtering clamps excessive page requests and bounds response size");
         check(page.entries().getFirst().key().equals("place5"),"Pages sort newest first with deterministic ties");
-        var result=JournalBook.page(entries,new JournalRequest(1,1,0,8,"CoD"));
+        var result=JournalBook.page(entries,new JournalRequest(1,1,0,8,"CoD",17));
+        check(result.requestId()==17,"Server replies echo the client request identity");
         check(result.total()==1&&result.entries().getFirst().weight()==8.5,"Search is case insensitive inside the chosen category");
         var empty=JournalBook.page(entries,new JournalRequest(1,0,0,8,"no matches"));
         check(empty.total()==0&&empty.pages()==1&&empty.entries().isEmpty(),"Empty journals/searches have a usable first page");
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         JournalState.CODEC.encode(buffer,result);check(JournalState.CODEC.decode(buffer).equals(result),"Journal state round-trips every field");buffer.release();
-        buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);var request=new JournalRequest(1,2,3,4,"spire");
+        buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);var request=new JournalRequest(1,2,3,4,"spire",123);
         JournalRequest.CODEC.encode(buffer,request);check(JournalRequest.CODEC.decode(buffer).equals(request),"Read-only requests round-trip without a target identity");buffer.release();
         try{new JournalRequest(1,0,0,9,"");throw new AssertionError("Oversized request accepted");}catch(IllegalArgumentException expected){checked++;}
         try{new JournalRequest(1,0,0,8,"x".repeat(49));throw new AssertionError("Oversized search accepted");}catch(IllegalArgumentException expected){checked++;}
+        try{new JournalRequest(1,0,0,8,"",-1);throw new AssertionError("Negative request identity accepted");}catch(IllegalArgumentException expected){checked++;}
         var root=Files.createTempDirectory("hl-journal-");var file=root.resolve("holylois/discoveries.json");Files.createDirectories(file.getParent());
         Files.writeString(file,"{\"version\":2,\"found\":[{\"key\":\"overworld|spire|0,0\",\"name\":\"Ice Spire\",\"player\":\"Alice\",\"number\":1,\"first\":true,\"time\":100}],\"firsts\":[]}");
         discoveries.load(null,root);var upgraded=new Gson().fromJson(Files.readString(file),Discoveries.State.class);

@@ -16,13 +16,16 @@ import java.time.format.DateTimeFormatter;
 /** Collection browser: tabs, filters and search beside a selected entry with explicit location actions. */
 public final class JournalScreen extends TravelScreen {
     private JournalState state;private int tab,filter,page;private String query="",selected="";private EditBox search;
-    private boolean loading,detail,timedOut;private long requestedAt=System.currentTimeMillis();
+    private boolean loading,detail,timedOut;private long requestedAt=System.currentTimeMillis();private int expectedRequest;
     private int listX,listY,listW,rows,detailX,detailW;
     private static final int ROW=30;
     public JournalScreen(int tab){super("journal_title");this.tab=tab;loading=true;}
     public JournalScreen(JournalState state){this(state.tab());update(state);}
     static Component label(String key,Object...args){return Component.translatable("holylois.journal."+key,args);}
+    void expect(int id){expectedRequest=id;}
     public void update(JournalState next){
+        if(next.requestId()!=0&&next.requestId()!=expectedRequest)return;
+        if(next.requestId()==0)expectedRequest=0;
         state=next;tab=next.tab();filter=next.filter();page=next.page();query=next.search();loading=false;timedOut=false;
         if(next.entries().stream().noneMatch(e->e.key().equals(selected)))selected=next.entries().isEmpty()?"":next.entries().getFirst().key();
         if(width>0)rebuildWidgets();
@@ -109,7 +112,8 @@ public final class JournalScreen extends TravelScreen {
         if(timedOut)g.centeredText(font,label("timeout"),listX+listW/2,listY+24,Ui.TEXT);
         else if(loading||state==null)g.centeredText(font,label("loading"),listX+listW/2,listY+24,Ui.MUTED);
         else if(state.entries().isEmpty()){
-            int y=listY+8;for(var line:font.split(label(query.isEmpty()?"empty":"no_results"),listW-12)){g.text(font,line,listX+6,y,Ui.MUTED,false);y+=12;}
+            String empty=query.isEmpty()?(tab==0?"empty_world":filter==0?"empty":"empty"+filter):"no_results";
+            int y=listY+8;for(var line:font.split(label(empty),listW-12)){g.text(font,line,listX+6,y,Ui.MUTED,false);y+=12;}
         }
         if(state!=null&&(!detail||wide()))g.text(font,label("page",state.page()+1,state.pages(),state.total()),listX+74,top+panelHeight-33,Ui.MUTED,false);
         var entry=selected();
@@ -127,7 +131,10 @@ public final class JournalScreen extends TravelScreen {
                 lines.add(rarities);
             }
             if(entry.level()>0)lines.add(label("level",entry.level()));
-            if(entry.time()>0&&wide())lines.add(Component.literal(DateTimeFormatter.ofPattern("d MMM yyyy",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(entry.time()))));
+            if(entry.time()>0){
+                String date=DateTimeFormatter.ofPattern("d MMM yyyy",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(entry.time()));
+                lines.add(label(tab==0?"first_on":entry.kind()==JournalState.FISH?"caught_on":entry.kind()==JournalState.KILL?"defeated_on":"visited_on",date));
+            }
             if(entry.location()){
                 lines.add(Component.literal(HomesScreen.dimension(entry.dimension())));
                 lines.add(Component.literal(entry.x()+", "+entry.y()+", "+entry.z()));
@@ -137,7 +144,7 @@ public final class JournalScreen extends TravelScreen {
     }
     private final class JournalRow extends Button {
         private final JournalState.Entry entry;
-        JournalRow(int x,int y,int w,int h,JournalState.Entry entry,Runnable run){super(x,y,w,h,name(entry),b->run.run(),DEFAULT_NARRATION);this.entry=entry;}
+        JournalRow(int x,int y,int w,int h,JournalState.Entry entry,Runnable run){super(x,y,w,h,name(entry),b->run.run(),DEFAULT_NARRATION);this.entry=entry;if(font.width(name(entry))>w-36)setTooltip(net.minecraft.client.gui.components.Tooltip.create(name(entry)));}
         @Override protected void extractContents(GuiGraphicsExtractor g,int x,int y,float tick){
             boolean activeRow=entry.key().equals(selected);
             Ui.box(g,getX(),getY(),getWidth(),getHeight(),activeRow?Ui.GOLD_SOFT:isHovered()?Ui.CONTROL_HOVER:Ui.CONTROL,activeRow?Ui.GOLD:Ui.LINE);

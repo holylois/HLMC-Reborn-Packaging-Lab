@@ -14,6 +14,7 @@ import java.nio.file.Files;
 /** The new control is seeded only once, on a free key. Existing bound or unbound choices stay personal. */
 public final class JournalClient {
     static final String KEY="key.holylois.journal";
+    private static int requestId;
     static void register(){
         JournalHints.register();
         ClientPlayNetworking.registerGlobalReceiver(JournalUpdate.TYPE,(notice,context)->JournalHints.added());
@@ -35,7 +36,7 @@ public final class JournalClient {
         ClientTickEvents.END_CLIENT_TICK.register(client->{while(key.consumeClick())if(client.player!=null&&client.gui.screen()==null)open(1);});
         ClientPlayNetworking.registerGlobalReceiver(JournalState.TYPE,(state,context)->{
             if(context.client().gui.screen() instanceof JournalScreen screen)screen.update(state);
-            else context.client().gui.setScreen(new JournalScreen(state));
+            else if(state.requestId()==0)context.client().gui.setScreen(new JournalScreen(state));
         });
     }
     /** Migrate only our invalid pre-SDL unbound value; preserve all valid player choices. */
@@ -45,13 +46,21 @@ public final class JournalClient {
         return true;
     }
     static void open(int tab){
-        if(request(new JournalRequest(tab,0,0,6,"")))Minecraft.getInstance().gui.setScreen(new JournalScreen(tab));
+        if(!available())return;
+        Minecraft.getInstance().gui.setScreen(new JournalScreen(tab));
+        request(new JournalRequest(tab,0,0,6,""));
     }
-    static boolean request(JournalRequest request){
+    private static boolean available(){
         if(!ClientPlayNetworking.canSend(JournalRequest.TYPE)){
             var player=Minecraft.getInstance().player;
             if(player!=null)player.sendSystemMessage(Component.translatable("holylois.journal.unavailable"));return false;
         }
-        ClientPlayNetworking.send(request);return true;
+        return true;
+    }
+    static boolean request(JournalRequest request){
+        if(!available()||!(Minecraft.getInstance().gui.screen() instanceof JournalScreen screen))return false;
+        requestId=requestId==Integer.MAX_VALUE?1:requestId+1;
+        screen.expect(requestId);
+        ClientPlayNetworking.send(new JournalRequest(request.tab(),request.filter(),request.page(),request.size(),request.search(),requestId));return true;
     }
 }
