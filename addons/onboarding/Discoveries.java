@@ -51,7 +51,7 @@ public final class Discoveries {
         public UUID uuid;
     }
     /** A boss or elite world first: key "boss:minecraft:ender_dragon", "elite", "level:50"... */
-    public static final class First { public String key, what, player, dim; public UUID uuid; public long time; public int x, y, z, level; public Integer firstLevel; }
+    public static final class First { public String key, what, player, dim, type; public UUID uuid; public long time; public int x, y, z, level; public Integer firstLevel; public holylois.boombox.DefeatRecord record; }
     public static final class State {
         public int version = 4;
         public List<Found> found = new ArrayList<>(); public List<First> firsts = new ArrayList<>();
@@ -141,11 +141,11 @@ public final class Discoveries {
                 if(mob&&!hostileType(f.key.substring(4)))continue;
                 if(mob&&firsts.containsKey("boss:"+f.key.substring(4)))continue;
                 entries.add(new JournalState.Entry(f.key,mob?JournalState.KILL:JournalState.FEAT,mob?f.key.substring(4):f.what,StatsVisibility.display(f.player),
-                    f.dim,f.x,f.y,f.z,f.time,1,0,0,f.firstLevel==null?0:f.firstLevel,true,true));
+                    f.dim,f.x,f.y,f.z,f.time,1,0,0,f.firstLevel==null?0:f.firstLevel,true,true).withStrongest(f.record).withSubject(firstType(f)));
             }
         }else{
             if(request.filter()==4)for(var f:firsts.values())if(!f.key.startsWith("mob:")&&owns(player.getUUID(),player.getGameProfile().name(),f.uuid,f.player))
-                entries.add(new JournalState.Entry(f.key,JournalState.FEAT,f.what,StatsVisibility.display(f.player),f.dim,f.x,f.y,f.z,f.time,1,0,0,f.level,true,true));
+                entries.add(new JournalState.Entry(f.key,JournalState.FEAT,f.what,StatsVisibility.display(f.player),f.dim,f.x,f.y,f.z,f.time,1,0,0,f.level,true,true).withStrongest(f.record).withSubject(firstType(f)));
             for(var f:own.fish.values())entries.add(new JournalState.Entry("fish:"+f.species,JournalState.FISH,f.species,"",f.dim,f.x,f.y,f.z,f.time,f.count,f.heaviest,f.rarities,0,true,false,
                 f.rarityCounts==null?java.util.List.of():java.util.Arrays.stream(f.rarityCounts).boxed().toList(),f.shiny));
             for(var type:BuiltInRegistries.ENTITY_TYPE){
@@ -318,9 +318,10 @@ public final class Discoveries {
         String boss = BOSSES.get(type);
         if (boss == null && entity.getType().builtInRegistryHolder().is(BOSS_TAG)) boss = entity.getName().getString();
         if(!hostileType(type)&&boss==null)return;
-        if (boss != null) first(server, player, entity, "boss:" + type, "slew " + boss);
+        if (boss != null) first(server, player, entity, "boss:" + type, "slew " + boss,record,complete);
         var mobFirst=rememberMob(type,player.getGameProfile().name(),record.dimension(),record.x(),record.y(),record.z(),record.time(),level);
         if(mobFirst!=null)mobFirst.uuid=player.getUUID();
+        if(mobFirst!=null&&complete)mobFirst.record=record;
         if(mobFirst!=null){
             if(boss==null)server.getPlayerList().broadcastSystemMessage(Component.literal("✦ World first: ").withStyle(ChatFormatting.GOLD)
                 .append(Component.literal(StatsVisibility.display(mobFirst.player)+" defeated the first "))
@@ -328,9 +329,9 @@ public final class Discoveries {
         }
         if (rune == null) return;
         String mob = entity.getName().getString();
-        if (rune[1] > 0) first(server, player, entity, "elite", "slew the first Runeforged elite (" + mob + ", level " + rune[0] + ")");
+        if (rune[1] > 0) first(server, player, entity, "elite", "slew the first Runeforged elite (" + mob + ", level " + rune[0] + ")",record,complete);
         for (int needed : LEVELS)
-            if (rune[0] >= needed) first(server, player, entity, "level:" + needed, "slew the first level " + needed + "+ monster (" + mob + ", level " + rune[0] + ")");
+            if (rune[0] >= needed) first(server, player, entity, "level:" + needed, "slew the first level " + needed + "+ monster (" + mob + ", level " + rune[0] + ")",record,complete);
     }
 
     private static final TagKey<EntityType<?>> BOSS_TAG = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath("c", "bosses"));
@@ -342,20 +343,34 @@ public final class Discoveries {
         var first=new First();first.key=key;first.what="slew the first "+title(type.substring(type.indexOf(':')+1));
         first.player=player;first.dim=dimension;first.x=x;first.y=y;first.z=z;first.time=time;first.level=level;
         first.firstLevel=level;
+        first.type=type;
         firsts.put(key,first);dirty=true;return first;
     }
 
-    private void first(MinecraftServer server, ServerPlayer player, LivingEntity entity, String key, String what) {
+    private void first(MinecraftServer server, ServerPlayer player, LivingEntity entity, String key, String what,holylois.boombox.DefeatRecord record,boolean complete) {
         if (firsts.containsKey(key)) return;
         var first = new First();
         first.key = key; first.what = what; first.player = player.getGameProfile().name(); first.uuid=player.getUUID(); first.time = System.currentTimeMillis() / 1000;
         first.dim = entity.level().dimension().identifier().toString();
         first.x = entity.getBlockX(); first.y = entity.getBlockY(); first.z = entity.getBlockZ();
+        first.type=record.type();first.firstLevel=record.level();first.level=record.level();
+        if(complete){first.record=record;first.time=record.time();first.dim=record.dimension();first.x=record.x();first.y=record.y();first.z=record.z();}
         firsts.put(key, first);
         save();
         server.getPlayerList().broadcastSystemMessage(worldFirst(first.player, Component.literal(" " + what + "!").withStyle(ChatFormatting.YELLOW)), false);
         ding(server);
         LOG.info("World first: {} {} at {} {} {}", first.player, what, first.x, first.y, first.z);
+    }
+    /** Legacy milestones can identify a species, never reconstruct its unsaved equipment. */
+    static String firstType(First first){
+        if(first.type!=null)return first.type;
+        if(first.record!=null)return first.record.type();
+        if(first.key.startsWith("mob:")||first.key.startsWith("boss:"))return first.key.substring(first.key.indexOf(':')+1);
+        if(first.what==null)return "";
+        int start=first.what.lastIndexOf('('),end=first.what.lastIndexOf(", level ");if(start<0||end<=start)return "";
+        String name=first.what.substring(start+1,end),found="";
+        for(var type:BuiltInRegistries.ENTITY_TYPE)if(type.getDescription().getString().equals(name)){if(!found.isEmpty())return "";found=BuiltInRegistries.ENTITY_TYPE.getKey(type).toString();}
+        return found;
     }
 
     /** The challenge chime for every player, each only hearing their own. */

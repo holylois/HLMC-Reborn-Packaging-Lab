@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 public final class JournalPreview {
     private final LinkedHashMap<DefeatRecord,Zombie> cache=new LinkedHashMap<>();
     private Object level;
+    private final long clockStarted=net.minecraft.util.Util.getMillis();
     private static int nextPreviewId=-1_000_000;
     public Zombie entity(DefeatRecord record){
         var mc=Minecraft.getInstance();if(mc.level==null||record==null||!record.type().equals("minecraft:zombie"))return null;
@@ -46,12 +47,19 @@ public final class JournalPreview {
     public boolean draw(GuiGraphicsExtractor g,DefeatRecord record,int x,int y,int width,int height,boolean portrait,float rotation){
         var entity=entity(record);if(entity==null)return false;
         var renderer=Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entity);
-        var state=renderer.createRenderState(entity,0);
+        float age=(net.minecraft.util.Util.getMillis()-clockStarted)/50f;
+        entity.tickCount=(int)age;
+        var state=renderer.createRenderState(entity,age-(int)age);
+        state.shadowPieces.clear();state.outlineColor=0;
         state.lightCoords=net.minecraft.util.LightCoordsUtil.pack(15,15);
-        if(state instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState living){living.bodyRot=180;living.yRot=0;living.xRot=0;living.deathTime=0;}
+        if(state instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState living){living.bodyRot=180;living.yRot=0;living.xRot=0;living.deathTime=0;living.walkAnimationSpeed=0;living.walkAnimationPos=0;}
         int scale=portrait?40:Math.max(12,Math.min(width/2,height/2));
         float focus=portrait?(entity.isBaby()?0.82f:1.65f):entity.getBbHeight()/2;
         g.entity(state,scale,new Vector3f(0,focus,0),new Quaternionf().rotateZ((float)Math.PI).rotateY(rotation),new Quaternionf(),x,y,x+width,y+height);
         return true;
+    }
+    public static DefeatRecord presentation(JournalState.Entry entry){
+        if(entry.strongest()!=null)return entry.strongest();
+        return entry.subject().equals("minecraft:zombie")?new DefeatRecord("minecraft:zombie",0,20,false,false,0,"minecraft:overworld",0,0,0,java.util.List.of(),java.util.List.of(),java.util.List.of()):null;
     }
 }

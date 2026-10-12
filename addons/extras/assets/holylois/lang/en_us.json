@@ -1,4 +1,6 @@
 {
+  "holylois.journal.first_record": "First recorded defeat",
+  "holylois.journal.appearance_missing": "Original appearance was not recorded.",
   "holylois.journal.strongest": "Strongest recorded defeat",
   "holylois.journal.record_level": "Record level: %s",
   "holylois.journal.record_health": "Maximum health: %s",

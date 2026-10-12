@@ -1,4 +1,6 @@
 {
+  "holylois.journal.first_record": "Pirmā pierakstītā uzvara",
+  "holylois.journal.appearance_missing": "Sākotnējais izskats netika pierakstīts.",
   "holylois.journal.strongest": "Spēcīgākais pierakstītais pretinieks",
   "holylois.journal.record_level": "Rekorda līmenis: %s",
   "holylois.journal.record_health": "Maksimālā veselība: %s",

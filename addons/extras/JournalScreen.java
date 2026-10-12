@@ -18,7 +18,7 @@ public final class JournalScreen extends TravelScreen {
     private JournalState state;private int tab,filter,page;private String query="",selected="";private EditBox search;
     private boolean loading,detail,timedOut;private long requestedAt=System.currentTimeMillis();private int expectedRequest;
     private int listX,listY,listW,rows,detailX,detailW,detailScroll,maxScroll;
-    private static final int ROW=30;
+    private JournalLayout layout;
     private final JournalPreview preview=new JournalPreview();
     private boolean previewPaused;private float previewRotation;private long previewClock=System.currentTimeMillis();
     public JournalScreen(int tab){super("journal_title");this.tab=tab;loading=true;}
@@ -43,47 +43,45 @@ public final class JournalScreen extends TravelScreen {
     @Override protected void init(){
         search=null;
         panelWidth=Math.min(640,width-24);panelHeight=Math.min(400,height-24);left=(width-panelWidth)/2;top=(height-panelHeight)/2;
-        rows=Math.max(1,Math.min(8,(panelHeight-126)/ROW));
-        listX=left+12;listY=top+88;listW=wide()?(panelWidth-36)*3/5:panelWidth-24;detailX=listX+listW+12;detailW=panelWidth-24-listW-12;
-        int content=panelWidth-24,half=(content-6)/2;
+        layout=JournalLayout.of(panelWidth,panelHeight);rows=layout.rows();
+        listX=left+JournalLayout.PAD;listY=top+layout.bodyY();listW=layout.listWidth();detailX=left+layout.detailX();detailW=layout.detailWidth();
+        int content=layout.content(),gap=JournalLayout.GAP,half=(content-gap)/2,footer=top+layout.footerY();
         if(!detail||wide()){
-        action(listX,top+32,half,label("world"),()->filter(0,0)).active=!loading;
-        action(listX+half+6,top+32,half,label("mine"),()->filter(1,0)).active=!loading;
-        int sw=Math.max(50,content/3);
-        search=addRenderableWidget(new EditBox(font,listX,top+62,sw,22,label("search")));search.setMaxLength(48);search.setValue(query);search.setHint(label("search"));
-        action(listX+sw+6,top+62,44,label("find"),()->{query=search.getValue().strip();page=0;fetch();}).active=!loading;
-        int[] filters=tab==0?new int[]{0,2,3}:new int[]{0,1,2,3};
-        int fx=listX+sw+56,fw=Math.max(24,(content-sw-56)/filters.length);
-        for(int i=0;i<filters.length;i++){int f=filters[i];var b=action(fx+i*fw,top+62,fw-3,label("filter"+f),()->filter(tab,f));b.active=!loading;if(f==4)b.setTooltip(net.minecraft.client.gui.components.Tooltip.create(label("your_first")));}
-        }
-        if(!detail||wide()){
+            action(listX,top+32,half,label("world"),()->filter(0,0)).active=!loading;
+            action(listX+half+gap,top+32,content-half-gap,label("mine"),()->filter(1,0)).active=!loading;
+            int sw=content/3;
+            search=addRenderableWidget(new EditBox(font,listX,top+60,sw,22,label("search")));search.setMaxLength(48);search.setValue(query);search.setHint(label("search"));
+            action(listX+sw+gap,top+60,44,label("find"),()->{query=search.getValue().strip();page=0;fetch();}).active=!loading;
+            int[] filters=tab==0?new int[]{0,2,3}:new int[]{0,1,2,3};
+            for(int i=0;i<filters.length;i++){int f=filters[i];action(left+layout.filterX(i,filters.length),top+60,layout.filterWidth(i,filters.length),label("filter"+f),()->filter(tab,f)).active=!loading;}
             if(state!=null)for(int i=0;i<Math.min(rows,state.entries().size());i++){
-                var e=state.entries().get(i);var b=new JournalRow(listX,listY+i*ROW,listW,ROW-4,e,()->{selected=e.key();detail=true;detailScroll=0;rebuildWidgets();});b.active=!loading;addRenderableWidget(b);
+                var e=state.entries().get(i);var b=new JournalRow(listX,top+layout.rowY(i),listW,layout.rowHeight(i),e,()->{selected=e.key();detail=true;detailScroll=0;rebuildWidgets();});b.active=!loading;addRenderableWidget(b);
             }
         }
         var entry=selected();
-        if(entry!=null&&(!loading)&&(wide()||detail)){
-            int dx=wide()?detailX:listX,dw=wide()?detailW:listW,dy=top+panelHeight-68;
+        if(entry!=null&&!loading&&(wide()||detail)){
+            int dx=wide()?detailX:listX,dw=wide()?detailW:listW;
             var target=entry.strongest();String destination=target==null?entry.dimension():target.dimension();
             int targetX=target==null?entry.x():target.x(),targetY=target==null?entry.y():target.y(),targetZ=target==null?entry.z():target.z();
-            if(entry.strongest()!=null&&entry.strongest().type().equals("minecraft:zombie"))action(dx+(wide()?0:76),top+panelHeight-40,60,label(previewPaused?"rotate":"pause"),()->{previewPaused=!previewPaused;previewClock=System.currentTimeMillis();rebuildWidgets();});
+            if(JournalPreview.presentation(entry)!=null)action(dx+(wide()?0:66),footer,60,label(previewPaused?"rotate":"pause"),()->{previewPaused=!previewPaused;previewClock=System.currentTimeMillis();rebuildWidgets();});
             if(entry.location()){
-                action(dx,dy,(dw-4)/2,label("waypoint"),()->{
+                int halfAction=(dw-gap)/2,y=top+layout.actionsY();
+                action(dx,y,halfAction,label("waypoint"),()->{
                     if(net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("xaerominimap"))XaeroWaypoints.add(destination+" "+targetX+" "+targetY+" "+targetZ+" "+name(entry).getString());
                 }).active=net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("xaerominimap");
-                action(dx+(dw+4)/2,dy,(dw-4)/2,label("map"),()->{
+                action(dx+halfAction+gap,y,dw-halfAction-gap,label("map"),()->{
                     String map=mapName(destination);
                     if(map!=null)defaultHandleClickEvent(new ClickEvent.OpenUrl(URI.create("https://map.holylois.com/#"+map+":"+targetX+":"+targetY+":"+targetZ+":120:0:0:0:1:flat")),minecraft,this);
                 }).active=mapName(destination)!=null;
             }
-            if(!wide())action(dx,top+panelHeight-40,70,label("back"),()->{detail=false;rebuildWidgets();});
+            if(!wide())action(dx,footer,60,label("back"),()->{detail=false;rebuildWidgets();});
         }
         if(!detail||wide()){
-            action(listX,top+panelHeight-40,30,Component.literal("<"),()->{page--;fetch();}).active=!loading&&page>0;
-            action(listX+36,top+panelHeight-40,30,Component.literal(">"),()->{page++;fetch();}).active=!loading&&state!=null&&page+1<state.pages();
-            if(tab==1){var firsts=action(listX+listW-(wide()?32:104),top+panelHeight-40,28,label("filter4"),()->filter(tab,4));firsts.active=!loading;firsts.setTooltip(net.minecraft.client.gui.components.Tooltip.create(label("your_first")));}
+            action(listX,footer,22,Component.literal("<"),()->{page--;fetch();}).active=!loading&&page>0;
+            action(listX+28,footer,22,Component.literal(">"),()->{page++;fetch();}).active=!loading&&state!=null&&page+1<state.pages();
+            if(tab==1){int star=wide()?listX+listW-22:listX+content-88;var b=action(star,footer,22,label("filter4"),()->filter(tab,4));b.active=!loading;b.setTooltip(net.minecraft.client.gui.components.Tooltip.create(label("your_first")));}
         }
-        action(left+panelWidth-72,top+panelHeight-40,60,label("close"),this::onClose);
+        action(listX+content-60,footer,60,label("close"),this::onClose);
         if(timedOut)action(listX+Math.max(0,(listW-80)/2),listY+56,80,label("retry"),this::fetch);
     }
     private JournalState.Entry selected(){return state==null?null:state.entries().stream().filter(e->e.key().equals(selected)).findFirst().orElse(null);}
@@ -108,19 +106,33 @@ public final class JournalScreen extends TravelScreen {
         var id=Identifier.tryParse(entry.name());
         if(entry.kind()==JournalState.FISH&&id!=null)return BuiltInRegistries.ITEM.getOptional(id).orElse(net.minecraft.world.item.Items.COD);
         if(entry.kind()==JournalState.PLACE)return net.minecraft.world.item.Items.MAP;
-        return switch(entry.name()){
-            case "minecraft:zombie"->net.minecraft.world.item.Items.ZOMBIE_HEAD;
-            case "minecraft:skeleton"->net.minecraft.world.item.Items.SKELETON_SKULL;
-            case "minecraft:wither_skeleton"->net.minecraft.world.item.Items.WITHER_SKELETON_SKULL;
-            case "minecraft:creeper"->net.minecraft.world.item.Items.CREEPER_HEAD;
-            case "minecraft:piglin"->net.minecraft.world.item.Items.PIGLIN_HEAD;
-            case "minecraft:ender_dragon"->net.minecraft.world.item.Items.DRAGON_HEAD;
-            default->net.minecraft.world.item.Items.BOOK;
+        String subject=entry.subject().isEmpty()?entry.name():entry.subject();
+        var drop=switch(subject){
+            case "minecraft:zombie","minecraft:husk","minecraft:drowned","minecraft:zombie_villager","minecraft:zombified_piglin"->"minecraft:rotten_flesh";
+            case "minecraft:skeleton","minecraft:stray","minecraft:bogged","minecraft:wither_skeleton"->"minecraft:bone";
+            case "minecraft:spider","minecraft:cave_spider"->"minecraft:string";
+            case "minecraft:creeper","minecraft:ghast"->"minecraft:gunpowder";
+            case "minecraft:enderman"->"minecraft:ender_pearl";
+            case "minecraft:phantom"->"minecraft:phantom_membrane";
+            case "minecraft:blaze"->"minecraft:blaze_rod";
+            case "minecraft:slime"->"minecraft:slime_ball";
+            case "minecraft:magma_cube"->"minecraft:magma_cream";
+            case "minecraft:witch"->"minecraft:glass_bottle";
+            case "minecraft:guardian","minecraft:elder_guardian"->"minecraft:prismarine_shard";
+            case "minecraft:pig","minecraft:hoglin","minecraft:zoglin"->"minecraft:porkchop";
+            case "minecraft:cow","minecraft:mooshroom","minecraft:horse","minecraft:donkey","minecraft:mule"->"minecraft:leather";
+            case "minecraft:chicken","minecraft:parrot"->"minecraft:feather";
+            case "minecraft:sheep"->"minecraft:white_wool";
+            case "minecraft:rabbit"->"minecraft:rabbit_hide";
+            case "minecraft:squid","minecraft:glow_squid"->subject.equals("minecraft:glow_squid")?"minecraft:glow_ink_sac":"minecraft:ink_sac";
+            default->subject;
         };
+        var itemId=Identifier.tryParse(drop);
+        return itemId==null?net.minecraft.world.item.Items.NAME_TAG:BuiltInRegistries.ITEM.getOptional(itemId).orElse(net.minecraft.world.item.Items.NAME_TAG);
     }
     @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical){
         int dx=wide()?detailX:listX,dw=wide()?detailW:listW;
-        if(selected()!=null&&(wide()||detail)&&x>=dx&&x<=dx+dw&&y>=top+32&&y<top+panelHeight-76){
+        if(selected()!=null&&(wide()||detail)&&x>=dx&&x<=dx+dw&&y>=listY&&y<top+layout.actionsY()-JournalLayout.GAP){
             detailScroll=Math.max(0,Math.min(maxScroll,detailScroll-(int)(vertical*22)));return true;
         }
         return super.mouseScrolled(x,y,horizontal,vertical);
@@ -144,11 +156,11 @@ public final class JournalScreen extends TravelScreen {
         super.extractRenderState(g,mx,my,tick);g.nextStratum();
         if(!detail||wide()){
             int content=panelWidth-24,half=(content-6)/2,tx=tab==0?listX:listX+half+6;
-            g.fill(tx+4,top+54,tx+half-4,top+55,Ui.GOLD);
+            g.fill(tx+4,top+52,tx+half-4,top+53,Ui.GOLD);
             int sw=Math.max(50,content/3),fx=listX+sw+56,n=tab==0?3:4,fw=Math.max(24,(content-sw-56)/n);
             int selectedFilter=tab==0?(filter==3?2:filter==2?1:0):filter;
-            if(filter!=4)g.fill(fx+selectedFilter*fw+3,top+83,fx+(selectedFilter+1)*fw-6,top+84,Ui.GOLD);
-            else{int x=listX+listW-(wide()?32:104);g.fill(x+4,top+panelHeight-19,x+24,top+panelHeight-18,Ui.GOLD);}
+            if(filter!=4){int x=left+layout.filterX(selectedFilter,n);g.fill(x+4,top+80,x+layout.filterWidth(selectedFilter,n)-4,top+81,Ui.GOLD);}
+            else{int x=wide()?listX+listW-22:listX+layout.content()-88;g.fill(x+4,top+layout.footerY()+20,x+18,top+layout.footerY()+21,Ui.GOLD);}
         }
         if(timedOut)g.centeredText(font,label("timeout"),listX+listW/2,listY+24,Ui.TEXT);
         else if(state==null)g.centeredText(font,label("loading"),listX+listW/2,listY+24,Ui.MUTED);
@@ -157,15 +169,16 @@ public final class JournalScreen extends TravelScreen {
             String empty=query.isEmpty()?(tab==0?"empty_world":filter==0?"empty":"empty"+filter):"no_results";
             int y=listY+8;for(var line:font.split(label(empty),listW-12)){g.text(font,line,listX+6,y,Ui.MUTED,false);y+=12;}
         }
-        if(state!=null&&(!detail||wide()))g.text(font,label("page",state.page()+1,state.pages(),state.total()),listX+74,top+panelHeight-33,Ui.MUTED,false);
+        if(state!=null&&(!detail||wide()))g.text(font,font.plainSubstrByWidth(label("page",state.page()+1,state.pages(),state.total()).getString(),Math.max(20,listW-90)),listX+56,top+layout.footerY()+7,Ui.MUTED,false);
         var entry=selected();
         if(!loading&&entry!=null&&(wide()||detail)){
-            int dx=wide()?detailX:listX,dw=wide()?detailW:listW,dy=wide()?listY+6:top+38,max=top+panelHeight-76,boxY=dy-6;
-            Ui.box(g,dx-3,boxY,dw+6,Math.max(20,max-boxY+6),Ui.RAISED,Ui.LINE);
+            int dx=wide()?detailX:listX,dw=wide()?detailW:listW,boxY=wide()?listY:top+32,dy=boxY+6,max=top+layout.actionsY()-JournalLayout.GAP-6;
+            Ui.box(g,dx,boxY,dw,max-boxY+6,Ui.RAISED,Ui.LINE);
             g.nextStratum();
-            if(entry.strongest()!=null&&entry.strongest().type().equals("minecraft:zombie")){
+            var presentation=JournalPreview.presentation(entry);
+            if(presentation!=null){
                 int previewHeight=Math.min(80,Math.max(36,(max-boxY)/3));
-                preview.draw(g,entry.strongest(),dx+4,dy,dw-8,previewHeight,false,previewRotation);dy+=previewHeight+8;
+                preview.draw(g,presentation,dx+6,dy,dw-12,previewHeight,false,previewRotation);dy+=previewHeight+6;
             }
             var lines=new ArrayList<Component>();
             lines.add(title(entry));
@@ -179,20 +192,21 @@ public final class JournalScreen extends TravelScreen {
                 lines.addAll(rarityLines(entry));
                 if(entry.shiny()>0)lines.add(label("shiny_count",entry.shiny()).copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
             }
-            if(entry.kind()==JournalState.KILL)lines.addAll(recordLines(entry.strongest()));
-            if(entry.level()>0&&(entry.strongest()==null||tab==0))lines.add(label(tab==0?"first_level":"level",entry.level()));
-            else if(tab==0&&entry.kind()==JournalState.KILL)lines.add(label("unknown_first_level"));
-            if(entry.time()>0){
+            if(entry.kind()==JournalState.KILL||entry.kind()==JournalState.FEAT&&entry.strongest()!=null)lines.addAll(recordLines(entry.strongest(),tab==0||entry.kind()==JournalState.FEAT));
+            if(presentation!=null&&entry.strongest()==null)lines.add(label("appearance_missing"));
+            if(entry.level()>0&&entry.strongest()==null)lines.add(label(tab==0?"first_level":"level",entry.level()));
+            else if(tab==0&&entry.kind()==JournalState.KILL&&entry.strongest()==null)lines.add(label("unknown_first_level"));
+            if(entry.time()>0&&(tab!=0||entry.strongest()==null)){
                 String date=DateTimeFormatter.ofPattern("d MMM yyyy",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(entry.time()));
                 lines.add(label(tab==0||entry.kind()==JournalState.FEAT?"first_on":entry.kind()==JournalState.FISH?"caught_on":entry.kind()==JournalState.KILL?"defeated_on":"visited_on",date));
             }
-            if(entry.location()){
+            if((tab!=0||entry.strongest()==null)&&entry.location()){
                 lines.add(Component.literal(HomesScreen.dimension(entry.dimension())));
                 lines.add(Component.literal(entry.x()+", "+entry.y()+", "+entry.z()));
-            }else lines.add(label("no_location"));
+            }else if(!entry.location())lines.add(label("no_location"));
             int textTop=dy;dy-=detailScroll;g.enableScissor(dx,textTop,dx+dw,max+2);
             for(var line:lines){for(var part:font.split(line,dw-8)){g.text(font,part,dx+4,dy,Ui.MUTED,false);dy+=11;}dy+=2;}
-            g.disableScissor();maxScroll=Math.max(0,dy+detailScroll-max+10);
+            g.disableScissor();maxScroll=Math.max(0,dy+detailScroll-max+6);
             if(maxScroll>0)g.text(font,Component.literal("↕"),dx+dw-8,boxY+2,Ui.MUTED,false);
         }
     }
@@ -209,20 +223,17 @@ public final class JournalScreen extends TravelScreen {
         return lines;
     }
     public static List<Component> recordLines(DefeatRecord record){
+        return recordLines(record,false);
+    }
+    public static List<Component> recordLines(DefeatRecord record,boolean first){
         if(record==null)return List.of(label("record_missing"));
         var lines=new ArrayList<Component>();
-        lines.add(label("strongest").copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
+        lines.add(label(first?"first_record":"strongest").copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
         lines.add(record.level()>0?label("record_level",record.level()):label("unlevelled"));lines.add(label("record_health",record.health()));
         if(record.elite())lines.add(label("elite"));
         if(Math.abs(record.scale()-1)>0.01)lines.add(label("record_scale",record.scale()));
         lines.add(label("record_time",DateTimeFormatter.ofPattern("d MMM yyyy HH:mm:ss",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(record.time()))));
         lines.add(Component.literal(HomesScreen.dimension(record.dimension())+" "+record.x()+", "+record.y()+", "+record.z()));
-        for(var gear:record.gear())lines.add(label("gear",label("slot_"+gear.slot()).getString(),BuiltInRegistries.ITEM.getOptional(Identifier.parse(gear.item())).map(item->new net.minecraft.world.item.ItemStack(item).getHoverName().getString()).orElse(gear.item())));
-        for(var effect:record.effects()){
-            var value=BuiltInRegistries.MOB_EFFECT.getOptional(Identifier.parse(effect.id()));
-            int color=value.isPresent()&&value.get().getCategory()==net.minecraft.world.effect.MobEffectCategory.HARMFUL?0xFF5555:0x4AA8FF;
-            lines.add(label("effect",value.map(e->Component.translatable(e.getDescriptionId()).getString()).orElse(effect.id()),effect.amplifier()+1,effect.ticks()<0?"∞":effect.ticks()/20).copy().withStyle(s->s.withColor(color)));
-        }
         for(var affix:record.affixes())lines.add(label("affix",affixName(affix)));
         return lines;
     }
@@ -238,10 +249,11 @@ public final class JournalScreen extends TravelScreen {
             boolean activeRow=entry.key().equals(selected);
             Ui.box(g,getX(),getY(),getWidth(),getHeight(),activeRow?Ui.GOLD_SOFT:isHovered()?Ui.CONTROL_HOVER:Ui.CONTROL,activeRow?Ui.GOLD:Ui.LINE);
             g.nextStratum();
-            if(!preview.draw(g,entry.strongest(),getX()+6,getY()+4,20,20,true,0.35f))g.item(new net.minecraft.world.item.ItemStack(icon(entry)),getX()+6,getY()+5);
+            g.item(new net.minecraft.world.item.ItemStack(icon(entry)),getX()+6,getY()+(getHeight()-16)/2);
             int color=entry.first()?Ui.GOLD:Ui.TEXT;
-            var title=font.split(title(entry),getWidth()-36);if(!title.isEmpty())g.text(font,title.getFirst(),getX()+30,getY()+4,color,false);
-            var description=font.split(summary(entry),getWidth()-36);if(!description.isEmpty())g.text(font,description.getFirst(),getX()+30,getY()+15,Ui.MUTED,false);
+            int textY=getY()+(getHeight()-18)/2;
+            var title=font.split(title(entry),getWidth()-34);if(!title.isEmpty())g.text(font,title.getFirst(),getX()+28,textY,color,false);
+            var description=font.split(summary(entry),getWidth()-34);if(!description.isEmpty())g.text(font,description.getFirst(),getX()+28,textY+10,Ui.MUTED,false);
         }
     }
 }

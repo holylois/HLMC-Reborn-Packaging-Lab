@@ -1,4 +1,6 @@
 {
+  "holylois.journal.first_record": "Первая записанная победа",
+  "holylois.journal.appearance_missing": "Первоначальный вид не был записан.",
   "holylois.journal.strongest": "Сильнейший записанный противник",
   "holylois.journal.record_level": "Уровень рекорда: %s",
   "holylois.journal.record_health": "Максимальное здоровье: %s",

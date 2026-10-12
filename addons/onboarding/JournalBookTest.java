@@ -47,6 +47,7 @@ public final class JournalBookTest {
         check(first.player.equals("Alice")&&first.level==50&&first.firstLevel==20&&first.time==100&&first.x==1,"Higher-level kills preserve the first defeated level, credit and location");
         var savedFirst=new Gson().fromJson(new Gson().toJson(first),Discoveries.First.class);
         check(savedFirst.firstLevel==20&&savedFirst.level==50,"First defeat level and later highest level survive saving separately");
+        check(Discoveries.firstType(savedFirst).equals("minecraft:zombie"),"Saved firsts retain their entity subject for appearance and drop icons");
         check(new Gson().fromJson("{\"level\":50}",Discoveries.First.class).firstLevel==null,"Legacy highest levels do not invent the first defeat level");
         check(discoveries.rememberMob("minecraft:skeleton","Bob","minecraft:overworld",0,64,0,201,0)!=null,"Different mob types have independent firsts");
         var entries=new ArrayList<JournalState.Entry>();
@@ -65,7 +66,7 @@ public final class JournalBookTest {
         JournalState.CODEC.encode(buffer,result);check(JournalState.CODEC.decode(buffer).equals(result),"Journal state round-trips every field");buffer.release();
         buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);var request=new JournalRequest(1,2,3,4,"spire",123);
         var recordPage=new JournalState(1,3,0,1,1,8,"",List.of(new JournalState.Entry("kill:minecraft:zombie",3,"minecraft:zombie","","minecraft:overworld",1,64,2,200,2,0,0,20,true,false).withStrongest(record)));
-        JournalState.CODEC.encode(buffer,recordPage);check(JournalState.CODEC.decode(buffer).equals(recordPage),"strongest record survives bounded v4 packet roundtrip");buffer.clear();
+        JournalState.CODEC.encode(buffer,recordPage);check(JournalState.CODEC.decode(buffer).equals(recordPage),"strongest record and entity subject survive bounded v5 packet roundtrip");buffer.clear();
         JournalRequest.CODEC.encode(buffer,request);check(JournalRequest.CODEC.decode(buffer).equals(request),"Read-only requests round-trip without a target identity");buffer.release();
         try{new JournalRequest(1,0,0,9,"");throw new AssertionError("Oversized request accepted");}catch(IllegalArgumentException expected){checked++;}
         try{new JournalRequest(1,0,0,8,"x".repeat(49));throw new AssertionError("Oversized search accepted");}catch(IllegalArgumentException expected){checked++;}

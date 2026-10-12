@@ -36,22 +36,34 @@ public final class StrongestJournalChecks {
             check(record.effects().stream().anyMatch(e->e.id().equals("minecraft:strength"))&&record.affixes().contains(com.ultimatearpg.monster.ArpgEliteAffix.HEAVY_ARMOR.id()),"actual effects and semicolon Runeforged affix IDs saved");
             return snapshot;
         });
+        var firstPage=world.getServer().computeOnServer(server->{
+            var player=server.getPlayerList().getPlayers().getFirst();var first=backend.snapshot(player,new JournalRequest(0,3,0,8,"zombie"));
+            var mob=first.entries().stream().filter(e->e.key().equals("mob:minecraft:zombie")).findFirst().orElseThrow();
+            check(mob.strongest()!=null&&mob.strongest().level()==20,"world first retains the original defeat, separate from strongest level 50");
+            check(mob.strongest().gear().stream().anyMatch(g->g.item().equals("minecraft:iron_helmet")),"world first retains original equipment");
+            check(mob.subject().equals("minecraft:zombie"),"world-first subject survives the page payload");
+            return first;
+        });
         context.waitTicks(100);
         context.runOnClient(client->{
             var preview=new JournalPreview();var record=page.entries().getFirst().strongest();var entity=preview.entity(record);
             check(entity!=null&&client.level.getEntity(entity.getId())==null,"preview zombie is never inserted into the world");
             check(entity.getItemBySlot(EquipmentSlot.HEAD).is(Items.DIAMOND_HELMET),"isolated preview restores strongest equipment");
             check(entity.getItemBySlot(EquipmentSlot.MAINHAND).is(Items.IRON_SWORD),"isolated preview restores the recorded weapon");
+            String details=JournalScreen.recordLines(record).stream().map(c->c.getString()).collect(java.util.stream.Collectors.joining("\n"));
+            check(details.contains("Maximum health")&&!details.contains("Helmet")&&!details.contains("Sword")&&!details.contains("Strength"),"details keep HP without redundant gear or potion lines");
             client.options.guiScale().set(1);client.resizeGui();
             client.gui.setScreen(new JournalScreen(page));
         });context.waitTicks(1);context.takeScreenshot("60-strongest-zombie-wide");
         var pause=context.computeOnClient(client->{var button=client.gui.screen().children().stream().filter(w->w instanceof net.minecraft.client.gui.components.Button b&&b.getMessage().getString().equals("Pause")).map(w->(net.minecraft.client.gui.components.Button)w).findFirst().orElseThrow();double scale=client.getWindow().getGuiScale();return new double[]{(button.getX()+button.getWidth()/2)*scale,(button.getY()+8)*scale};});
         context.getInput().setCursorPos(pause[0],pause[1]);context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);context.waitTicks(2);
         context.runOnClient(client->{try{var field=JournalScreen.class.getDeclaredField("previewPaused");field.setAccessible(true);check(field.getBoolean(client.gui.screen()),"real mouse click pauses the rotating model");}catch(ReflectiveOperationException error){throw new IllegalStateException(error);}});
-        context.runOnClient(client->{client.options.guiScale().set(2);client.resizeGui();client.gui.setScreen(new JournalScreen(new JournalState(1,3,0,1,1,3,"zombie",page.entries())));});
+        context.runOnClient(client->client.gui.setScreen(new JournalScreen(firstPage)));
+        context.waitTicks(4);context.takeScreenshot("60-world-first-zombie-wide");
+        context.runOnClient(client->{client.options.guiScale().set(2);client.resizeGui();client.gui.setScreen(new JournalScreen(new JournalState(1,3,0,1,1,2,"zombie",page.entries())));});
         context.waitTicks(1);context.takeScreenshot("60-strongest-zombie-narrow-list");
         context.runOnClient(client->{
-            var screen=new JournalScreen(new JournalState(1,3,0,1,1,3,"zombie",page.entries()));
+            var screen=new JournalScreen(new JournalState(1,3,0,1,1,2,"zombie",page.entries()));
             try{var detail=JournalScreen.class.getDeclaredField("detail");detail.setAccessible(true);detail.setBoolean(screen,true);}catch(ReflectiveOperationException error){throw new IllegalStateException(error);}
             client.gui.setScreen(screen);
         });context.waitTicks(1);context.takeScreenshot("60-strongest-zombie-narrow-detail");
