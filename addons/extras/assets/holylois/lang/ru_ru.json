@@ -14,6 +14,7 @@
   "holylois.journal.gear": "%s: %s",
   "holylois.journal.effect": "%s %s (%s с)",
   "holylois.journal.affix": "Свойство: %s",
+  "holylois.journal.traits": "Особенности",
   "holylois.journal.slot_head": "Голова",
   "holylois.journal.slot_chest": "Грудь",
   "holylois.journal.slot_legs": "Ноги",

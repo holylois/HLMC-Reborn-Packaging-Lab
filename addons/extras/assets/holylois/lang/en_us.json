@@ -14,6 +14,7 @@
   "holylois.journal.gear": "%s: %s",
   "holylois.journal.effect": "%s %s (%s s)",
   "holylois.journal.affix": "Affix: %s",
+  "holylois.journal.traits": "Traits",
   "holylois.journal.slot_head": "Head",
   "holylois.journal.slot_chest": "Chest",
   "holylois.journal.slot_legs": "Legs",

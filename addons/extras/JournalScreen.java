@@ -132,7 +132,7 @@ public final class JournalScreen extends TravelScreen {
     }
     @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical){
         int dx=wide()?detailX:listX,dw=wide()?detailW:listW;
-        if(selected()!=null&&(wide()||detail)&&x>=dx&&x<=dx+dw&&y>=listY&&y<top+layout.actionsY()-JournalLayout.GAP){
+        if(maxScroll>0&&selected()!=null&&(wide()||detail)&&x>=dx&&x<=dx+dw&&y>=(wide()?listY:top+32)&&y<top+layout.actionsY()-JournalLayout.GAP){
             detailScroll=Math.max(0,Math.min(maxScroll,detailScroll-(int)(vertical*22)));return true;
         }
         return super.mouseScrolled(x,y,horizontal,vertical);
@@ -178,7 +178,7 @@ public final class JournalScreen extends TravelScreen {
             var presentation=JournalPreview.presentation(entry);
             if(presentation!=null){
                 int previewHeight=Math.min(80,Math.max(36,(max-boxY)/3));
-                preview.draw(g,presentation,dx+6,dy,dw-12,previewHeight,false,previewRotation);dy+=previewHeight+6;
+                if(preview.draw(g,presentation,dx+6,dy,dw-12,previewHeight,false,previewRotation))dy+=previewHeight+6;
             }
             var lines=new ArrayList<Component>();
             lines.add(title(entry));
@@ -204,9 +204,12 @@ public final class JournalScreen extends TravelScreen {
                 lines.add(Component.literal(HomesScreen.dimension(entry.dimension())));
                 lines.add(Component.literal(entry.x()+", "+entry.y()+", "+entry.z()));
             }else if(!entry.location())lines.add(label("no_location"));
-            int textTop=dy;dy-=detailScroll;g.enableScissor(dx,textTop,dx+dw,max+2);
+            int textTop=dy,contentHeight=0;
+            for(var line:lines)contentHeight+=font.split(line,dw-8).size()*11+2;
+            maxScroll=detailOverflow(contentHeight,max+2-textTop);detailScroll=Math.clamp(detailScroll,0,maxScroll);
+            dy-=detailScroll;g.enableScissor(dx,textTop,dx+dw,max+2);
             for(var line:lines){for(var part:font.split(line,dw-8)){g.text(font,part,dx+4,dy,Ui.MUTED,false);dy+=11;}dy+=2;}
-            g.disableScissor();maxScroll=Math.max(0,dy+detailScroll-max+6);
+            g.disableScissor();
             if(maxScroll>0)g.text(font,Component.literal("↕"),dx+dw-8,boxY+2,Ui.MUTED,false);
         }
     }
@@ -232,11 +235,15 @@ public final class JournalScreen extends TravelScreen {
         lines.add(record.level()>0?label("record_level",record.level()):label("unlevelled"));lines.add(label("record_health",record.health()));
         if(record.elite())lines.add(label("elite"));
         if(Math.abs(record.scale()-1)>0.01)lines.add(label("record_scale",record.scale()));
+        if(!record.affixes().isEmpty()){
+            lines.add(label("traits").copy().withStyle(s->s.withColor(JournalPreview.auraColor(record.affixes().size()))));
+            for(var affix:record.affixes())lines.add(affixName(affix).copy().withStyle(s->s.withColor(JournalPreview.auraColor(record.affixes().size()))));
+        }
         lines.add(label("record_time",DateTimeFormatter.ofPattern("d MMM yyyy HH:mm:ss",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(record.time()))));
         lines.add(Component.literal(HomesScreen.dimension(record.dimension())+" "+record.x()+", "+record.y()+", "+record.z()));
-        for(var affix:record.affixes())lines.add(label("affix",affixName(affix)));
         return lines;
     }
+    public static int detailOverflow(int contentHeight,int availableHeight){return Math.max(0,contentHeight-availableHeight-2);}
     private static Component affixName(String id){
         try{var type=Class.forName("com.ultimatearpg.monster.ArpgEliteAffix");var value=type.getMethod("byId",String.class).invoke(null,id);if(value!=null)return Component.translatable((String)type.getMethod("translationKey").invoke(value));}catch(ReflectiveOperationException|LinkageError ignored){}
         return Component.literal(id);

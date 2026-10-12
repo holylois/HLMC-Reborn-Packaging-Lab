@@ -44,6 +44,9 @@ public final class StrongestJournalChecks {
             check(mob.subject().equals("minecraft:zombie"),"world-first subject survives the page payload");
             return first;
         });
+        world.getServer().runOnServer(server->kill(server,"minecraft:witch",31,Items.IRON_HELMET,false));context.waitTicks(4);
+        var witchPage=world.getServer().computeOnServer(server->{backend.drainDeaths(server);var player=server.getPlayerList().getPlayers().getFirst();return backend.snapshot(player,new JournalRequest(1,3,0,8,"witch"));});
+        var witchFirst=world.getServer().computeOnServer(server->{var player=server.getPlayerList().getPlayers().getFirst();return backend.snapshot(player,new JournalRequest(0,3,0,8,"witch"));});
         context.waitTicks(100);
         context.runOnClient(client->{
             var preview=new JournalPreview();var record=page.entries().getFirst().strongest();var entity=preview.entity(record);
@@ -52,6 +55,12 @@ public final class StrongestJournalChecks {
             check(entity.getItemBySlot(EquipmentSlot.MAINHAND).is(Items.IRON_SWORD),"isolated preview restores the recorded weapon");
             String details=JournalScreen.recordLines(record).stream().map(c->c.getString()).collect(java.util.stream.Collectors.joining("\n"));
             check(details.contains("Maximum health")&&!details.contains("Helmet")&&!details.contains("Sword")&&!details.contains("Strength"),"details keep HP without redundant gear or potion lines");
+            check(details.contains("Traits")&&details.contains("Haste")&&details.contains("Physical Resistance"),"nameplate traits are preserved and readable in the defeat record");
+            var witch=preview.entity(witchPage.entries().getFirst().strongest());
+            check(witch instanceof net.minecraft.world.entity.monster.Witch&&client.level.getEntity(witch.getId())==null,"Witch record creates an isolated Witch preview");
+            check(witch.getItemBySlot(EquipmentSlot.MAINHAND).is(Items.IRON_SWORD),"Witch equipment snapshot is restored");
+            check(witchFirst.entries().getFirst().strongest().type().equals("minecraft:witch"),"Witch world first has its own appearance snapshot");
+            check(JournalScreen.detailOverflow(99,100)==0&&JournalScreen.detailOverflow(102,100)==0&&JournalScreen.detailOverflow(150,100)==48,"fitting text has no scrolling; overflow remains reachable");
             client.options.guiScale().set(1);client.resizeGui();
             client.gui.setScreen(new JournalScreen(page));
         });context.waitTicks(1);context.takeScreenshot("60-strongest-zombie-wide");
@@ -60,6 +69,8 @@ public final class StrongestJournalChecks {
         context.runOnClient(client->{try{var field=JournalScreen.class.getDeclaredField("previewPaused");field.setAccessible(true);check(field.getBoolean(client.gui.screen()),"real mouse click pauses the rotating model");}catch(ReflectiveOperationException error){throw new IllegalStateException(error);}});
         context.runOnClient(client->client.gui.setScreen(new JournalScreen(firstPage)));
         context.waitTicks(4);context.takeScreenshot("60-world-first-zombie-wide");
+        context.runOnClient(client->client.gui.setScreen(new JournalScreen(witchPage)));context.waitTicks(4);context.takeScreenshot("60-witch-personal-wide");
+        context.runOnClient(client->client.gui.setScreen(new JournalScreen(witchFirst)));context.waitTicks(4);context.takeScreenshot("60-witch-world-first-wide");
         context.runOnClient(client->{client.options.guiScale().set(2);client.resizeGui();client.gui.setScreen(new JournalScreen(new JournalState(1,3,0,1,1,2,"zombie",page.entries())));});
         context.waitTicks(1);context.takeScreenshot("60-strongest-zombie-narrow-list");
         context.runOnClient(client->{
@@ -71,10 +82,13 @@ public final class StrongestJournalChecks {
         world.getServer().runOnServer(server->{backend=null;});
     }
     private static void kill(net.minecraft.server.MinecraftServer server,int level,net.minecraft.world.item.Item helmet,boolean cancel){
+        kill(server,"minecraft:zombie",level,helmet,cancel);
+    }
+    private static void kill(net.minecraft.server.MinecraftServer server,String type,int level,net.minecraft.world.item.Item helmet,boolean cancel){
         var player=server.getPlayerList().getPlayers().getFirst();var world=(ServerLevel)player.level();
-        var zombie=(Zombie)BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("minecraft:zombie")).create(world,EntitySpawnReason.COMMAND);
+        var zombie=(net.minecraft.world.entity.Mob)BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(type)).create(world,EntitySpawnReason.COMMAND);
         zombie.setNoAi(true);zombie.setPos(player.getX()+3,player.getY(),player.getZ());
-        var rune=(com.ultimatearpg.monster.ArpgMonsterLevelAccess)zombie;rune.ultimatearpg$setMonsterLevel(level);rune.ultimatearpg$setMonsterBaseLevel(level);rune.ultimatearpg$setEliteMonster(true);rune.ultimatearpg$setEliteAffixIds(com.ultimatearpg.monster.ArpgEliteAffix.HEAVY_ARMOR.id());rune.ultimatearpg$setProcessedEliteRoll(true);rune.ultimatearpg$setProcessedWeaponQuality(true);rune.ultimatearpg$setProcessedArmorQuality(true);
+        var rune=(com.ultimatearpg.monster.ArpgMonsterLevelAccess)zombie;rune.ultimatearpg$setMonsterLevel(level);rune.ultimatearpg$setMonsterBaseLevel(level);rune.ultimatearpg$setEliteMonster(true);rune.ultimatearpg$setEliteAffixIds(com.ultimatearpg.monster.ArpgEliteAffix.HEAVY_ARMOR.id()+";"+com.ultimatearpg.monster.ArpgEliteAffix.HASTE.id()+";"+com.ultimatearpg.monster.ArpgEliteAffix.HEAVY.id());rune.ultimatearpg$setProcessedEliteRoll(true);rune.ultimatearpg$setProcessedWeaponQuality(true);rune.ultimatearpg$setProcessedArmorQuality(true);
         zombie.setItemSlot(EquipmentSlot.HEAD,new ItemStack(helmet));zombie.setItemSlot(EquipmentSlot.MAINHAND,new ItemStack(Items.IRON_SWORD));
         zombie.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.STRENGTH,300,1));
         if(cancel)cancelled.add(zombie.getUUID());world.addFreshEntity(zombie);zombie.setLastHurtByPlayer(player,100);zombie.hurtServer(world,world.damageSources().playerAttack(player),100000);

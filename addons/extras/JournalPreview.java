@@ -2,6 +2,9 @@ package holylois.boombox;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -14,20 +17,24 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import java.util.LinkedHashMap;
 
-/** Zombie pilot: cached isolated preview objects, no world insertion or ticking, no arbitrary entity data. */
+/** Cached isolated living-mob previews, no world insertion or ticking, no arbitrary entity data. */
 public final class JournalPreview {
-    private final LinkedHashMap<DefeatRecord,Zombie> cache=new LinkedHashMap<>();
+    private final LinkedHashMap<DefeatRecord,LivingEntity> cache=new LinkedHashMap<>();
     private Object level;
     private final long clockStarted=net.minecraft.util.Util.getMillis();
     private static int nextPreviewId=-1_000_000;
-    public Zombie entity(DefeatRecord record){
-        var mc=Minecraft.getInstance();if(mc.level==null||record==null||!record.type().equals("minecraft:zombie"))return null;
+    public LivingEntity entity(DefeatRecord record){
+        var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||record==null||record.type().equals("minecraft:player"))return null;
         if(level!=mc.level){cache.clear();level=mc.level;}
         if(cache.containsKey(record))return cache.get(record);
         if(cache.size()>=8)cache.remove(cache.keySet().iterator().next());
-        var zombie=(Zombie)BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("minecraft:zombie")).create(mc.level,EntitySpawnReason.LOAD);if(zombie==null)return null;
+        var type=BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.parse(record.type()));if(type.isEmpty())return null;
+        var created=type.get().create(mc.level,EntitySpawnReason.LOAD);if(!(created instanceof LivingEntity zombie))return null;
         zombie.setId(nextPreviewId--);if(!record.appearanceId().isEmpty())zombie.setUUID(java.util.UUID.fromString(record.appearanceId()));
-        zombie.setNoAi(true);zombie.setSilent(true);zombie.setPermanentlyInvulnerable(true);zombie.setBaby(record.baby());
+        if(zombie instanceof Mob mob)mob.setNoAi(true);
+        zombie.setSilent(true);zombie.setPermanentlyInvulnerable(true);
+        if(zombie instanceof Zombie z)z.setBaby(record.baby());else if(zombie instanceof AgeableMob a)a.setBaby(record.baby());
+        var scale=zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.SCALE);if(scale!=null)scale.setBaseValue(record.scale());
         zombie.setPos(mc.player.position());
         for(var gear:record.gear()){
             var item=BuiltInRegistries.ITEM.getOptional(Identifier.parse(gear.item()));if(item.isEmpty())continue;var stack=new ItemStack(item.get());
@@ -53,13 +60,28 @@ public final class JournalPreview {
         state.shadowPieces.clear();state.outlineColor=0;
         state.lightCoords=net.minecraft.util.LightCoordsUtil.pack(15,15);
         if(state instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState living){living.bodyRot=180;living.yRot=0;living.xRot=0;living.deathTime=0;living.walkAnimationSpeed=0;living.walkAnimationPos=0;}
-        int scale=portrait?40:Math.max(12,Math.min(width/2,height/2));
-        float focus=portrait?(entity.isBaby()?0.82f:1.65f):entity.getBbHeight()/2;
+        int scale=portrait?40:Math.max(1,(int)Math.min((width-12)/Math.max(0.1f,entity.getBbWidth()*2.0f),(height-12)/Math.max(0.1f,entity.getBbHeight()*1.3f)));
+        float focus=portrait?(entity.isBaby()?0.82f:1.65f):entity.getBbHeight()*0.55f;
         g.entity(state,scale,new Vector3f(0,focus,0),new Quaternionf().rotateZ((float)Math.PI).rotateY(rotation),new Quaternionf(),x,y,x+width,y+height);
+        if(!portrait&&record.elite()&&!record.affixes().isEmpty())aura(g,record,x,y,width,height,age);
         return true;
+    }
+    /** Bounded GUI-only motes in the recorded elite palette; never spawn world particles. */
+    private static void aura(GuiGraphicsExtractor g,DefeatRecord record,int x,int y,int width,int height,float age){
+        int color=auraColor(record.affixes().size());float clock=JournalHints.motionEnabled()?age:0;
+        g.nextStratum();g.enableScissor(x,y,x+width,y+height);
+        for(int i=0;i<10;i++){
+            double angle=i*2.39996+clock*0.035;double rise=((i*0.113+clock*0.009)%1);
+            int px=x+width/2+(int)(Math.cos(angle)*Math.min(width*0.22,height*0.35));int py=y+height-4-(int)(rise*(height-8));
+            g.fill(px,py,px+1,py+1,0xCC000000|color);if(i%3==0)g.fill(px-1,py,px+2,py+1,0x66000000|color);
+        }
+        g.disableScissor();
+    }
+    public static int auraColor(int count){
+        try{var quality=Class.forName("com.ultimatearpg.item.ArpgItemQuality");var value=quality.getMethod("fromEliteAffixCount",int.class).invoke(null,count);return (int)quality.getMethod("color").invoke(value)&0xFFFFFF;}catch(ReflectiveOperationException|LinkageError ignored){return Ui.GOLD&0xFFFFFF;}
     }
     public static DefeatRecord presentation(JournalState.Entry entry){
         if(entry.strongest()!=null)return entry.strongest();
-        return entry.subject().equals("minecraft:zombie")?new DefeatRecord("minecraft:zombie",0,20,false,false,0,"minecraft:overworld",0,0,0,java.util.List.of(),java.util.List.of(),java.util.List.of()):null;
+        return entry.subject().isEmpty()?null:new DefeatRecord(entry.subject(),0,20,false,false,0,"minecraft:overworld",0,0,0,java.util.List.of(),java.util.List.of(),java.util.List.of());
     }
 }
