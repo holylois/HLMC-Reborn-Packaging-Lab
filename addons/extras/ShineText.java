@@ -4,7 +4,8 @@ import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.Style;
 
 /**
- * Moving shine for Legendary and Mythic names (client only). The server marks the text with a shine font (FishData.shine),
+ * Fixed gold with a moving glint for Legendary; a moving gradient/wave for Mythic (client only). The server marks the text
+ * with a shine font (FishData.shine),
  * which draws exactly like the default font; here each glyph gets its colour from its screen position and the clock, so the
  * same name shimmers in chat, tooltips, death messages and anywhere else text is drawn.
  */
@@ -22,12 +23,15 @@ public final class ShineText {
 
     /** Glyph colour at x (keeps the alpha of the colour the game chose). */
     public static int color(Style style, float x, int color) {
+        return colorAt(style,x,color,seconds());
+    }
+
+    public static int colorAt(Style style,float x,int color,float t){
         int kind = kind(style);
         if (kind == 0) return color;
         boolean mythic = kind == 2;
-        float t = seconds();
         int from = mythic ? 0xFF3333 : 0xFF9E1C, to = mythic ? 0xFF6BCC : 0xFFE58C;
-        int rgb = mix(from, to, 0.5f + 0.5f * (float) Math.sin(x * 0.09f - t * (mythic ? 4.5f : 3f)));
+        int rgb = mythic ? mix(from, to, 0.5f + 0.5f * (float) Math.sin(x * 0.09f - t * 4.5f)) : FishData.color("legendary") & 0xFFFFFF;
         // A white glint sweeps from left to right every 2.4 s (Mythic every 1.6 s).
         float period = mythic ? 1.6f : 2.4f, at = (t % period) / period * 300 - 40;
         float glint = Math.max(0, 1 - Math.abs(Math.floorMod((int) x, 300) - at) / 10f);

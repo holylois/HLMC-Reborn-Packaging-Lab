@@ -214,5 +214,7 @@
   "holylois.journal.rarity5": "Мифическая",
   "holylois.travel.journal_title": "Журнал Holy Lois",
   "key.holylois.journal": "Журнал Holy Lois",
-  "key.category.holylois.journal": "Holy Lois"
+  "key.category.holylois.journal": "Holy Lois",
+  "holylois.crate.tip": "Поставьте этот ящик в мире.",
+  "holylois.crate.open": "Разбейте подходящим инструментом, чтобы забрать добычу."
 }

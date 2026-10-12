@@ -214,5 +214,7 @@
   "holylois.journal.rarity5": "Mythic",
   "holylois.travel.journal_title": "Holy Lois Journal",
   "key.holylois.journal": "Holy Lois Journal",
-  "key.category.holylois.journal": "Holy Lois"
+  "key.category.holylois.journal": "Holy Lois",
+  "holylois.crate.tip": "Place this crate in the world.",
+  "holylois.crate.open": "Break it with the right tool to collect loot."
 }

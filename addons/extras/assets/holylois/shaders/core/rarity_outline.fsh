@@ -3,7 +3,7 @@
 
 // Rarity stroke (RarityOutline.java). The item and its stroke both use this pipeline (same sort key, so the stroke stays under
 // the item). Vertex alpha says what to draw: 255 = the item itself (premultiplied, as vanilla), 254 = its silhouette in the
-// vertex colour, 253 = Legendary gold gradient, 252 = Mythic red gradient (both move).
+// vertex colour, 253 = fixed Legendary gold with a white shine, 252 = moving Mythic red gradient.
 
 layout(std140) uniform DynamicTransforms {
     mat4 ModelViewMat;
@@ -47,7 +47,14 @@ void main() {
         vec3 to = mode == 253 ? vec3(1.0, 0.90, 0.55) : vec3(1.0, 0.42, 0.80);
         // GameTime is the day fraction (24000 ticks = 1200 s): a diagonal band sweeps across about every 2.6 s.
         float t = 0.5 + 0.5 * sin((gl_FragCoord.x + gl_FragCoord.y) * 0.07 - GameTime * 1200.0 * 2.4);
-        color = mix(from, to, t);
+        if (mode == 253) {
+            // Legendary stays gold, with just a narrow white shine. Mythic keeps its moving color gradient.
+            float sweep = fract((gl_FragCoord.x + gl_FragCoord.y) * 0.015 - GameTime * 1200.0 / 2.4);
+            float glint = pow(max(0.0, 1.0 - abs(sweep - 0.5) * 24.0), 2.0);
+            color = mix(vertexColor.rgb, vec3(1.0), glint * 0.75);
+        } else {
+            color = mix(from, to, t);
+        }
     }
     fragColor = vec4(color, 1.0) * ColorModulator;
 }

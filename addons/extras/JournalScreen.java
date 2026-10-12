@@ -97,7 +97,7 @@ public final class JournalScreen extends TravelScreen {
     }
     private static Component title(JournalState.Entry entry){
         if(!entry.first())return name(entry).copy().withStyle(s->s.withColor(Ui.TEXT&0xFFFFFF));
-        return Component.literal("★ ").withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)).append(name(entry).copy().withStyle(s->JournalHints.motionEnabled()?FishData.shine(s.withColor(FishData.color("legendary")&0xFFFFFF),"legendary"):s.withColor(FishData.color("legendary")&0xFFFFFF)));
+        return name(entry).copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF));
     }
     private static net.minecraft.world.item.Item icon(JournalState.Entry entry){
         var id=Identifier.tryParse(entry.name());
@@ -122,9 +122,9 @@ public final class JournalScreen extends TravelScreen {
     }
     static String mapName(String dim){return switch(dim){case "minecraft:overworld"->"world";case "minecraft:the_nether"->"world_the_nether";case "minecraft:the_end"->"world_the_end";default->null;};}
     private Component summary(JournalState.Entry e){
-        if(e.kind()==JournalState.FEAT)return label("first_by",e.by());
-        return e.kind()==JournalState.FISH?label("caught",e.count()):e.kind()==JournalState.KILL?label(tab==0?"first_by":"defeated",tab==0?e.by():e.count())
+        Component text=e.kind()==JournalState.FEAT?label("first_by",e.by()):e.kind()==JournalState.FISH?label("caught",e.count()):e.kind()==JournalState.KILL?label(tab==0?"first_by":"defeated",tab==0?e.by():e.count())
             :tab==0?label("first_by",e.by()):label("visited");
+        return e.first()?Component.literal("★ ").append(text).withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)):text;
     }
     @Override boolean enter(){if(search!=null&&search.isFocused()&&!loading){query=search.getValue().strip();page=0;fetch();return true;}return false;}
     @Override public void tick(){
@@ -159,7 +159,7 @@ public final class JournalScreen extends TravelScreen {
             g.nextStratum();
             var lines=new ArrayList<Component>();
             lines.add(title(entry));
-            if(entry.first())lines.add(label(tab==0?"world_credit":"your_first").copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
+            if(entry.first())lines.add(Component.literal("★ ").append(label(tab==0?"world_credit":"your_first")).withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
             lines.add(summary(entry));
             if(entry.kind()==JournalState.FISH){
                 lines.add(label("best",entry.weight()>0?FishData.shortWeight(entry.weight())+" kg":label("unweighed").getString()));
@@ -204,7 +204,7 @@ public final class JournalScreen extends TravelScreen {
             g.item(new net.minecraft.world.item.ItemStack(icon(entry)),getX()+6,getY()+5);
             int color=entry.first()?Ui.GOLD:Ui.TEXT;
             var title=font.split(title(entry),getWidth()-36);if(!title.isEmpty())g.text(font,title.getFirst(),getX()+30,getY()+4,color,false);
-            g.text(font,font.plainSubstrByWidth(summary(entry).getString(),getWidth()-36),getX()+30,getY()+15,Ui.MUTED,false);
+            var description=font.split(summary(entry),getWidth()-36);if(!description.isEmpty())g.text(font,description.getFirst(),getX()+30,getY()+15,Ui.MUTED,false);
         }
     }
 }

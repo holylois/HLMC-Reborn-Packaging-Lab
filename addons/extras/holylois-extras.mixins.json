@@ -6,6 +6,9 @@
   "mixins": [
     "SchoolCatchMixin",
     "ShoalItemCatchMixin",
+    "SwimmingFishMixin",
+    "ShoalIdentityMixin",
+    "ShoalCatchRadiusMixin",
     "AdvancementTabOrderMixin",
     "RelicPlacementMixin",
     "RelicBlockChangeMixin",
@@ -33,6 +36,7 @@
   "client": [
     "CrateNameMixin",
     "TooltipPaletteMixin",
+    "ShoalRadiusMixin",
     "LiteminerScrollMixin",
     "BetterAdvancementsClickMixin",
     "NemoTooltipMixin",

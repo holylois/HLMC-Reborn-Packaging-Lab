@@ -15,7 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 public abstract class ShoalItemCatchMixin {
     @WrapOperation(method="fishUpShoal",at=@At(value="INVOKE",target="Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"),require=1)
     private static boolean holyLoisShoalItem(Level level,Entity entity,Operation<Boolean> original,Entity hook,Player player){
-        if(entity instanceof AbstractFish fish&&player instanceof ServerPlayer angler&&holylois.boombox.SchoolCatch.reel(angler,fish))return true;
+        if(entity instanceof AbstractFish fish&&player instanceof ServerPlayer angler&&holylois.boombox.SchoolCatch.reel(angler,fish,hook.position()))return true;
         return original.call(level,entity);
     }
 }

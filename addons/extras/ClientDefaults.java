@@ -28,6 +28,8 @@ public final class ClientDefaults implements PreLaunchEntrypoint {
                 if (done.add("rei-hide-tags")) text = text.replace("\"hiddenCategories\": []", "\"hiddenCategories\": [\"minecraft:plugins/tag\"]");
                 // A scrolling list instead of pages: no arrows and no "0/1" counter, only the search bar.
                 if (done.add("rei-scrolling")) text = text.replace("\"scrollingEntryListWidget\": false", "\"scrollingEntryListWidget\": true");
+                // Keep saved favorites intact, but hide the favorite button/panel as requested.
+                if (done.add("rei-no-favorites")) text = text.replace("\"favoritesEnabled\": true", "\"favoritesEnabled\": false");
                 if (!text.equals(before)) Files.writeString(rei, text, StandardCharsets.UTF_8);
             }
             // Alt-tab keeps the game running instead of opening the pause menu (F3+P turns pausing back on). Only once options.txt

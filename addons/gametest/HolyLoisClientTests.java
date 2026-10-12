@@ -77,6 +77,8 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "cards over the cinematic camera", context, world, HolyLoisClientTests::cinematicCards);
             run(failed, "hooked school fish arrives as an item", context, world, HolyLoisClientTests::schoolCatch);
             run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);
+            run(failed, "persistent shoal fish and swimming sizes", context, world, HolyLoisClientTests::shoalIdentity);
+            run(failed, "quiet favorites and first descriptions", context, world, HolyLoisClientTests::uiRefinements);
             run(failed, "crate rarity presentation", context, world, HolyLoisClientTests::cratePresentation);
             run(failed, "fishing history counts", context, world, HolyLoisClientTests::fishingHistory);
             run(failed, "fish tooltips", context, world, HolyLoisClientTests::fishTooltips);
@@ -797,16 +799,17 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var level = (net.minecraft.server.level.ServerLevel) player.level();
             var type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getValue(net.minecraft.resources.Identifier.parse("fishofthieves:splashtail"));
             var fish = (net.minecraft.world.entity.animal.fish.AbstractFish) type.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
-            fish.setPos(player.getX(), player.getY(), player.getZ());
+            fish.setPos(player.getX()+6, player.getY(), player.getZ());
             level.addFreshEntity(fish);
             var item = holylois.boombox.SchoolCatch.itemFor(fish);
             check(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item.getItem()).toString().equals("fishofthieves:splashtail"), "a hooked Splashtail becomes the Splashtail item (" + item + ")");
             check(!item.has(net.minecraft.core.component.DataComponents.BUCKET_ENTITY_DATA), "no bucket data on the caught fish");
             check(holylois.boombox.SchoolCatch.reel(player, fish) && !fish.isAlive(), "reeling the hooked fish removes the mob");
-            boolean got = false;
-            for (int i = 0; i < player.getInventory().getContainerSize(); i++)
-                got |= net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(player.getInventory().getItem(i).getItem()).toString().equals("fishofthieves:splashtail");
-            check(got, "the caught Splashtail is in the inventory");
+            var drops=level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,player.getBoundingBox().inflate(12));
+            var drop=drops.stream().filter(d->BuiltInRegistries.ITEM.getKey(d.getItem().getItem()).toString().equals("fishofthieves:splashtail")).findFirst().orElseThrow();
+            check(drop.getDeltaMovement().x<0&&drop.getDeltaMovement().y>0,"caught fish flies from the hook toward the angler");
+            check(holylois.boombox.FishData.kilograms(drop.getItem())==holylois.boombox.FishData.kilograms(item),"caught swimming fish keeps its visible weight");
+            drop.discard();
         });
         server.runCommand("clear @a");
     }
@@ -831,11 +834,97 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
                 var item=player.getInventory().getItem(i);
                 if(BuiltInRegistries.ITEM.getKey(item.getItem()).toString().equals("fishofthieves:splashtail"))caught+=item.getCount();
             }
-            check(caught==1,"shoal catch gives exactly one fish item");
+            check(caught==0,"shoal catch does not insert an item instantly into inventory");
+            var drops=level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,player.getBoundingBox().inflate(8));
+            check(drops.stream().filter(d->BuiltInRegistries.ITEM.getKey(d.getItem().getItem()).toString().equals("fishofthieves:splashtail")).count()==1,"shoal catch launches exactly one fish item");
+            drops.forEach(net.minecraft.world.entity.Entity::discard);
             check(level.getEntitiesOfClass(net.minecraft.world.entity.animal.fish.AbstractFish.class,player.getBoundingBox().inflate(8)).isEmpty(),"shoal catch does not spawn a live fish");
             shoal.discard();
         });
         world.getServer().runCommand("clear @a");
+    }
+
+    private static void uiRefinements(ClientGameTestContext context,TestSingleplayerContext world){
+        context.runOnClient(client->{
+            check(!me.shedaniel.rei.api.client.config.ConfigObject.getInstance().isFavoritesEnabled(),"REI favorites and its left panel are disabled");
+            client.gui.setScreen(new InventoryScreen(client.player));
+        });
+        context.waitTicks(5);context.takeScreenshot("55-no-favorites");
+        context.runOnClient(client->{
+            var entry=new holylois.boombox.JournalState.Entry("first",2,"Ruin Town",client.player.getName().getString(),"minecraft:overworld",8,63,2,1,1,0,0,0,true,true);
+            var screen=new holylois.boombox.JournalScreen(new holylois.boombox.JournalState(1,2,0,1,1,8,"",List.of(entry)));
+            client.gui.setScreen(screen);
+            try{
+                var title=holylois.boombox.JournalScreen.class.getDeclaredMethod("title",holylois.boombox.JournalState.Entry.class);title.setAccessible(true);
+                var text=(net.minecraft.network.chat.Component)title.invoke(null,entry);
+                check(!text.getString().contains("★")&&text.getStyle().getColor().getValue()==(holylois.boombox.Ui.GOLD&0xFFFFFF),"first discovery name is clean yellow without a star");
+                var summary=holylois.boombox.JournalScreen.class.getDeclaredMethod("summary",holylois.boombox.JournalState.Entry.class);summary.setAccessible(true);
+                check(((net.minecraft.network.chat.Component)summary.invoke(screen,entry)).getString().startsWith("★ "),"world-first star appears in the description");
+            }catch(ReflectiveOperationException error){throw new IllegalStateException(error);}
+        });
+        context.waitTicks(5);context.takeScreenshot("55-first-description");
+        context.runOnClient(client->client.gui.setScreen(null));
+    }
+
+    private static void shoalIdentity(ClientGameTestContext context,TestSingleplayerContext world){
+        var server=world.getServer();
+        server.runCommand("clear @a");
+        server.runCommand("fill 3 -64 -5 18 -59 8 water");
+        server.runOnServer(s->{
+            var player=s.getPlayerList().getPlayers().getFirst();var level=(ServerLevel)player.level();
+            var type=BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("fishofthieves:shoal"));
+            var shoal=new com.stevekung.fishofthieves.entity.shoal.Shoal(type,level);shoal.setPos(10,-59,2);
+            level.setBlock(new BlockPos(10,-59,2),com.stevekung.fishofthieves.registry.FOTBlocks.SHOAL.defaultBlockState(),3);
+            shoal.createNaturalSpawn(false);
+            check(shoal.getShoalFish().stream().anyMatch(f->f.id().startsWith("minecraft:")),"natural circling shoals include a biome-appropriate vanilla fish");
+            check(shoal.getShoalFish().stream().allMatch(f->f.data().contains(holylois.boombox.SwimmingFish.SAVE_KEY)),"every displayed virtual fish has a saved catch identity before sync");
+            var entry=shoal.getShoalFish().getFirst();var tag=entry.data().copy();tag.putString("id",entry.id());
+            var fish=(net.minecraft.world.entity.animal.fish.AbstractFish)net.minecraft.world.entity.EntityType.loadEntityRecursive(tag,level,new net.minecraft.world.entity.EntitySpawnRequest(net.minecraft.world.entity.EntitySpawnReason.LOAD,false),net.minecraft.world.entity.EntityProcessor.NOP);
+            var item=holylois.boombox.SwimmingFish.identity(fish).copy();
+            var data=item.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag();var trophy=data.getCompound("holylois_fish").orElseThrow();
+            trophy.putString("rarity","mythic");trophy.putDouble("kg",80);data.put("holylois_fish",trophy);
+            item.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(data));
+            ((holylois.boombox.SwimmingFish.Memory)fish).holyLoisFish(item);holylois.boombox.SwimmingFish.applyScale(fish,item);
+            var output=net.minecraft.world.level.storage.TagValueOutput.createWithContext(net.minecraft.util.ProblemReporter.DISCARDING,level.registryAccess());fish.saveWithoutId(output);
+            var saved=output.buildResult();saved.putString("id",entry.id());
+            var loaded=(net.minecraft.world.entity.animal.fish.AbstractFish)net.minecraft.world.entity.EntityType.loadEntityRecursive(saved,level,new net.minecraft.world.entity.EntitySpawnRequest(net.minecraft.world.entity.EntitySpawnReason.LOAD,false),net.minecraft.world.entity.EntityProcessor.NOP);
+            check(holylois.boombox.FishData.kilograms(holylois.boombox.SwimmingFish.identity(loaded))==80&&loaded.getScale()>3,"fish weight and body scale survive entity save/load");
+            var bucket=loaded.getBucketItemStack();loaded.saveToBucketTag(bucket);
+            var released=(net.minecraft.world.entity.animal.fish.AbstractFish)loaded.getType().create(level,net.minecraft.world.entity.EntitySpawnReason.BUCKET);
+            released.loadFromBucketTag(bucket.get(net.minecraft.core.component.DataComponents.BUCKET_ENTITY_DATA).copyTag());
+            check(holylois.boombox.FishData.kilograms(holylois.boombox.SwimmingFish.identity(released))==80&&released.getScale()>3,"bucket capture/release keeps the fish identity instead of rerolling it");
+            shoal.getShoalFish().set(0,new com.stevekung.fishofthieves.entity.shoal.ShoalFishData(entry.id(),entry.uuid(),saved));
+            check(holylois.boombox.ShoalFishIdentity.radius(shoal)>2,"a giant fish widens its school's circle/bubbles");
+            level.addFreshEntity(shoal);
+        });
+        context.runOnClient(client->{client.player.setYRot(-90);client.player.setXRot(12);});
+        context.waitTicks(25);
+        context.runOnClient(client->{
+            var shoals=client.level.getEntitiesOfClass(com.stevekung.fishofthieves.entity.shoal.Shoal.class,new net.minecraft.world.phys.AABB(2,-65,-6,20,-55,10));
+            log("client shoal diagnostics: entities="+shoals.size()+" request channel="+net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(com.stevekung.fishofthieves.network.RequestServerShoalFishPacket.TYPE));
+            for(var shoal:shoals){
+                log("client shoal id="+shoal.getId()+" fish="+shoal.getShoalFishClient().size());
+                for(var fish:shoal.getShoalFishClient())log("client virtual fish: "+BuiltInRegistries.ENTITY_TYPE.getKey(fish.getType())+" scale="+fish.getScale()+" kg="+holylois.boombox.FishData.kilograms(((holylois.boombox.SwimmingFish.Memory)fish).holyLoisFish()));
+            }
+        });
+        context.takeScreenshot("56-mixed-large-shoal");
+        context.runOnClient(client->{
+            var shoals=client.level.getEntitiesOfClass(com.stevekung.fishofthieves.entity.shoal.Shoal.class,new net.minecraft.world.phys.AABB(2,-65,-6,20,-55,10));
+            check(!shoals.isEmpty()&&shoals.getFirst().getShoalFishClient().stream().anyMatch(f->f.getScale()>3),"client virtual fish uses the saved large scale");
+            check(shoals.getFirst().getShoalFishClient().stream().anyMatch(f->BuiltInRegistries.ENTITY_TYPE.getKey(f.getType()).getNamespace().equals("minecraft")),"vanilla fish renders inside the shoal");
+        });
+        server.runOnServer(s->{
+            var player=s.getPlayerList().getPlayers().getFirst();var level=(ServerLevel)player.level();
+            var shoal=level.getEntitiesOfClass(com.stevekung.fishofthieves.entity.shoal.Shoal.class,new net.minecraft.world.phys.AABB(2,-65,-6,20,-55,10)).getFirst();
+            var entry=shoal.getShoalFish().getFirst();shoal.getShoalFish().clear();shoal.getShoalFish().add(entry);
+            var hook=new net.minecraft.world.entity.projectile.FishingHook(player,level,0,0);hook.setPos(shoal.position().add(holylois.boombox.ShoalFishIdentity.radius(shoal)-0.25,0,0));level.addFreshEntity(hook);
+            check(com.stevekung.fishofthieves.entity.shoal.Shoal.fishUpShoal(hook,player)==4,"a cast near the enlarged visible circle's edge reels its fish");
+            var drops=level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(2,-65,-6,20,-55,10));
+            var caught=drops.stream().filter(d->holylois.boombox.FishData.kilograms(d.getItem())==80).findFirst().orElseThrow();
+            check(holylois.boombox.FishData.rarity(caught.getItem()).equals("mythic")&&caught.getDeltaMovement().lengthSqr()>0,"caught item keeps the visible rarity/weight and flies toward the angler");
+            caught.discard();
+        });
+        server.runCommand("fill 3 -64 -5 18 -59 8 air");
     }
 
     private static void fishingHistory(ClientGameTestContext context,TestSingleplayerContext world){
@@ -857,6 +946,8 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
                 String tier=holylois.boombox.CrateStyle.rarity(item);
                 var lines=item.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(client.level),client.player,net.minecraft.world.item.TooltipFlag.NORMAL);
                 check(lines.getFirst().getStyle().getColor().getValue()==(holylois.boombox.FishData.color(tier)&0xFFFFFF),type+" crate tooltip uses "+tier+" color");
+                check(lines.get(1).getString().equals(net.minecraft.network.chat.Component.translatable("holylois.crate.tip").getString())&&lines.get(2).getString().equals(net.minecraft.network.chat.Component.translatable("holylois.crate.open").getString()),"crate tooltip explains placing and breaking for loot");
+                log(type+" held crate name: "+item.getStyledHoverName()+" expected="+Integer.toHexString(holylois.boombox.FishData.color(tier)&0xFFFFFF));
                 check(item.getStyledHoverName().getStyle().getColor().getValue()==(holylois.boombox.FishData.color(tier)&0xFFFFFF),type+" crate held name uses its tier color");
                 var border=com.anthonyhilyard.legendarytooltips.LegendaryTooltips.getDefinitionColors(item,0xF0100010,0xF0100010,0x505000FF,0x5028007F,client.level.registryAccess());
                 check(border.startBorder().get()==holylois.boombox.FishData.color(tier)&&border.endBorder().get()==holylois.boombox.FishData.color(tier),type+" crate tooltip border uses the shared fish palette");

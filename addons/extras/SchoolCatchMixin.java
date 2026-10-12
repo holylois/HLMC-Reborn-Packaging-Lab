@@ -22,7 +22,10 @@ public abstract class SchoolCatchMixin {
     @Inject(method = "retrieve", at = @At("HEAD"), cancellable = true)
     private void holyLoisReelFish(ItemStack rod, CallbackInfoReturnable<Integer> info) {
         if (!(hookedIn instanceof AbstractFish fish) || !(getPlayerOwner() instanceof ServerPlayer angler)) return;
-        if (!SchoolCatch.reel(angler, fish)) return;
+        if (!SchoolCatch.reel(angler, fish,((FishingHook)(Object)this).position())) return;
+        var hook=(FishingHook)(Object)this;
+        net.minecraft.advancements.triggers.CriteriaTriggers.FISHING_ROD_HOOKED.trigger(angler,rod,hook,java.util.List.of(SchoolCatch.itemFor(fish)));
+        angler.level().addFreshEntity(new net.minecraft.world.entity.ExperienceOrb(angler.level(),angler.getX(),angler.getY()+0.5,angler.getZ(),angler.getRandom().nextInt(6)+1));
         ((FishingHook) (Object) this).discard();
         info.setReturnValue(1);
     }

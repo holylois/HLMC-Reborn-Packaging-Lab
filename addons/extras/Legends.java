@@ -239,6 +239,14 @@ public final class Legends {
 
     /** Gives one caught fish its size; leaves anything else (and fish already weighed or legend items) alone. */
     static void weigh(ItemStack stack, ServerLevel level, RandomSource random, float luck, String angler, LootRules.FishConfig config) {
+        weigh(stack,level,random,luck,angler,config,false);
+    }
+
+    static void weighSwimming(ItemStack stack,ServerLevel level,RandomSource random,LootRules.FishConfig config){
+        weigh(stack,level,random,0,null,config,true);
+    }
+
+    private static void weigh(ItemStack stack,ServerLevel level,RandomSource random,float luck,String angler,LootRules.FishConfig config,boolean swimming){
         if (stack.isEmpty() || stack.getCount() != 1) return;
         var data = stack.get(DataComponents.CUSTOM_DATA);
         if (data != null) { var tag = data.copyTag(); if (tag.contains(FISH_KEY) || tag.contains(LEGEND_KEY)) return; }
@@ -254,13 +262,13 @@ public final class Legends {
         double size = forced == null ? LootRules.size(random.nextDouble(), config.curve, luck)
             : switch (forced) { case "rare" -> 0.75 + random.nextDouble() * 0.15; case "epic" -> 0.9 + random.nextDouble() * 0.07; default -> 0.97 + random.nextDouble() * 0.03; };
         var rarity = LootRules.rarity(size);
-        if (rarity == LootRules.RARITIES.getFirst()) return;
+        if (rarity == LootRules.RARITIES.getFirst() && !swimming) return;
         double mythicFactor = rarity.name().equals("Legendary") && ("mythic".equals(forced) || random.nextDouble() < config.mythicChance) ? LootRules.mythic(random.nextDouble()) : 0;
         if (mythicFactor > 0) { rarity = LootRules.MYTHIC; size = mythicFactor; }
         boolean mythic = mythicFactor > 0;
         boolean shiny = rarity.trophy() && ("shiny".equals(forced) || random.nextDouble() < config.shinyChance);
         String key = rarity.name().toLowerCase(Locale.ROOT);
-        int rgb = FishData.color(key) & 0xFFFFFF;
+        int rgb = key.equals("common")?0xFFFFFF:FishData.color(key) & 0xFFFFFF;
         var name = stack.getHoverName().copy();
         // item_name, not custom_name: no name tag over item frames and it does not look anvil-renamed.
         stack.set(DataComponents.ITEM_NAME, Component.literal((shiny ? "✧ " : "") + name.getString()).withStyle(s -> FishData.shine(s.withColor(rgb).withItalic(false).withBold(mythic), key)));
@@ -279,24 +287,50 @@ public final class Legends {
             FishTraits.food(stack, kilograms);
             lines.add(Component.literal((angler == null ? "Caught on " : "Caught by " + angler + ", ") + day).withStyle(s -> s.withColor(ChatFormatting.DARK_GRAY).withItalic(true)));
             fishTag.putDouble("kg", kilograms);
-            if(angler!=null){
-                var catcher=level.getServer().getPlayerList().getPlayerByName(angler);
-                if(catcher!=null&&PartySupport.ready(catcher)&&net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.canSend(catcher,RareCatchNotice.TYPE)){
-                    net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(catcher,new RareCatchNotice(id,key,kilograms,shiny));
-                }
-            }
             fishTag.putString("species", id);
             fishTag.putString("day", day);
             if (angler != null) fishTag.putString("by", angler);
             stack.set(DataComponents.MAX_STACK_SIZE, 1);
             if (rarity.from() >= 0.9 || shiny) stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
-            String fishName = (shiny ? "Shiny " : "") + name.getString();
-            if (rarity.name().equals("Legendary") && angler != null)
+
+        }
+        if(swimming&&!rarity.trophy()){
+            double kg=rarity==LootRules.RARITIES.getFirst()?0.1+0.6*(size/0.5):0.7+0.29*((size-0.5)/0.25);
+            kg=Math.round(Math.clamp(kg,0.1,0.99)*100)/100.0;
+            fishTag.putDouble("kg",kg);fishTag.putDouble("size",size);fishTag.putString("species",id);
+            lines.add(Component.literal("Weight: "+LootRules.kg(kg)).withStyle(s->s.withColor(ChatFormatting.WHITE).withItalic(false)));
+            stack.set(DataComponents.MAX_STACK_SIZE,1);
+        }
+        stack.set(DataComponents.LORE, new ItemLore(lines));
+        var tag = data == null ? new CompoundTag() : data.copyTag();
+        tag.put(FISH_KEY, fishTag);
+        CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);
+        if(angler!=null)stampCatch(stack,level,angler);
+    }
+
+    /** Apply catch-time credit/celebration without rerolling a fish already shown in a shoal. */
+    static void stampCatch(ItemStack stack,ServerLevel level,String angler){
+        String key=FishData.rarity(stack);double kilograms=FishData.kilograms(stack);
+        if(kilograms<=0)return;
+        var data=stack.get(DataComponents.CUSTOM_DATA);if(data==null)return;
+        var tag=data.copyTag();var fishTag=tag.getCompound(FISH_KEY).orElse(null);if(fishTag==null)return;
+        String day=LocalDate.now(RIGA).toString();fishTag.putString("day",day);fishTag.putString("by",angler);
+        tag.put(FISH_KEY,fishTag);CustomData.set(DataComponents.CUSTOM_DATA,stack,tag);
+        var lore=stack.get(DataComponents.LORE);var lines=new ArrayList<Component>();
+        if(lore!=null)for(var line:lore.lines())if(!line.getString().startsWith("Caught on ")&&!line.getString().startsWith("Caught by "))lines.add(line);
+        lines.add(Component.literal("Caught by "+angler+", "+day).withStyle(s->s.withColor(ChatFormatting.DARK_GRAY).withItalic(true)));
+        stack.set(DataComponents.LORE,new ItemLore(lines));
+        var catcher=level.getServer().getPlayerList().getPlayerByName(angler);
+        if(List.of("rare","epic","legendary","mythic").contains(key)&&catcher!=null&&PartySupport.ready(catcher)&&net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.canSend(catcher,RareCatchNotice.TYPE)){
+            net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(catcher,new RareCatchNotice(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(),key,kilograms,FishData.shiny(stack)));
+        }
+            String fishName = (FishData.shiny(stack)?"Shiny ":"")+stack.getHoverName().getString().replaceFirst("^✧ ","");
+            if (key.equals("legendary") && angler != null)
                 level.getServer().getPlayerList().broadcastSystemMessage(Component.literal(angler).withStyle(ChatFormatting.YELLOW)
                     .append(Component.literal(" caught a ").withStyle(ChatFormatting.GRAY))
                     .append(gradient("Legendary " + fishName, 0xFFE58C, 0xFF9E1C, false, "legendary"))
                     .append(Component.literal(" of " + LootRules.kg(kilograms) + "!").withStyle(ChatFormatting.GRAY)), false);
-            if (mythic && angler != null) {
+            if (key.equals("mythic") && angler != null) {
                 var server = level.getServer();
                 server.getPlayerList().broadcastSystemMessage(Component.literal(angler).withStyle(ChatFormatting.YELLOW)
                     .append(Component.literal(" pulled up a ").withStyle(ChatFormatting.GRAY))
@@ -305,13 +339,8 @@ public final class Legends {
                 var fanfare = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(net.minecraft.sounds.SoundEvents.UI_TOAST_CHALLENGE_COMPLETE);
                 for (var player : server.getPlayerList().getPlayers())
                     player.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(fanfare, net.minecraft.sounds.SoundSource.MASTER,
-                        player.getX(), player.getY(), player.getZ(), 0.6f, 0.8f, random.nextLong()));
+                        player.getX(), player.getY(), player.getZ(), 0.6f, 0.8f, level.getRandom().nextLong()));
             }
-        }
-        stack.set(DataComponents.LORE, new ItemLore(lines));
-        var tag = data == null ? new CompoundTag() : data.copyTag();
-        tag.put(FISH_KEY, fishTag);
-        CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);
     }
 
     /** Chat text from one colour to another letter by letter, in the rarity's shine font (players see it shimmer). */

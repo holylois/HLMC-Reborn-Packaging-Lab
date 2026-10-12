@@ -214,5 +214,7 @@
   "holylois.journal.rarity5": "Mītiska",
   "holylois.travel.journal_title": "Holy Lois žurnāls",
   "key.holylois.journal": "Holy Lois žurnāls",
-  "key.category.holylois.journal": "Holy Lois"
+  "key.category.holylois.journal": "Holy Lois",
+  "holylois.crate.tip": "Novieto šo kasti pasaulē.",
+  "holylois.crate.open": "Salauz ar piemērotu rīku, lai savāktu laupījumu."
 }
