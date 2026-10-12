@@ -1,6 +1,6 @@
 # Holy Lois: Reborn launcher and add-ons
 
-Launcher 1.4.2 installs and updates the signed Holy Lois pack for Minecraft 26.3. Pick how you play (I own Minecraft, or Play with a name), install, then Play. One button follows the state (Install, Update, Repair, Play), the account card shows your skin head, and the main screen keeps the most used keys and commands in view, with gold kept for the main action. Built-in pack: 1.9.0.
+Launcher 1.4.3 installs and updates the signed Holy Lois pack for Minecraft 26.3. Pick how you play (I own Minecraft, or Play with a name), install, then Play. One button follows the state (Install, Update, Repair, Play), the account card shows your skin head, and the main screen keeps the most used keys and commands in view, with gold kept for the main action. Built-in pack: 2.0.0.
 
 [Download the launcher](https://github.com/pjampjam/HLMC-Reborn-Packaging-Lab/releases/latest/download/HolyLoisReborn.exe). [Player guide](https://github.com/pjampjam/HLMC-Reborn/blob/main/PLAYER-GUIDE.md). [Admin guide](https://github.com/pjampjam/HLMC-Reborn/blob/main/ADMIN-GUIDE.md).
 
@@ -8,13 +8,13 @@ Quick start accepts valid names without a Mojang ownership lookup. Existing Holy
 
 R over an item shows its recipe; R over an empty slot sorts without opening a recipe as the slot fills. Matching stones can merge after chest acquisition; rolled variants keep their own components.
 
-## Next candidate
+## Pack 2.0.0
 
-The private `next-190` branch prepares launcher 1.4.3 with embedded pack 1.10.0, a Journal reference and authored release notes in EN/RU/LV. Extras 1.8.0 and onboarding 1.10.0 add the Journal and per-creature world firsts. The published downloads above remain unchanged until the combined release is approved.
+Launcher 1.4.3 embeds pack 2.0.0, a Journal reference and authored release notes in EN/RU/LV. Extras 1.8.0 and onboarding 1.10.0 add the Journal, fish records and per-creature world firsts. Smelting pickaxes preserve Fortune drops; stable library updates and new structures complete the batch.
 
 ## Build
 
-Use the .NET10 SDK on Windows and run `./build.ps1 -Version 1.4.2`. Add `-Package` for the release EXE. Sources under `addons/` target the pinned Fabric26.3 APIs; their server build scripts compile against the installed libraries and run the relevant checks. Do not ship private preview/probe mods.
+Use the .NET10 SDK on Windows and run `./build.ps1 -Version 1.4.3`. Add `-Package` for the release EXE. Sources under `addons/` target the pinned Fabric26.3 APIs; their server build scripts compile against the installed libraries and run the relevant checks. Do not ship private preview/probe mods.
 
 ## Release integrity
 
