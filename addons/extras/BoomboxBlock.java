@@ -59,8 +59,8 @@ public final class BoomboxBlock extends HorizontalDirectionalBlock implements ne
     /** Music notes rise from a playing boombox, a few more when it is turned up; while its audio is heard they follow the beat (BoomboxPulse). */
     @Override public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (!state.getValue(PLAYING) || BoomboxPulse.live(pos) || random.nextInt(14) >= 2 + state.getValue(VOLUME) / 2) return;
-        level.addParticle(ParticleTypes.NOTE, pos.getX() + 0.2 + random.nextDouble() * 0.6, pos.getY() + 0.75,
-            pos.getZ() + 0.2 + random.nextDouble() * 0.6, random.nextInt(25) / 24.0, 0, 0);
+        BoomboxPulse.ambient(pos.getX() + 0.2 + random.nextDouble() * 0.6, pos.getY() + 0.75,
+            pos.getZ() + 0.2 + random.nextDouble() * 0.6, random.nextInt(25) / 24.0);
     }
 
     @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {

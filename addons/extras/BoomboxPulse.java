@@ -137,7 +137,12 @@ public final class BoomboxPulse {
      * Louder music throws it further and draws it bigger. Skipped with Particles: Minimal.
      */
     private static void hop(Minecraft mc, double x, double y, double z, double sx, double sz, float loud) {
-        hop(mc,x,y,z,sx,sz,loud,1);
+        hop(mc,x,y,z,sx,sz,loud,0.5f);
+    }
+    public static void ambient(double x,double y,double z,double pitch){
+        var mc=Minecraft.getInstance();if(mc.options.particles().get()==net.minecraft.server.level.ParticleStatus.MINIMAL)return;
+        var particle=mc.particleEngine.createParticle(net.minecraft.core.particles.ParticleTypes.NOTE,x,y,z,pitch,0,0);
+        if(particle!=null)particle.scale(0.5f);
     }
     private static void hop(Minecraft mc, double x, double y, double z, double sx, double sz, float loud,float size) {
         if (mc.options.particles().get() == net.minecraft.server.level.ParticleStatus.MINIMAL) return;

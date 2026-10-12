@@ -14,13 +14,17 @@ import java.util.ArrayList;
 public final class FishTooltipSections {
     private FishTooltipSections() {}
     static boolean normalize(ItemStack stack){
-        var fish=FishData.tag(stack);var attributes=stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
-        if(!FishData.weighed(stack)||fish.getBooleanOr("held_tooltip",false)||attributes==null||attributes.modifiers().isEmpty())return false;
+        var fish=FishData.tag(stack);
+        if(!FishData.weighed(stack)||fish.getIntOr("held_version",0)==2)return false;
         var lore=stack.get(DataComponents.LORE);if(lore==null)return false;
+        FishTraits.refreshHeld(stack);var attributes=stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
         var lines=new ArrayList<Component>();var credit=new ArrayList<Component>();
+        boolean oldHeld=false;
         for(var line:lore.lines()){
-            if(line.getString().startsWith("Caught by ")||line.getString().startsWith("Caught on "))credit.add(line);else lines.add(line);
+            if(line.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t&&t.getKey().equals("holylois.fish.held")){oldHeld=true;continue;}
+            if(line.getString().startsWith("Caught by ")||line.getString().startsWith("Caught on ")){credit.add(line);oldHeld=false;}else if(!oldHeld)lines.add(line);
         }
+        if(!attributes.modifiers().isEmpty()){
         lines.add(Component.translatable("holylois.fish.held").withStyle(s->s.withColor(ChatFormatting.GRAY).withItalic(false)));
         for(var entry:attributes.modifiers()){
             var modifier=entry.modifier();boolean percent=modifier.operation()!=AttributeModifier.Operation.ADD_VALUE;
@@ -29,9 +33,10 @@ public final class FishTooltipSections {
             lines.add(Component.literal((amount>=0?"+":"")+value+(percent?"% ":" "))
                 .append(Component.translatable(entry.attribute().value().getDescriptionId())).withStyle(s->s.withColor(ChatFormatting.BLUE).withItalic(false)));
         }
+        }
         lines.addAll(credit);stack.set(DataComponents.LORE,new ItemLore(lines));
         stack.set(DataComponents.TOOLTIP_DISPLAY,stack.getOrDefault(DataComponents.TOOLTIP_DISPLAY,TooltipDisplay.DEFAULT).withHidden(DataComponents.ATTRIBUTE_MODIFIERS,true));
-        var data=stack.get(DataComponents.CUSTOM_DATA).copyTag();fish.putBoolean("held_tooltip",true);data.put(Legends.FISH_KEY,fish);
+        var data=stack.get(DataComponents.CUSTOM_DATA).copyTag();fish.putBoolean("held_tooltip",true);fish.putInt("held_version",2);data.put(Legends.FISH_KEY,fish);
         stack.set(DataComponents.CUSTOM_DATA,CustomData.of(data));return true;
     }
 }

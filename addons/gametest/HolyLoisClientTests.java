@@ -62,6 +62,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "boombox model", context, world, HolyLoisClientTests::boomboxModel);
             run(failed, "boombox hand closeup", context, world, HolyLoisClientTests::boomboxHand);
             run(failed, "boombox held notes", context, world, HolyLoisClientTests::boomboxHeldNotes);
+            run(failed, "vanilla held fish and placed notes", context, world, HeldFishChecks::run);
             run(failed, "lantern swing", context, world, HolyLoisClientTests::lanternSwing);
             run(failed, "holy lootbox", context, world, HolyLoisClientTests::holyLootbox);
             run(failed, "invisible frame keeps its frame", context, world, HolyLoisClientTests::invisibleFrameDrops);
@@ -2174,7 +2175,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         check(sideways > 0.05 && sideways > 3 * forward, "the boombox swings out from the body and back in, not forward (" + sideways + " vs " + forward + ")");
         float size = context.computeOnClient(client -> holylois.boombox.BoomboxPulse.lastScale);
         log("held boombox note size: " + size);
-        check(size > 0.2f && size <= 1.45f/3f, "held notes are one third of the placed-note scale (" + size + ")");
+        check(size > 0.2f && size <= 1.45f/3f, "held notes retain their previous small scale (" + size + ")");
         // First person (owner 2026-10-10): the boombox in your own hand pulses, but throws no notes into your view.
         context.runOnClient(client -> { client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); client.player.setXRot(65); });
         int conesBefore = context.computeOnClient(client -> holylois.boombox.BoomboxPulse.ownCones);

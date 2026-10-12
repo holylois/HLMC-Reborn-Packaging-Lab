@@ -31,9 +31,9 @@ public final class FishTraits {
     record Trait(Holder<MobEffect> eat, Holder<MobEffect> extra, boolean bad, Holder<Attribute> held, double amount, String heldOp) {}
 
     static final Map<String, Trait> SPECIES = Map.ofEntries(
-        Map.entry("minecraft:cod", new Trait(MobEffects.HASTE, null, false, null, 0, null)),
-        Map.entry("minecraft:salmon", new Trait(MobEffects.STRENGTH, null, false, null, 0, null)),
-        Map.entry("minecraft:tropical_fish", new Trait(MobEffects.NIGHT_VISION, null, false, null, 0, null)),
+        Map.entry("minecraft:cod", new Trait(MobEffects.HASTE, null, false, Attributes.ARMOR, 1, "add")),
+        Map.entry("minecraft:salmon", new Trait(MobEffects.STRENGTH, null, false, Attributes.MOVEMENT_SPEED, 0.03, "base")),
+        Map.entry("minecraft:tropical_fish", new Trait(MobEffects.NIGHT_VISION, null, false, Attributes.WATER_MOVEMENT_EFFICIENCY, 0.15, "add")),
         Map.entry("minecraft:pufferfish", new Trait(MobEffects.POISON, MobEffects.NAUSEA, true, Attributes.ARMOR, 1, "add")),
         Map.entry("fishofthieves:splashtail", new Trait(MobEffects.SPEED, null, false, Attributes.MOVEMENT_SPEED, 0.05, "base")),
         Map.entry("fishofthieves:pondie", new Trait(MobEffects.REGENERATION, null, false, null, 0, null)),
@@ -98,12 +98,27 @@ public final class FishTraits {
             lines.add(Component.literal("A pure trophy: no effect when eaten").withStyle(s -> s.withColor(ChatFormatting.DARK_GRAY).withItalic(true)));
         }
         if (held && !uncommon && trait.held() != null) {
-            double times = switch (tier(rarity)) { case 2 -> 1.5; case 3 -> 2; case 4 -> 3; default -> 1; } * (shiny ? 1.5 : 1);
             var operation = "base".equals(trait.heldOp()) ? AttributeModifier.Operation.ADD_MULTIPLIED_BASE : AttributeModifier.Operation.ADD_VALUE;
-            var modifier = new AttributeModifier(Identifier.fromNamespaceAndPath("holylois", "trophy_fish"), Math.round(trait.amount() * times * 100) / 100.0, operation);
+            var modifier = new AttributeModifier(Identifier.fromNamespaceAndPath("holylois", "trophy_fish"), heldAmount(trait.amount(),rarity,shiny,cooked), operation);
             stack.set(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder().add(trait.held(), modifier, EquipmentSlotGroup.MAINHAND).build());
         }
         return lines;
+    }
+    static double heldAmount(double base,String rarity,boolean shiny,boolean cooked){
+        double times=switch(tier(rarity)){case 2->1.5;case 3->2;case 4->3;default->1;}*(shiny?1.5:1);
+        return Math.round(base*times*100)/100.0*(cooked?0.5:1);
+    }
+    static void refreshHeld(ItemStack stack){
+        var fish=FishData.tag(stack);if(fish==null||!FishData.weighed(stack))return;
+        String species=fish.getStringOr("species",net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString()).replace("cooked_","");
+        var trait=SPECIES.getOrDefault(species,FALLBACK);
+        var entries=new ArrayList<>(stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS,ItemAttributeModifiers.EMPTY).modifiers());
+        var id=Identifier.fromNamespaceAndPath("holylois","trophy_fish");entries.removeIf(e->e.modifier().id().equals(id));
+        if(trait.held()!=null&&!fish.getBooleanOr("fillet",false)){
+            var operation="base".equals(trait.heldOp())?AttributeModifier.Operation.ADD_MULTIPLIED_BASE:AttributeModifier.Operation.ADD_VALUE;
+            entries.add(new ItemAttributeModifiers.Entry(trait.held(),new AttributeModifier(id,heldAmount(trait.amount(),FishData.rarity(stack),FishData.shiny(stack),fish.getBooleanOr("cooked",false)),operation),EquipmentSlotGroup.MAINHAND));
+        }
+        stack.set(DataComponents.ATTRIBUTE_MODIFIERS,new ItemAttributeModifiers(entries));
     }
 
     /**

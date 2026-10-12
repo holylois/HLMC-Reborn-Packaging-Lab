@@ -12,6 +12,9 @@ public final class LegendsTest {
         // FishTraits holds mob effects, which need the game's registries.
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
+        for(String tier:List.of("rare","epic","legendary","mythic"))for(boolean shiny:new boolean[]{false,true})
+            check(FishTraits.heldAmount(0.03,tier,shiny,true)==FishTraits.heldAmount(0.03,tier,shiny,false)/2,"cooked held bonus is exactly half at every trophy tier");
+        check(FishTraits.SPECIES.get("minecraft:cod").held()!=null&&FishTraits.SPECIES.get("minecraft:salmon").held()!=null&&FishTraits.SPECIES.get("minecraft:tropical_fish").held()!=null,"vanilla trophies have tool-independent held bonuses");
         check(FishTraits.seconds("legendary", 0.5, false, true) == 2 * FishTraits.seconds("legendary", 0.5, false, false)
             && FishTraits.seconds("mythic", 1, true, true) == 4 * FishTraits.seconds("mythic", 1, false, false), "cooking doubles a trophy's effect time");
         check(LootRules.matches("*:chests/*", "nova_structures:chests/tavern/bar") && LootRules.matches("*:chests/*", "minecraft:chests/simple_dungeon")

@@ -421,6 +421,7 @@ public final class Legends {
         var copy = fish.copy();
         copy.putBoolean("cooked", true);
         copy.remove("held_tooltip");
+        copy.remove("held_version");
         tag.put(FISH_KEY, copy);
         CustomData.set(DataComponents.CUSTOM_DATA, result, tag);
         LowTierFish.normalize(result);
