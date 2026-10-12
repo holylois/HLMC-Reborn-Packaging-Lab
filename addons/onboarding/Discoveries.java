@@ -87,6 +87,7 @@ public final class Discoveries {
     private Path file;
 
     void registerJournal() {
+        holylois.boombox.JournalProtocol.register();
         ServerPlayNetworking.registerGlobalReceiver(JournalRequest.TYPE,(request,context)->{
             if(request.requestId()>0)open(context.player(),request);
         });
