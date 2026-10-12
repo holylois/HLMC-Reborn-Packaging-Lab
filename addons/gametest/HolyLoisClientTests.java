@@ -74,6 +74,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "water by camera height", context, world, HolyLoisClientTests::waterByHeight);
             run(failed, "item cards", context, world, HolyLoisClientTests::itemCards);
             run(failed, "holy lois journal", context, world, HolyLoisClientTests::journal);
+            run(failed, "cards over the cinematic camera", context, world, HolyLoisClientTests::cinematicCards);
             run(failed, "hooked school fish arrives as an item", context, world, HolyLoisClientTests::schoolCatch);
             run(failed, "fish tooltips", context, world, HolyLoisClientTests::fishTooltips);
             run(failed, "fish of thieves eating frames", context, world, HolyLoisClientTests::fishEatingFrames);
@@ -128,17 +129,17 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
     }
     private static void journalReply(net.minecraft.server.level.ServerPlayer player,holylois.boombox.JournalRequest request){
         var all=journalEntries(request.tab());
-        var entries=all.stream().filter(e->request.filter()==0||e.kind()==request.filter()).filter(e->e.name().toLowerCase(java.util.Locale.ROOT).contains(request.search().toLowerCase(java.util.Locale.ROOT))).toList();
+        var entries=all.stream().filter(e->request.filter()==4?e.first():request.filter()==0||e.kind()==request.filter()).filter(e->e.name().toLowerCase(java.util.Locale.ROOT).contains(request.search().toLowerCase(java.util.Locale.ROOT))).toList();
         int pages=Math.max(1,(entries.size()+request.size()-1)/request.size()),page=Math.min(request.page(),pages-1),start=page*request.size();
         net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player,new holylois.boombox.JournalState(request.tab(),request.filter(),page,pages,entries.size(),request.size(),request.search(),entries.subList(start,Math.min(entries.size(),start+request.size())),request.requestId()));
     }
     private static List<holylois.boombox.JournalState.Entry> journalEntries(int tab){
         var entries=new ArrayList<holylois.boombox.JournalState.Entry>();
         if(tab==1){
-            entries.add(new holylois.boombox.JournalState.Entry("fish:cod",1,"minecraft:cod","","minecraft:overworld",150,64,-300,1791670000,12,8.5,29,0,true,false));
+            entries.add(new holylois.boombox.JournalState.Entry("fish:cod",1,"minecraft:cod","","minecraft:overworld",150,64,-300,1791670000,12,8.5,63,0,true,false,java.util.List.of(2L,1L,2L,3L,2L,2L),2));
             entries.add(new holylois.boombox.JournalState.Entry("kill:zombie",3,"minecraft:zombie","","minecraft:overworld",150,64,-300,1791660000,48,0,0,75,true,false));
         }
-        for(int i=0;i<19;i++)entries.add(new holylois.boombox.JournalState.Entry("place:"+i,2,"Ice Spire "+(i+1),"Explorer","minecraft:overworld",1700+i*300,90,-1700,1791600000-i*3600,1,0,0,0,true,tab==0));
+        for(int i=0;i<19;i++)entries.add(new holylois.boombox.JournalState.Entry("place:"+i,2,"Ice Spire "+(i+1),"Explorer","minecraft:overworld",1700+i*300,90,-1700,1791600000-i*3600,1,0,0,0,true,tab==0||i==0));
         return entries;
     }
     private static void journal(ClientGameTestContext context,TestSingleplayerContext world){
@@ -181,16 +182,26 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             check(state.tab()==0&&state.page()==1&&state.entries().size()<=8,"world firsts page through bounded server responses");
         });
         context.clickScreenButton("holylois.journal.mine");context.waitTicks(12);
+        context.clickScreenButton("holylois.journal.filter4");context.waitTicks(12);
+        context.runOnClient(client->{var state=(holylois.boombox.JournalState)field(client.gui.screen(),"state");check(state.total()==1&&state.entries().getFirst().first(),"personal firsts are a distinct credited collection");});
+        context.takeScreenshot("52-journal-personal-firsts");
         context.clickScreenButton("holylois.journal.filter1");context.waitTicks(12);
         context.runOnClient(client->{
             var screen=(holylois.boombox.JournalScreen)client.gui.screen();
             var state=(holylois.boombox.JournalState)field(screen,"state");
             check(state.total()==1&&state.entries().getFirst().weight()==8.5,"fish category retains the measured best weight");
+            check(state.entries().getFirst().shiny()==2&&state.entries().getFirst().rarityCounts().get(4)==2,"fish detail receives actual rarity and shiny totals");
             String fishName=holylois.boombox.JournalScreen.name(state.entries().getFirst()).getString();
             for(var child:screen.children())if(child instanceof net.minecraft.client.gui.components.Button button&&button.getMessage().getString().equals(fishName)){button.onPress(new net.minecraft.client.input.KeyEvent(40,0,0));break;}
             check((boolean)field(screen,"detail"),"selecting a journal row opens its details");
         });
         context.waitTicks(5);context.takeScreenshot("52-journal-fish-details");
+        context.runOnClient(client->{
+            var screen=(holylois.boombox.JournalScreen)client.gui.screen();
+            screen.mouseScrolled(screen.width/2.0,screen.height/2.0,0,-4);
+            check((int)field(screen,"detailScroll")>0,"long fish history can scroll without covering action buttons");
+        });
+        context.waitTicks(2);context.takeScreenshot("52-journal-fish-history-scrolled");
         int before=context.computeOnClient(client->waypointCount());
         context.clickScreenButton("holylois.journal.waypoint");context.waitTicks(8);
         check(context.computeOnClient(client->waypointCount())==before+1,"selected journal entry adds a client-only waypoint");
@@ -236,6 +247,24 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
     private static int waypointCount(){
         var session=BuiltInHudModules.MINIMAP.getCurrentSession();var root=session==null?null:session.getWorldManager().getCurrentRootContainer();
         int count=0;if(root!=null)for(var w:root.getAllWorldsIterable())for(var set:w.getIterableWaypointSets())for(var point:set.getWaypoints())count++;return count;
+    }
+    private static void cinematicCards(ClientGameTestContext context,TestSingleplayerContext world){
+        context.runOnClient(client->{client.gui.setScreen(null);ji("cinematic.CinematicManager","toggleImmediate");});
+        context.waitFor(client->holylois.boombox.CinematicTweaks.playing(),200);
+        context.runOnClient(client->ji("render.HUDController","setHidden",true));
+        check(context.computeOnClient(client->(boolean)ji("render.HUDController","isHidden")),"the real cinematic HUD cancellation is active");
+        int before=context.computeOnClient(client->holylois.boombox.RareCatchHud.cardsDrawn);
+        world.getServer().runOnServer(server->net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(server.getPlayerList().getPlayers().getFirst(),new holylois.boombox.RareCatchNotice("minecraft:cod","legendary",22,true)));
+        context.waitTicks(15);context.takeScreenshot("53-catch-card-over-cinematic");
+        check(context.computeOnClient(client->holylois.boombox.RareCatchHud.cardsDrawn)>before,"catch cards remain visible when the cinematic skips normal HUD extraction");
+        context.runOnClient(client->holylois.boombox.JournalHints.added());context.waitTicks(3);
+        check(context.computeOnClient(client->(long)field(holylois.boombox.JournalHints.class,"started"))==0,"a Journal notice waits for the cinematic to end instead of expiring unseen");
+        context.runOnClient(client->{try{var setting=holylois.boombox.CinematicCards.class.getDeclaredField("enabled");setting.setAccessible(true);setting.setBoolean(null,false);}catch(Exception error){throw new AssertionError(error);}});
+        int muted=context.computeOnClient(client->holylois.boombox.RareCatchHud.cardsDrawn);
+        context.waitTicks(6);
+        check(context.computeOnClient(client->holylois.boombox.RareCatchHud.cardsDrawn)==muted,"cinematic card off leaves the camera view clear");
+        context.runOnClient(client->{try{var setting=holylois.boombox.CinematicCards.class.getDeclaredField("enabled");setting.setAccessible(true);setting.setBoolean(null,true);}catch(Exception error){throw new AssertionError(error);}ji("cinematic.CinematicManager","forceDeactivate");});
+        context.waitTicks(4);
     }
 
     /**

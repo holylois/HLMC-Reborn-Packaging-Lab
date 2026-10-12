@@ -3,19 +3,26 @@ package holylois.boombox.mixins;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Ji AFK Cinematic cancels the whole HUD while its camera runs. Priority 500 puts this before its cancel, so a catch card (and an
- * item card) still shows over the cinematic; only then, the HUD draws them itself otherwise.
+ * 26.3 can skip Hud extraction entirely during the cinematic. Append only our cards to the completed GUI state instead,
+ * after letterboxing/chat, independently of the normal HUD visibility. Normal gameplay still uses the HUD element.
  */
-@Mixin(value = Gui.class, priority = 500)
+@Mixin(Gui.class)
 public abstract class CatchCardCinematicMixin {
-    @Inject(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/DeltaTracker;)V", at = @At("HEAD"))
-    private void holyLoisCardsOverCinematic(GuiGraphicsExtractor g, DeltaTracker delta, CallbackInfo info) {
-        if (holylois.boombox.CinematicTweaks.playing()) holylois.boombox.RareCatchHud.card(g, true);
+    @Shadow @Final private GuiRenderState guiRenderState;
+    @Inject(method = "extractRenderState(Lnet/minecraft/client/DeltaTracker;ZZ)V", at = @At("TAIL"), require=1)
+    private void holyLoisCardsOverCinematic(DeltaTracker delta,boolean hud,boolean overlays,CallbackInfo info) {
+        if (holylois.boombox.CinematicTweaks.playing()&&holylois.boombox.CinematicCards.enabled()){
+            var g=new GuiGraphicsExtractor(net.minecraft.client.Minecraft.getInstance(),guiRenderState,0,0);
+            g.nextStratum();holylois.boombox.RareCatchHud.card(g,true);
+        }
     }
 }

@@ -51,7 +51,7 @@ public final class Discoveries {
         public UUID uuid;
     }
     /** A boss or elite world first: key "boss:minecraft:ender_dragon", "elite", "level:50"... */
-    public static final class First { public String key, what, player, dim; public long time; public int x, y, z, level; }
+    public static final class First { public String key, what, player, dim; public UUID uuid; public long time; public int x, y, z, level; }
     public static final class State {
         public int version = 3;
         public List<Found> found = new ArrayList<>(); public List<First> firsts = new ArrayList<>();
@@ -92,7 +92,7 @@ public final class Discoveries {
         });
         FishCaught.EVENT.register((player,fish)->{
             if(file==null||!PartySupport.ready(player))return;
-            boolean fresh=book(player).caught(BuiltInRegistries.ITEM.getKey(fish.getItem()).toString(),fish.getCount(),FishData.kilograms(fish),FishData.rarity(fish),
+            boolean fresh=book(player).caught(BuiltInRegistries.ITEM.getKey(fish.getItem()).toString(),fish.getCount(),FishData.kilograms(fish),FishData.rarity(fish),FishData.shiny(fish),
                 player.level().dimension().identifier().toString(),player.getBlockX(),player.getBlockY(),player.getBlockZ(),now());
             if(fresh)hint(player,JournalState.FISH);
             dirty=true;
@@ -129,30 +129,44 @@ public final class Discoveries {
             if((player.getUUID().equals(f.uuid)||f.uuid==null&&player.getGameProfile().name().equalsIgnoreCase(f.player))&&own.visit(f.key,f.time))dirty=true;
             if(request.tab()==0 ? !f.first : !own.places.containsKey(f.key))continue;
             entries.add(new JournalState.Entry(f.key,JournalState.PLACE,f.name+(f.first?"":" #"+f.number),StatsVisibility.display(f.player),
-                f.dim==null?"minecraft:overworld":f.dim,f.x,f.y,f.z,request.tab()==0?f.time:own.places.get(f.key),1,0,0,0,true,f.first));
+                f.dim==null?"minecraft:overworld":f.dim,f.x,f.y,f.z,request.tab()==0?f.time:own.places.get(f.key),1,0,0,0,true,f.first&&(request.tab()==0||owns(player.getUUID(),player.getGameProfile().name(),f.uuid,f.player))));
         }
         if(request.tab()==0){
             for(var f:firsts.values()){
                 boolean mob=f.key.startsWith("mob:");
+                if(mob&&!hostileType(f.key.substring(4)))continue;
                 if(mob&&firsts.containsKey("boss:"+f.key.substring(4)))continue;
                 entries.add(new JournalState.Entry(f.key,mob?JournalState.KILL:JournalState.FEAT,mob?f.key.substring(4):f.what,StatsVisibility.display(f.player),
                     f.dim,f.x,f.y,f.z,f.time,1,0,0,f.level,true,true));
             }
         }else{
-            for(var f:own.fish.values())entries.add(new JournalState.Entry("fish:"+f.species,JournalState.FISH,f.species,"",f.dim,f.x,f.y,f.z,f.time,f.count,f.heaviest,f.rarities,0,true,false));
+            if(request.filter()==4)for(var f:firsts.values())if(!f.key.startsWith("mob:")&&owns(player.getUUID(),player.getGameProfile().name(),f.uuid,f.player))
+                entries.add(new JournalState.Entry(f.key,JournalState.FEAT,f.what,StatsVisibility.display(f.player),f.dim,f.x,f.y,f.z,f.time,1,0,0,f.level,true,true));
+            for(var f:own.fish.values())entries.add(new JournalState.Entry("fish:"+f.species,JournalState.FISH,f.species,"",f.dim,f.x,f.y,f.z,f.time,f.count,f.heaviest,f.rarities,0,true,false,
+                f.rarityCounts==null?java.util.List.of():java.util.Arrays.stream(f.rarityCounts).boxed().toList(),f.shiny));
             for(var type:BuiltInRegistries.ENTITY_TYPE){
                 long count=player.getStats().getValue(net.minecraft.stats.Stats.ENTITY_KILLED,type);
                 if(count<=0)continue;
                 String id=BuiltInRegistries.ENTITY_TYPE.getKey(type).toString();var k=own.kills.get(id);
                 if(id.equals("minecraft:player"))continue;
+                var first=firsts.get("mob:"+id);
+                var boss=firsts.get("boss:"+id);
+                if(request.filter()==4&&boss!=null&&owns(player.getUUID(),player.getGameProfile().name(),boss.uuid,boss.player))continue;
+                boolean myFirst=first!=null&&hostileType(id)&&owns(player.getUUID(),player.getGameProfile().name(),first.uuid,first.player);
                 entries.add(new JournalState.Entry("kill:"+id,JournalState.KILL,id,"",k==null?"":k.dim,k==null?0:k.x,k==null?0:k.y,k==null?0:k.z,
-                    k==null?0:k.time,count,0,0,k==null?0:k.level,k!=null,false));
+                    k==null?0:k.time,count,0,0,k==null?0:k.level,k!=null,myFirst));
             }
         }
         return JournalBook.page(entries,request);
     }
 
     /** Display name for a structure id, or null when it should not be announced. */
+    static boolean owns(UUID viewer,String name,UUID owner,String legacyName){return owner!=null?owner.equals(viewer):legacyName!=null&&name.equalsIgnoreCase(legacyName);}
+    static boolean hostileType(String id){
+        var key=Identifier.tryParse(id);
+        return key!=null&&BuiltInRegistries.ENTITY_TYPE.getOptional(key).map(type->hostile(type.getCategory(),type.builtInRegistryHolder().is(BOSS_TAG))).orElse(false);
+    }
+    static boolean hostile(net.minecraft.world.entity.MobCategory category,boolean boss){return category==net.minecraft.world.entity.MobCategory.MONSTER||boss;}
     static String name(String id) {
         int colon = id.indexOf(':');
         String namespace = colon < 0 ? "minecraft" : id.substring(0, colon), path = id.substring(colon + 1);
@@ -283,8 +297,10 @@ public final class Discoveries {
         dirty=true;
         String boss = BOSSES.get(type);
         if (boss == null && entity.getType().builtInRegistryHolder().is(BOSS_TAG)) boss = entity.getName().getString();
+        if(!hostileType(type)&&boss==null)return;
         if (boss != null) first(server, player, entity, "boss:" + type, "slew " + boss);
         var mobFirst=rememberMob(type,player.getGameProfile().name(),entity.level().dimension().identifier().toString(),entity.getBlockX(),entity.getBlockY(),entity.getBlockZ(),now(),level);
+        if(mobFirst!=null)mobFirst.uuid=player.getUUID();
         if(mobFirst!=null){
             if(boss==null)server.getPlayerList().broadcastSystemMessage(Component.literal("✦ World first: ").withStyle(ChatFormatting.GOLD)
                 .append(Component.literal(StatsVisibility.display(mobFirst.player)+" defeated the first "))
@@ -311,7 +327,7 @@ public final class Discoveries {
     private void first(MinecraftServer server, ServerPlayer player, LivingEntity entity, String key, String what) {
         if (firsts.containsKey(key)) return;
         var first = new First();
-        first.key = key; first.what = what; first.player = player.getGameProfile().name(); first.time = System.currentTimeMillis() / 1000;
+        first.key = key; first.what = what; first.player = player.getGameProfile().name(); first.uuid=player.getUUID(); first.time = System.currentTimeMillis() / 1000;
         first.dim = entity.level().dimension().identifier().toString();
         first.x = entity.getBlockX(); first.y = entity.getBlockY(); first.z = entity.getBlockZ();
         firsts.put(key, first);
@@ -334,17 +350,13 @@ public final class Discoveries {
             .append(rest.copy().withStyle(style -> style.withBold(false)));
     }
 
-    /** " in a Frozen Peaks biome, 2.4k blocks NE of spawn" (repeats: " · Frozen Peaks, 2.4k blocks NE of spawn"). */
+    /** Biome/dimension only. The map and waypoint actions provide the saved location without inventing a shared spawn. */
     static String where(Found entry, boolean full) {
         String biome = entry.biome == null || entry.biome.isEmpty() ? "" : title(entry.biome.substring(entry.biome.indexOf(':') + 1));
         if (entry.dim != null && entry.dim.endsWith("the_nether")) return " in the Nether" + (biome.isEmpty() ? "" : " (" + biome + ")");
         if (entry.dim != null && entry.dim.endsWith("the_end")) return " in the End";
-        double distance = Math.hypot(entry.x, entry.z);
-        String far = distance < 1000 ? String.valueOf(Math.round(distance / 10) * 10) : String.format(Locale.ROOT, "%.1fk", distance / 1000);
-        String[] compass = {"E", "SE", "S", "SW", "W", "NW", "N", "NE"};
-        String dir = compass[(int) Math.floorMod(Math.round(Math.toDegrees(Math.atan2(entry.z, entry.x)) / 45), 8L)];
         String place = biome.isEmpty() ? "" : full ? " in " + article(biome) + " " + biome + " biome" : " · " + biome;
-        return place + ", " + far + " blocks " + dir + " of spawn";
+        return place;
     }
 
     /** [Map] opens BlueMap at the spot, [Waypoint] adds a Xaero waypoint on the clicking player's client (extras). */

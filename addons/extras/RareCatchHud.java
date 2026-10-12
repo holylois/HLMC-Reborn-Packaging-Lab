@@ -18,6 +18,7 @@ public final class RareCatchHud {
     private static final java.nio.file.Path FILE=java.nio.file.Path.of("config","holylois-catch-ui.json");
     private static boolean enabled=true;
     static void register(){
+        CinematicCards.register();
         try{if(java.nio.file.Files.exists(FILE))enabled=new com.google.gson.Gson().fromJson(java.nio.file.Files.readString(FILE),Boolean.class);}catch(Exception ignored){}
         net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT.register((d,a)->d.register(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("catchcards")
             .then(net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("on").executes(c->setting(true)))

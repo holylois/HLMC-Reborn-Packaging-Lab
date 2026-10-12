@@ -32,7 +32,7 @@ public final class OnboardingTest {
         check(AudioUrlGuard.isAudio("RIFF\0\0\0\0WAVEfmt ".getBytes())&&AudioUrlGuard.isAudio("ID3\4\0".getBytes())&&AudioUrlGuard.isAudio(new byte[]{(byte)0xFF,(byte)0xFB,0x10})
             &&!AudioUrlGuard.isAudio("<!DOCTYPE html>".getBytes())&&!AudioUrlGuard.isAudio("PK\3\4".getBytes())&&!AudioUrlGuard.isAudio(new byte[0]),"AudioPlayer links keep only mp3/wav bytes");
         var spire=new Discoveries.Found();spire.dim="minecraft:overworld";spire.biome="minecraft:frozen_peaks";spire.x=1700;spire.z=-1700;
-        check(Discoveries.where(spire,true).equals(" in a Frozen Peaks biome, 2.4k blocks NE of spawn")&&Discoveries.where(spire,false).equals(" · Frozen Peaks, 2.4k blocks NE of spawn"),"Discoveries say the biome and where from spawn ("+Discoveries.where(spire,true)+")");
+        check(Discoveries.where(spire,true).equals(" in a Frozen Peaks biome")&&Discoveries.where(spire,false).equals(" · Frozen Peaks"),"Discoveries give the biome without a misleading spawn-relative direction");
         var deep=new Discoveries.Found();deep.dim="minecraft:the_nether";deep.biome="minecraft:basalt_deltas";
         check(Discoveries.where(deep,false).equals(" in the Nether (Basalt Deltas)"),"Nether finds name the dimension");
         var links=Discoveries.links("minecraft:overworld",120,64,-300,"Ice Spire #3").getSiblings();

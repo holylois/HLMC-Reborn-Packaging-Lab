@@ -8,7 +8,7 @@ import holylois.boombox.JournalRequest;
 final class JournalBook {
     static final List<String> RARITIES=List.of("common","uncommon","rare","epic","legendary","mythic");
     static final class Catch {
-        String species,dim; long count,time; double heaviest; int rarities,x,y,z;
+        String species,dim; long count,time,shiny; double heaviest; int rarities,x,y,z; long[] rarityCounts;
     }
     static final class Kill { String type,dim; long time; int level,x,y,z; }
     final Map<String,Catch> fish=new HashMap<>();
@@ -16,12 +16,20 @@ final class JournalBook {
     final Map<String,Long> places=new HashMap<>();
 
     boolean caught(String species,long count,double kg,String rarity,String dim,int x,int y,int z,long time){
+        return caught(species,count,kg,rarity,false,dim,x,y,z,time);
+    }
+    boolean caught(String species,long count,double kg,String rarity,boolean shiny,String dim,int x,int y,int z,long time){
         if(count<=0)return false;
-        boolean fresh=!fish.containsKey(species);
+        boolean newSpecies=!fish.containsKey(species);
         var entry=fish.computeIfAbsent(species,id->{var c=new Catch();c.species=id;return c;});
+        int band=RARITIES.indexOf(rarity),tier=Math.max(0,band);
+        boolean fresh=newSpecies||(entry.rarities&(1<<tier))==0||shiny&&entry.shiny==0;
         entry.count=Math.min(Long.MAX_VALUE-count,entry.count)+count;
         if(Double.isFinite(kg)&&kg>0)entry.heaviest=Math.max(entry.heaviest,kg);
-        int band=RARITIES.indexOf(rarity);entry.rarities|=1<<Math.max(0,band);
+        entry.rarities|=1<<tier;
+        if(entry.rarityCounts==null||entry.rarityCounts.length!=6)entry.rarityCounts=new long[6];
+        entry.rarityCounts[tier]=Math.min(Long.MAX_VALUE-count,entry.rarityCounts[tier])+count;
+        if(shiny)entry.shiny=Math.min(Long.MAX_VALUE-count,entry.shiny)+count;
         entry.dim=dim;entry.x=x;entry.y=y;entry.z=z;entry.time=time;
         return fresh;
     }
@@ -35,7 +43,7 @@ final class JournalBook {
 
     static JournalState page(List<JournalState.Entry> entries,JournalRequest request){
         String query=request.search().strip().toLowerCase(Locale.ROOT);
-        var all=entries.stream().filter(e->request.filter()==0||e.kind()==request.filter()||request.filter()==3&&e.kind()==JournalState.FEAT)
+        var all=entries.stream().filter(e->request.filter()==4?e.first():request.filter()==0||e.kind()==request.filter()||request.filter()==3&&e.kind()==JournalState.FEAT)
             .filter(e->query.isEmpty()||(e.name()+" "+e.by()).toLowerCase(Locale.ROOT).contains(query))
             .sorted(Comparator.comparingLong(JournalState.Entry::time).reversed().thenComparing(JournalState.Entry::key)).toList();
         int pages=Math.max(1,(all.size()+request.size()-1)/request.size()),page=Math.min(request.page(),pages-1),start=page*request.size();

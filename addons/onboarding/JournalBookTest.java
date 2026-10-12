@@ -15,10 +15,17 @@ public final class JournalBookTest {
     public static void main(String[] args)throws Exception{
         var book=new JournalBook();
         check(book.caught("minecraft:cod",1,0,"","minecraft:overworld",1,64,2,100),"First species earns one private hint");
-        check(!book.caught("minecraft:cod",1,8.5,"epic","minecraft:overworld",3,65,4,101),"Repeat species stay quiet");
+        check(book.caught("minecraft:cod",1,8.5,"epic","minecraft:overworld",3,65,4,101),"A first rarity band is a new collection entry");
         book.caught("minecraft:cod",1,2,"rare","minecraft:overworld",5,66,6,102);
         var cod=book.fish.get("minecraft:cod");
         check(cod.count==3&&cod.heaviest==8.5&&cod.rarities==(1|4|8),"Catches accumulate species, best measured weight and all rarity bands");
+        check(cod.rarityCounts[0]==1&&cod.rarityCounts[2]==1&&cod.rarityCounts[3]==1,"Rarity counts come only from actual catches");
+        book.caught("minecraft:cod",2,3,"legendary",true,"minecraft:overworld",0,64,0,104);
+        check(cod.shiny==2&&cod.rarityCounts[4]==2,"Shiny catches also count in their rarity tier");
+        var legacy=new Gson().fromJson("{\"fish\":{\"minecraft:cod\":{\"species\":\"minecraft:cod\",\"count\":10,\"rarities\":4}}}",JournalBook.class);
+        legacy.caught("minecraft:cod",1,1,"rare",false,"minecraft:overworld",0,64,0,105);
+        check(legacy.fish.get("minecraft:cod").count==11&&legacy.fish.get("minecraft:cod").rarityCounts[2]==1,"Legacy totals are preserved without inventing old per-rarity counts");
+        check(!legacy.caught("minecraft:cod",1,1,"rare",false,"minecraft:overworld",0,64,0,106),"Repeated catches of the same known tier stay quiet");
         book.caught("minecraft:salmon",1,Double.NaN,"common","minecraft:overworld",0,64,0,103);
         check(book.fish.get("minecraft:salmon").heaviest==0,"Unweighed catches do not invent a weight");
         check(book.visit("spire",100)&&!book.visit("spire",200)&&book.places.get("spire")==100,"Repeat visits keep the personal first visit");
@@ -27,7 +34,10 @@ public final class JournalBookTest {
         check(book.kills.get("minecraft:zombie").level==20&&book.kills.get("minecraft:zombie").time==200,"Kills retain the best level and the latest location");
         var alice=UUID.randomUUID();var bob=UUID.randomUUID();var state=new Discoveries.State();state.journals.put(alice,book);state.journals.put(bob,new JournalBook());
         var restored=new Gson().fromJson(new Gson().toJson(state),Discoveries.State.class);
-        check(restored.journals.get(alice).fish.get("minecraft:cod").count==3&&restored.journals.get(bob).fish.isEmpty(),"Saved journals stay separate by UUID across a reload or name change");
+        check(restored.journals.get(alice).fish.get("minecraft:cod").count==5&&restored.journals.get(bob).fish.isEmpty(),"Saved journals stay separate by UUID across a reload or name change");
+        check(Discoveries.owns(alice,"RenamedAlice",alice,"Alice")&&!Discoveries.owns(bob,"Bob",alice,"Alice"),"World-first credit follows the owner UUID, not everyone who visits");
+        check(Discoveries.owns(alice,"ALICE",null,"Alice")&&!Discoveries.owns(alice,"Bob",null,"Alice"),"Legacy firsts use an exact case-insensitive name match");
+        check(Discoveries.hostile(net.minecraft.world.entity.MobCategory.MONSTER,false)&&!Discoveries.hostile(net.minecraft.world.entity.MobCategory.CREATURE,false)&&!Discoveries.hostile(net.minecraft.world.entity.MobCategory.WATER_AMBIENT,false),"Passive and fish categories do not get world-first kills");
         var discoveries=new Discoveries();var first=discoveries.rememberMob("minecraft:zombie","Alice","minecraft:overworld",1,64,2,100,20);
         check(first!=null&&discoveries.rememberMob("minecraft:zombie","Bob","minecraft:overworld",3,64,4,200,50)==null,"Only one first per mob type");
         check(first.player.equals("Alice")&&first.level==50&&first.time==100&&first.x==1,"Higher-level kills preserve original first credit and its location");
@@ -38,6 +48,7 @@ public final class JournalBookTest {
         var page=JournalBook.page(entries,new JournalRequest(0,2,999,6,""));
         check(page.total()==18&&page.page()==2&&page.pages()==3&&page.entries().size()==6,"Filtering clamps excessive page requests and bounds response size");
         check(page.entries().getFirst().key().equals("place5"),"Pages sort newest first with deterministic ties");
+        check(JournalBook.page(entries,new JournalRequest(1,4,0,8,"")).total()==18,"Personal firsts filter contains only credited entries");
         var result=JournalBook.page(entries,new JournalRequest(1,1,0,8,"CoD",17));
         check(result.requestId()==17,"Server replies echo the client request identity");
         check(result.total()==1&&result.entries().getFirst().weight()==8.5,"Search is case insensitive inside the chosen category");
