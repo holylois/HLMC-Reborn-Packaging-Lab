@@ -29,12 +29,28 @@ public final class FishTooltip {
     static void decorate(ItemStack stack, List<Component> lines) {
         if (lines.isEmpty()) return;
         var look = look(stack);
-        if (look == null) return;
-        if (look.nameKey() != null) {
+        if (look != null&&look.nameKey() != null) {
             String name = Component.translatable(look.nameKey()).getString();
             // Hide Fish of Thieves' own variant line, too.
             for (int i = lines.size() - 1; i >= 1; i--) if (lines.get(i).getString().equals(name)) lines.remove(i);
         }
+        if(FishData.weighed(stack)&&stack.getOrDefault(DataComponents.TOOLTIP_DISPLAY,net.minecraft.world.item.component.TooltipDisplay.DEFAULT).shows(DataComponents.ATTRIBUTE_MODIFIERS)){
+            var credit=new java.util.ArrayList<Component>();var held=new java.util.ArrayList<Component>();
+            for(int i=lines.size()-1;i>=1;i--){
+                var line=lines.get(i);
+                if(line.getString().startsWith("Caught by ")||line.getString().startsWith("Caught on ")){credit.addFirst(lines.remove(i));}
+                else if(hasKey(line,"attribute.modifier."))held.addFirst(lines.remove(i));
+                else if(hasKey(line,"item.modifiers."))lines.remove(i);
+            }
+            if(!held.isEmpty()){
+                lines.add(Component.translatable("holylois.fish.held").withStyle(net.minecraft.ChatFormatting.GRAY));lines.addAll(held);
+            }
+            lines.addAll(credit);
+        }
+    }
+    static boolean hasKey(Component line,String prefix){
+        if(line.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents text&&text.getKey().startsWith(prefix))return true;
+        return line.getSiblings().stream().anyMatch(child->hasKey(child,prefix));
     }
 
     static Look look(ItemStack stack) {

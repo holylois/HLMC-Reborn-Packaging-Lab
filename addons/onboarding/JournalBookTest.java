@@ -40,7 +40,10 @@ public final class JournalBookTest {
         check(Discoveries.hostile(net.minecraft.world.entity.MobCategory.MONSTER,false)&&!Discoveries.hostile(net.minecraft.world.entity.MobCategory.CREATURE,false)&&!Discoveries.hostile(net.minecraft.world.entity.MobCategory.WATER_AMBIENT,false),"Passive and fish categories do not get world-first kills");
         var discoveries=new Discoveries();var first=discoveries.rememberMob("minecraft:zombie","Alice","minecraft:overworld",1,64,2,100,20);
         check(first!=null&&discoveries.rememberMob("minecraft:zombie","Bob","minecraft:overworld",3,64,4,200,50)==null,"Only one first per mob type");
-        check(first.player.equals("Alice")&&first.level==50&&first.time==100&&first.x==1,"Higher-level kills preserve original first credit and its location");
+        check(first.player.equals("Alice")&&first.level==50&&first.firstLevel==20&&first.time==100&&first.x==1,"Higher-level kills preserve the first defeated level, credit and location");
+        var savedFirst=new Gson().fromJson(new Gson().toJson(first),Discoveries.First.class);
+        check(savedFirst.firstLevel==20&&savedFirst.level==50,"First defeat level and later highest level survive saving separately");
+        check(new Gson().fromJson("{\"level\":50}",Discoveries.First.class).firstLevel==null,"Legacy highest levels do not invent the first defeat level");
         check(discoveries.rememberMob("minecraft:skeleton","Bob","minecraft:overworld",0,64,0,201,0)!=null,"Different mob types have independent firsts");
         var entries=new ArrayList<JournalState.Entry>();
         for(int i=0;i<18;i++)entries.add(new JournalState.Entry("place"+i,JournalState.PLACE,"Spire "+i,"Alice","minecraft:overworld",i,64,0,i,1,0,0,0,true,true));

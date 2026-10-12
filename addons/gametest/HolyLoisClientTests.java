@@ -84,6 +84,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "fishing history counts", context, world, HolyLoisClientTests::fishingHistory);
             run(failed, "fish tooltips", context, world, HolyLoisClientTests::fishTooltips);
             run(failed, "low-tier meals and full-name shine", context, world, HolyLoisClientTests::lowTierPolish);
+            run(failed, "fish pickup and tooltip sections", context, world, HolyLoisClientTests::fishPickupSections);
             run(failed, "fish of thieves eating frames", context, world, HolyLoisClientTests::fishEatingFrames);
             run(failed, "armor 3d", context, world, HolyLoisClientTests::armor3d);
             run(failed, "r over a fillet", context, world, HolyLoisClientTests::rOverFillet);
@@ -933,6 +934,64 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             return new double[]{((int)field(screen,"leftPos")+slot.x+8)*client.getWindow().getGuiScale(),((int)field(screen,"topPos")+slot.y+8)*client.getWindow().getGuiScale()};
         });
         context.getInput().setCursorPos(pos[0],pos[1]);context.waitTicks(5);context.takeScreenshot("57-uncommon-tooltip");
+        context.runOnClient(client->client.gui.setScreen(null));
+    }
+
+    private static void fishPickupSections(ClientGameTestContext context,TestSingleplayerContext world) throws Exception {
+        var server=world.getServer();server.runCommand("clear @a");
+        server.runOnServer(s->{
+            var player=s.getPlayerList().getPlayers().getFirst();var level=(ServerLevel)player.level();
+            var fish=new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse("fishofthieves:splashtail")));
+            var data=new net.minecraft.nbt.CompoundTag();data.putString("splashtail_variant","fishofthieves:ruby");
+            var meal=new net.minecraft.nbt.CompoundTag();meal.putString("rarity","uncommon");meal.putDouble("kg",0.8);meal.putString("by","EarlierAngler");data.put("holylois_fish",meal);
+            fish.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(data));
+            fish.set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE,1);player.getInventory().setItem(20,fish);
+            var fresh=fish.copy();var tag=data.copy();tag.getCompound("holylois_fish").orElseThrow().putString("by","AnotherAngler");
+            fresh.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(tag));
+            var drop=new net.minecraft.world.entity.item.ItemEntity(level,player.getX(),player.getY(),player.getZ(),fresh);
+            level.addFreshEntity(drop);drop.setNoPickUpDelay();drop.playerTouch(player);
+            log("FoT Uncommon pickup count="+player.getInventory().getItem(20).getCount()+" max="+player.getInventory().getItem(20).getMaxStackSize());
+            check(player.getInventory().getItem(20).getCount()==2&&!drop.isAlive(),"actual FoT Uncommon pickup merges into old stack before periodic sweep");
+            var raw=new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse("fishofthieves:islehopper")));
+            var trophy=new net.minecraft.nbt.CompoundTag();var f=new net.minecraft.nbt.CompoundTag();f.putString("rarity","legendary");f.putString("species","fishofthieves:islehopper");f.putDouble("kg",36.47);trophy.put("holylois_fish",f);
+            raw.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(trophy));
+            try{
+                var apply=holylois.boombox.FishTraits.class.getDeclaredMethod("apply",ItemStack.class,String.class,String.class,double.class,boolean.class,boolean.class);apply.setAccessible(true);
+                @SuppressWarnings("unchecked") var effects=(List<net.minecraft.network.chat.Component>)apply.invoke(null,raw,"fishofthieves:islehopper","legendary",0.98,false,false);
+                var lore=new ArrayList<>(effects);lore.add(net.minecraft.network.chat.Component.literal("Caught by TestAngler, 2026-10-12"));
+                raw.set(net.minecraft.core.component.DataComponents.LORE,new net.minecraft.world.item.component.ItemLore(lore));
+            }catch(ReflectiveOperationException error){throw new IllegalStateException(error);}
+            holylois.boombox.LowTierFish.normalize(raw);player.getInventory().setItem(21,raw);
+            var cooked=new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse("fishofthieves:cooked_islehopper")));
+            holylois.boombox.Legends.cooked(raw,cooked);
+            check(cooked.get(net.minecraft.core.component.DataComponents.LORE).lines().stream().filter(l->l.getString().equals("When held:")).count()==1,"cooking rebuilds one held section after copying trophy data");
+            var slice=new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse("farmersdelight:cod_slice")));
+            holylois.boombox.Legends.fillet(raw,slice);
+            check(!slice.has(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS)||slice.get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS).modifiers().isEmpty(),"fillets have no whole-fish held attribute");
+            check(slice.get(net.minecraft.core.component.DataComponents.LORE).lines().stream().anyMatch(l->l.getString().contains("Jump Boost")),"fillets retain the shorter eaten Jump Boost");
+            player.getInventory().setItem(22,slice);
+            var map=new ItemStack(net.minecraft.world.item.Items.BURIED_TREASURE_MAP);map.set(net.minecraft.core.component.DataComponents.MAP_ID,new net.minecraft.world.level.saveddata.maps.MapId(2));
+            player.getInventory().setItem(23,map);player.inventoryMenu.broadcastChanges();
+        });
+        context.waitTicks(5);
+        context.runOnClient(client->{
+            var raw=client.player.getInventory().getItem(21);
+            var lines=raw.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(client.level),client.player,net.minecraft.world.item.TooltipFlag.NORMAL).stream().map(net.minecraft.network.chat.Component::getString).toList();
+            log("islehopper sections: "+lines);
+            int held=lines.indexOf("When held:");int caught=-1;for(int i=0;i<lines.size();i++)if(lines.get(i).startsWith("Caught by "))caught=i;
+            check(held>=0&&caught>held&&lines.subList(caught+1,lines.size()).stream().allMatch(String::isBlank),"held attribute is labeled and catch credit is last text before food icons");
+            var map=client.player.getInventory().getItem(23);var tooltip=map.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(client.level),client.player,net.minecraft.world.item.TooltipFlag.NORMAL).stream().map(net.minecraft.network.chat.Component::getString).toList();
+            log("treasure map tooltip: "+tooltip);
+            check(map.getStyledHoverName().getString().equals("Buried Treasure Map")&&tooltip.stream().noneMatch(t->t.startsWith("ID #")||t.contains("filled_map."))&&tooltip.contains("The number 2 is etched into the map."),"treasure map has a readable name and real numbered inscription");
+            client.gui.setScreen(new InventoryScreen(client.player));
+        });
+        context.waitTicks(5);
+        for(int item:new int[]{21,22,23}){
+            var pos=context.computeOnClient(client->{var screen=(net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>)client.gui.screen();
+                var slot=screen.getMenu().slots.stream().filter(s->s.container instanceof net.minecraft.world.entity.player.Inventory&&s.getContainerSlot()==item).findFirst().orElseThrow();
+                return new double[]{((int)field(screen,"leftPos")+slot.x+8)*client.getWindow().getGuiScale(),((int)field(screen,"topPos")+slot.y+8)*client.getWindow().getGuiScale()};});
+            context.getInput().setCursorPos(pos[0],pos[1]);context.waitTicks(4);context.takeScreenshot("58-tooltip-section-"+item);
+        }
         context.runOnClient(client->client.gui.setScreen(null));
     }
 

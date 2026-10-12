@@ -47,6 +47,7 @@ public final class BoomboxClient implements ClientModInitializer {
         Capture.register();
         RelicTooltips.register();
         FishTooltip.register();
+        TreasureMapTooltip.register();
         BoomboxUseGuard.register();
     }
 }

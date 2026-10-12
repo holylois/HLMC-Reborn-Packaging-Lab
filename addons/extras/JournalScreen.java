@@ -169,7 +169,8 @@ public final class JournalScreen extends TravelScreen {
                 lines.addAll(rarityLines(entry));
                 if(entry.shiny()>0)lines.add(label("shiny_count",entry.shiny()).copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
             }
-            if(entry.level()>0)lines.add(label("level",entry.level()));
+            if(entry.level()>0)lines.add(label(tab==0?"first_level":"level",entry.level()));
+            else if(tab==0&&entry.kind()==JournalState.KILL)lines.add(label("unknown_first_level"));
             if(entry.time()>0){
                 String date=DateTimeFormatter.ofPattern("d MMM yyyy",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(entry.time()));
                 lines.add(label(tab==0||entry.kind()==JournalState.FEAT?"first_on":entry.kind()==JournalState.FISH?"caught_on":entry.kind()==JournalState.KILL?"defeated_on":"visited_on",date));

@@ -14,6 +14,7 @@ public abstract class CrateNameMixin {
     private Component holyLoisCrateName(Operation<Component> original){
         var stack=(ItemStack)(Object)this;
         var name=original.call();
+        if(holylois.boombox.TreasureMapTooltip.matches(stack))return holylois.boombox.TreasureMapTooltip.name();
         return CrateStyle.rarity(stack).isEmpty()?name:CrateStyle.name(stack);
     }
 }

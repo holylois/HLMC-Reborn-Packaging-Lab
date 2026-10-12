@@ -51,7 +51,7 @@ public final class Discoveries {
         public UUID uuid;
     }
     /** A boss or elite world first: key "boss:minecraft:ender_dragon", "elite", "level:50"... */
-    public static final class First { public String key, what, player, dim; public UUID uuid; public long time; public int x, y, z, level; }
+    public static final class First { public String key, what, player, dim; public UUID uuid; public long time; public int x, y, z, level; public Integer firstLevel; }
     public static final class State {
         public int version = 3;
         public List<Found> found = new ArrayList<>(); public List<First> firsts = new ArrayList<>();
@@ -138,7 +138,7 @@ public final class Discoveries {
                 if(mob&&!hostileType(f.key.substring(4)))continue;
                 if(mob&&firsts.containsKey("boss:"+f.key.substring(4)))continue;
                 entries.add(new JournalState.Entry(f.key,mob?JournalState.KILL:JournalState.FEAT,mob?f.key.substring(4):f.what,StatsVisibility.display(f.player),
-                    f.dim,f.x,f.y,f.z,f.time,1,0,0,f.level,true,true));
+                    f.dim,f.x,f.y,f.z,f.time,1,0,0,f.firstLevel==null?0:f.firstLevel,true,true));
             }
         }else{
             if(request.filter()==4)for(var f:firsts.values())if(!f.key.startsWith("mob:")&&owns(player.getUUID(),player.getGameProfile().name(),f.uuid,f.player))
@@ -322,6 +322,7 @@ public final class Discoveries {
         if(prior!=null){if(level>prior.level){prior.level=level;dirty=true;}return null;}
         var first=new First();first.key=key;first.what="slew the first "+title(type.substring(type.indexOf(':')+1));
         first.player=player;first.dim=dimension;first.x=x;first.y=y;first.z=z;first.time=time;first.level=level;
+        first.firstLevel=level;
         firsts.put(key,first);dirty=true;return first;
     }
 

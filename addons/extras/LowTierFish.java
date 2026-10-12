@@ -21,17 +21,18 @@ public final class LowTierFish {
     }
     public static boolean normalize(ItemStack stack){
         if(stack.isEmpty()||!stack.has(DataComponents.FOOD))return false;
-        boolean changed=stack.has(DataComponents.TROPICAL_FISH_PATTERN)||stack.has(DataComponents.TROPICAL_FISH_BASE_COLOR)||stack.has(DataComponents.TROPICAL_FISH_PATTERN_COLOR);
+        boolean changed=FishTooltipSections.normalize(stack);
+        changed|=stack.has(DataComponents.TROPICAL_FISH_PATTERN)||stack.has(DataComponents.TROPICAL_FISH_BASE_COLOR)||stack.has(DataComponents.TROPICAL_FISH_PATTERN_COLOR);
         stripBucketAppearance(stack);
         var fish=FishData.tag(stack);if(fish==null)return changed;
         String rarity=fish.getStringOr("rarity","");
         if(!rarity.equals("common")&&!rarity.equals("uncommon"))return changed;
-        if(fish.getIntOr("meal_version",0)==1)return changed;
+        if(fish.getIntOr("meal_version",0)==2)return changed;
         var tag=stack.get(DataComponents.CUSTOM_DATA).copyTag();tag.remove(Legends.FISH_KEY);
         for(var type:java.util.List.of(DataComponents.ITEM_NAME,DataComponents.LORE,DataComponents.FOOD,DataComponents.CONSUMABLE,
-            DataComponents.MAX_STACK_SIZE,DataComponents.ATTRIBUTE_MODIFIERS,DataComponents.ENCHANTMENT_GLINT_OVERRIDE))restore(stack,type);
+            DataComponents.MAX_STACK_SIZE,DataComponents.ATTRIBUTE_MODIFIERS,DataComponents.ENCHANTMENT_GLINT_OVERRIDE,DataComponents.TOOLTIP_DISPLAY))restore(stack,type);
         if(rarity.equals("uncommon")){
-            var meal=new CompoundTag();meal.putString("rarity",rarity);meal.putInt("meal_version",1);
+            var meal=new CompoundTag();meal.putString("rarity",rarity);meal.putInt("meal_version",2);
             tag.put(Legends.FISH_KEY,meal);
             int rgb=FishData.color(rarity)&0xFFFFFF;
             stack.set(DataComponents.ITEM_NAME,Component.literal(stack.getHoverName().getString()).withStyle(s->s.withColor(rgb).withItalic(false)));
@@ -43,6 +44,13 @@ public final class LowTierFish {
         }
         if(tag.isEmpty())stack.remove(DataComponents.CUSTOM_DATA);else stack.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
         return true;
+    }
+    public static void beforePickup(net.minecraft.server.level.ServerPlayer player,net.minecraft.world.entity.item.ItemEntity drop){
+        var incoming=drop.getItem();
+        if(FishData.tag(incoming)==null&&!FishTraits.SPECIES.containsKey(BuiltInRegistries.ITEM.getKey(incoming.getItem()).toString().replace("cooked_","")))return;
+        if(normalize(drop.getItem()))drop.setItem(drop.getItem());
+        boolean changed=false;for(var slot:player.inventoryMenu.slots)changed|=normalize(slot.getItem());
+        if(changed)player.inventoryMenu.broadcastChanges();
     }
     private static <T> void restore(ItemStack stack,DataComponentType<T> type){
         T value=stack.getItem().components().get(type);if(value==null)stack.remove(type);else stack.set(type,value);

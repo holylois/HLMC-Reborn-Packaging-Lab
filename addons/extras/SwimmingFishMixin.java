@@ -23,7 +23,7 @@ public abstract class SwimmingFishMixin implements SwimmingFish.Memory {
         var fish=(AbstractFish)(Object)this;var stack=SwimmingFish.identity(fish);
         if(!stack.isEmpty()){
             output.store(SwimmingFish.SAVE_KEY,ItemStack.CODEC,stack);
-            output.putDouble(SwimmingFish.SCALE_KEY,SwimmingFish.scale(holylois.boombox.FishData.kilograms(stack)));
+            output.putDouble(SwimmingFish.SCALE_KEY,SwimmingFish.scale(SwimmingFish.mass(stack)));
         }
     }
     @Inject(method="readAdditionalSaveData",at=@At("TAIL"),require=1)

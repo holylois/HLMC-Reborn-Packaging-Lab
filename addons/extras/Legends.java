@@ -420,8 +420,10 @@ public final class Legends {
         var tag = new CompoundTag();
         var copy = fish.copy();
         copy.putBoolean("cooked", true);
+        copy.remove("held_tooltip");
         tag.put(FISH_KEY, copy);
         CustomData.set(DataComponents.CUSTOM_DATA, result, tag);
+        LowTierFish.normalize(result);
     }
 
     /** Operator test catches (/legends give rare|epic|legendary|mythic): the rarity to make instead of rolling one. */
