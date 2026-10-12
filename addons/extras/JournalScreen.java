@@ -124,7 +124,7 @@ public final class JournalScreen extends TravelScreen {
     private Component summary(JournalState.Entry e){
         Component text=e.kind()==JournalState.FEAT?label("first_by",e.by()):e.kind()==JournalState.FISH?label("caught",e.count()):e.kind()==JournalState.KILL?label(tab==0?"first_by":"defeated",tab==0?e.by():e.count())
             :tab==0?label("first_by",e.by()):label("visited");
-        return e.first()?Component.literal("★ ").append(text).withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)):text;
+        return e.first()&&(tab==0||e.kind()==JournalState.FEAT||e.kind()==JournalState.PLACE)?Component.literal("★ ").append(text).withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)):text;
     }
     @Override boolean enter(){if(search!=null&&search.isFocused()&&!loading){query=search.getValue().strip();page=0;fetch();return true;}return false;}
     @Override public void tick(){
@@ -159,8 +159,11 @@ public final class JournalScreen extends TravelScreen {
             g.nextStratum();
             var lines=new ArrayList<Component>();
             lines.add(title(entry));
-            if(entry.first())lines.add(Component.literal("★ ").append(label(tab==0?"world_credit":"your_first")).withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
-            lines.add(summary(entry));
+            if(tab==0||entry.kind()==JournalState.FEAT)lines.add(summary(entry));
+            else{
+                if(entry.first())lines.add(Component.literal("★ ").append(label("your_first")).withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
+                lines.add(entry.kind()==JournalState.PLACE?label("visited"):summary(entry));
+            }
             if(entry.kind()==JournalState.FISH){
                 lines.add(label("best",entry.weight()>0?FishData.shortWeight(entry.weight())+" kg":label("unweighed").getString()));
                 lines.addAll(rarityLines(entry));

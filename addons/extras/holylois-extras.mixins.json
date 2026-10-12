@@ -83,6 +83,7 @@
     "FishSlotMixin",
     "ChestReplayMixin",
     "ShineTextMixin",
+    "ShineLayoutMixin",
     "KeptArmsCaptureMixin",
     "KeptArmsPlayerMixin",
     "KeptArmsLayerMixin",

@@ -10,10 +10,12 @@ import net.minecraft.network.chat.Style;
  * same name shimmers in chat, tooltips, death messages and anywhere else text is drawn.
  */
 public final class ShineText {
+    public record Run(float start,float end,int kind) {}
+    public interface Layout { void holyLoisRuns(java.util.List<Run> runs); }
     private ShineText() {}
 
     /** 0 = not shining, 1 = Legendary (gold), 2 = Mythic (red to gold, faster, with a small wave). */
-    static int kind(Style style) {
+    public static int kind(Style style) {
         if (!(style.getFont() instanceof FontDescription.Resource resource)) return 0;
         var id = resource.id();
         return id.equals(FishData.SHINE_MYTHIC) ? 2 : id.equals(FishData.SHINE_LEGENDARY) ? 1 : 0;
@@ -23,18 +25,23 @@ public final class ShineText {
 
     /** Glyph colour at x (keeps the alpha of the colour the game chose). */
     public static int color(Style style, float x, int color) {
-        return colorAt(style,x,color,seconds());
+        return colorAt(style,x,300,color,seconds());
     }
 
+    public static int color(Style style,float x,float width,int color){return colorAt(style,x,width,color,seconds());}
+
     public static int colorAt(Style style,float x,int color,float t){
+        return colorAt(style,x,300,color,t);
+    }
+    public static int colorAt(Style style,float x,float width,int color,float t){
         int kind = kind(style);
         if (kind == 0) return color;
         boolean mythic = kind == 2;
         int from = mythic ? 0xFF3333 : 0xFF9E1C, to = mythic ? 0xFF6BCC : 0xFFE58C;
         int rgb = mythic ? mix(from, to, 0.5f + 0.5f * (float) Math.sin(x * 0.09f - t * 4.5f)) : FishData.color("legendary") & 0xFFFFFF;
         // A white glint sweeps from left to right every 2.4 s (Mythic every 1.6 s).
-        float period = mythic ? 1.6f : 2.4f, at = (t % period) / period * 300 - 40;
-        float glint = Math.max(0, 1 - Math.abs(Math.floorMod((int) x, 300) - at) / 10f);
+        float period = mythic ? 1.6f : 2.4f, at = (t % period) / period * (Math.max(1,width)+40) - 20;
+        float glint = Math.max(0, 1 - Math.abs(x - at) / 10f);
         rgb = mix(rgb, 0xFFFFFF, glint * 0.85f);
         return (color & 0xFF000000) | rgb;
     }

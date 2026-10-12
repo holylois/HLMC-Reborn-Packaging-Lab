@@ -34,6 +34,7 @@ public final class SchoolCatch {
         fish.saveToBucketTag(stack);
         stack.remove(DataComponents.BUCKET_ENTITY_DATA);
         stack.remove(DataComponents.CUSTOM_NAME);
+        LowTierFish.stripBucketAppearance(stack);
         return stack;
     }
 
@@ -48,9 +49,10 @@ public final class SchoolCatch {
         if (stack.isEmpty()) return false;
         var config = Legends.fish;
         if (config != null && config.enabled) {
-            if(FishData.weighed(stack))Legends.stampCatch(stack,level,angler.getName().getString());
+            if(FishData.tag(stack)!=null)Legends.stampCatch(stack,level,angler.getName().getString());
             else Legends.weigh(stack, level, angler.getRandom(), angler.getLuck(), angler.getName().getString(), config);
         }
+        LowTierFish.normalize(stack);
         FishCaught.record(angler,stack);
         fish.discard();
         angler.awardStat(Stats.FISH_CAUGHT);

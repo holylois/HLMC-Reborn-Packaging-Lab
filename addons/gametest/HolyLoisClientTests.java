@@ -83,6 +83,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "crate rarity presentation", context, world, HolyLoisClientTests::cratePresentation);
             run(failed, "fishing history counts", context, world, HolyLoisClientTests::fishingHistory);
             run(failed, "fish tooltips", context, world, HolyLoisClientTests::fishTooltips);
+            run(failed, "low-tier meals and full-name shine", context, world, HolyLoisClientTests::lowTierPolish);
             run(failed, "fish of thieves eating frames", context, world, HolyLoisClientTests::fishEatingFrames);
             run(failed, "armor 3d", context, world, HolyLoisClientTests::armor3d);
             run(failed, "r over a fillet", context, world, HolyLoisClientTests::rOverFillet);
@@ -880,9 +881,58 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
                 check(!text.getString().contains("★")&&text.getStyle().getColor().getValue()==(holylois.boombox.Ui.GOLD&0xFFFFFF),"first discovery name is clean yellow without a star");
                 var summary=holylois.boombox.JournalScreen.class.getDeclaredMethod("summary",holylois.boombox.JournalState.Entry.class);summary.setAccessible(true);
                 check(((net.minecraft.network.chat.Component)summary.invoke(screen,entry)).getString().startsWith("★ "),"world-first star appears in the description");
+                var kill=new holylois.boombox.JournalState.Entry("kill",3,"Zombie",entry.by(),"minecraft:overworld",8,63,2,1,5,0,0,16,true,true);
+                var count=(net.minecraft.network.chat.Component)summary.invoke(screen,kill);
+                check(!count.getString().contains("★")&&count.getStyle().getColor()==null,"personal defeat count is plain, without gold or a star");
             }catch(ReflectiveOperationException error){throw new IllegalStateException(error);}
         });
         context.waitTicks(5);context.takeScreenshot("55-first-description");
+        context.runOnClient(client->client.gui.setScreen(null));
+    }
+
+    private static void lowTierPolish(ClientGameTestContext context,TestSingleplayerContext world){
+        world.getServer().runCommand("clear @a");
+        world.getServer().runOnServer(server->{
+            var player=server.getPlayerList().getPlayers().getFirst();
+            for(int i=0;i<2;i++){
+                var stack=new ItemStack(net.minecraft.world.item.Items.TROPICAL_FISH,2);var root=new net.minecraft.nbt.CompoundTag();var fish=new net.minecraft.nbt.CompoundTag();
+                fish.putString("rarity",i==0?"common":"uncommon");fish.putDouble("kg",0.15+i);root.put("holylois_fish",fish);
+                stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(root));
+                stack.set(net.minecraft.core.component.DataComponents.MAX_STACK_SIZE,1);
+                stack.set(net.minecraft.core.component.DataComponents.TROPICAL_FISH_PATTERN,net.minecraft.world.entity.animal.fish.TropicalFish.Pattern.FLOPPER);
+                var other=stack.copy();var different=root.copy();var old=different.getCompound("holylois_fish").orElseThrow();old.putDouble("kg",0.9);old.putString("by","AnotherAngler");different.put("holylois_fish",old);
+                other.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(different));
+                holylois.boombox.LowTierFish.normalize(stack);holylois.boombox.LowTierFish.normalize(other);
+                check(ItemStack.isSameItemSameComponents(stack,other),"old low-tier catches stack despite different weight/owner");
+                check(!holylois.boombox.LowTierFish.normalize(stack),"migration is idempotent");
+                player.getInventory().setItem(20+i,stack);
+            }
+            player.inventoryMenu.broadcastChanges();
+        });
+        context.waitTicks(5);
+        context.runOnClient(client->{
+            for(int i=20;i<22;i++){
+                var stack=client.player.getInventory().getItem(i);
+                check(stack.getMaxStackSize()==64&&!holylois.boombox.FishData.weighed(stack),"low-tier food stacks without weight");
+                String lines=stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(client.level),client.player,net.minecraft.world.item.TooltipFlag.NORMAL).toString();
+                check(!lines.contains("Parrotfish")&&!lines.contains("Weight:"),"no bucket flavor or weight on food");
+                if(i==21)check(holylois.boombox.RarityOutline.of(stack)==(0xFE000000|(holylois.boombox.FishData.color("uncommon")&0xFFFFFF)),"Uncommon has green sprite outline");
+            }
+            for(String name:List.of("Golden Crate","Raw Cod","Legendary long fish name"))for(String rarity:List.of("legendary","mythic"))for(int origin:new int[]{20,295,610}){
+                var text=net.minecraft.network.chat.Component.literal(name).withStyle(s->holylois.boombox.FishData.shine(s.withBold(rarity.equals("mythic")),rarity));
+                var prepared=client.font.prepareText(text.getVisualOrderText(),origin,20,0xFFFFFFFF,false,false,0);
+                @SuppressWarnings("unchecked") var runs=(List<holylois.boombox.ShineText.Run>)field(prepared,"holyLoisRuns");
+                check(runs.size()==1&&runs.getFirst().start()==0&&runs.getFirst().end()==client.font.getSplitter().stringWidth(text.getVisualOrderText()),"shine covers full name independently of screen position, including last letter");
+            }
+            client.gui.setScreen(new InventoryScreen(client.player));
+        });
+        context.waitTicks(5);context.takeScreenshot("57-stackable-low-fish");
+        var pos=context.computeOnClient(client->{
+            var screen=(net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>)client.gui.screen();
+            var slot=screen.getMenu().slots.stream().filter(s->s.container instanceof net.minecraft.world.entity.player.Inventory&&s.getContainerSlot()==21).findFirst().orElseThrow();
+            return new double[]{((int)field(screen,"leftPos")+slot.x+8)*client.getWindow().getGuiScale(),((int)field(screen,"topPos")+slot.y+8)*client.getWindow().getGuiScale()};
+        });
+        context.getInput().setCursorPos(pos[0],pos[1]);context.waitTicks(5);context.takeScreenshot("57-uncommon-tooltip");
         context.runOnClient(client->client.gui.setScreen(null));
     }
 

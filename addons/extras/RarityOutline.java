@@ -42,7 +42,7 @@ public final class RarityOutline {
         String rarity = FishData.rarity(stack);
         int rgb = FishData.color(rarity) & 0xFFFFFF;
         return switch (rarity) {
-            case "rare", "epic" -> 0xFE000000 | rgb;
+            case "uncommon", "rare", "epic" -> 0xFE000000 | rgb;
             case "legendary" -> 0xFD000000 | rgb;
             case "mythic" -> 0xFC000000 | rgb;
             default -> 0;

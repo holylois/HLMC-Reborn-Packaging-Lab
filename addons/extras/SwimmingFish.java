@@ -30,13 +30,16 @@ public final class SwimmingFish {
     }
     public static float scale(double kg){return (float)Math.clamp(0.55+0.55*Math.sqrt(Math.max(0,kg)),0.65,4.0);}
     public static void applyScale(AbstractFish fish,ItemStack stack){
-        double kg=FishData.kilograms(stack);var attribute=fish.getAttribute(Attributes.SCALE);
+        double kg=mass(stack);var attribute=fish.getAttribute(Attributes.SCALE);
         if(kg>0&&attribute!=null)attribute.addOrUpdateTransientModifier(new AttributeModifier(SCALE,scale(kg)-1,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
     }
     public static ItemStack valid(AbstractFish fish,ItemStack stack){
         var raw=SchoolCatch.rawItemFor(fish);
-        double kg=FishData.kilograms(stack);
+        double kg=mass(stack);
         return !stack.isEmpty()&&stack.getCount()==1&&stack.is(raw.getItem())&&Double.isFinite(kg)&&kg>0&&kg<=200
             &&java.util.List.of("common","uncommon","rare","epic","legendary","mythic").contains(FishData.rarity(stack))?stack:ItemStack.EMPTY;
+    }
+    public static double mass(ItemStack stack){
+        var tag=FishData.tag(stack);return tag==null?0:tag.getDoubleOr("swim_kg",tag.getDoubleOr("kg",0));
     }
 }

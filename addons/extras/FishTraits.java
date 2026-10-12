@@ -51,6 +51,7 @@ public final class FishTraits {
 
     /** Seconds of the eaten effect: 30 s for a small Rare up to 8 minutes for a big Mythic; Shiny and cooking double it. */
     static int seconds(String rarity, double size, boolean shiny, boolean cooked) {
+        if(rarity.equals("uncommon"))return cooked?15:10;
         double base = switch (tier(rarity)) { case 1 -> 30; case 2 -> 60; case 3 -> 120; case 4 -> 240; default -> 0; };
         double grow = 0.75 + Math.min(1, Math.max(0, size)) * 0.5;
         return (int) Math.round(base * grow * (shiny ? 2 : 1) * (cooked ? 2 : 1));
@@ -69,14 +70,15 @@ public final class FishTraits {
      */
     static List<Component> apply(ItemStack stack, String species, String rarity, double size, boolean shiny, boolean cooked, float share, boolean held) {
         var lines = new ArrayList<Component>();
-        if (tier(rarity) == 0) return lines;
+        boolean uncommon=rarity.equals("uncommon");
+        if (tier(rarity) == 0&&!uncommon) return lines;
         var trait = SPECIES.getOrDefault(species, FALLBACK);
         var food = stack.get(DataComponents.CONSUMABLE);
         if (trait.eat() != null && food != null) {
             // Owner 2026-10-11: only raw fish are filleted, so cooking a whole trophy is the big meal, one level stronger (IV at most);
             // fillets stay the steady snack, a quarter of the time and one level weaker.
             int ticks = Math.max(200, Math.round(seconds(rarity, size, shiny, cooked) * 20 * share));
-            int level = Math.min(3, Math.max(0, amplifier(rarity) - (share < 1 ? 1 : 0) + (cooked && share >= 1 ? 1 : 0)));
+            int level = uncommon?0:Math.min(3, Math.max(0, amplifier(rarity) - (share < 1 ? 1 : 0) + (cooked && share >= 1 ? 1 : 0)));
             var effects = new ArrayList<MobEffectInstance>();
             // Instant-ish effects (Saturation) would be absurd for minutes: a few seconds of them, by tier.
             boolean instant = trait.eat().value().isInstantaneous() || trait.eat() == MobEffects.SATURATION;
@@ -95,7 +97,7 @@ public final class FishTraits {
         } else if (trait.eat() == null) {
             lines.add(Component.literal("A pure trophy: no effect when eaten").withStyle(s -> s.withColor(ChatFormatting.DARK_GRAY).withItalic(true)));
         }
-        if (held && trait.held() != null) {
+        if (held && !uncommon && trait.held() != null) {
             double times = switch (tier(rarity)) { case 2 -> 1.5; case 3 -> 2; case 4 -> 3; default -> 1; } * (shiny ? 1.5 : 1);
             var operation = "base".equals(trait.heldOp()) ? AttributeModifier.Operation.ADD_MULTIPLIED_BASE : AttributeModifier.Operation.ADD_VALUE;
             var modifier = new AttributeModifier(Identifier.fromNamespaceAndPath("holylois", "trophy_fish"), Math.round(trait.amount() * times * 100) / 100.0, operation);

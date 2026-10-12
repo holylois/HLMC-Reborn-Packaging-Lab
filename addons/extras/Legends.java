@@ -297,14 +297,13 @@ public final class Legends {
         if(swimming&&!rarity.trophy()){
             double kg=rarity==LootRules.RARITIES.getFirst()?0.1+0.6*(size/0.5):0.7+0.29*((size-0.5)/0.25);
             kg=Math.round(Math.clamp(kg,0.1,0.99)*100)/100.0;
-            fishTag.putDouble("kg",kg);fishTag.putDouble("size",size);fishTag.putString("species",id);
-            lines.add(Component.literal("Weight: "+LootRules.kg(kg)).withStyle(s->s.withColor(ChatFormatting.WHITE).withItalic(false)));
-            stack.set(DataComponents.MAX_STACK_SIZE,1);
+            fishTag.putDouble("swim_kg",kg);
         }
         stack.set(DataComponents.LORE, new ItemLore(lines));
         var tag = data == null ? new CompoundTag() : data.copyTag();
         tag.put(FISH_KEY, fishTag);
         CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);
+        if(!swimming)LowTierFish.normalize(stack);
         if(angler!=null)stampCatch(stack,level,angler);
     }
 
@@ -396,6 +395,11 @@ public final class Legends {
     public static void cooked(ItemStack raw, ItemStack result) {
         var fish = FishData.tag(raw);
         if (fish != null && fish.getBooleanOr("fillet", false)) { filletData(fish, result, true); return; }
+        if(fish!=null&&fish.getStringOr("rarity","").equals("uncommon")&&!result.isEmpty()){
+            var data=result.get(DataComponents.CUSTOM_DATA);var tag=data==null?new CompoundTag():data.copyTag();
+            var meal=new CompoundTag();meal.putString("rarity","uncommon");tag.put(FISH_KEY,meal);
+            result.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));LowTierFish.normalize(result);return;
+        }
         if (fish == null || result.isEmpty() || !fish.contains("kg")) return;
         String key = fish.getStringOr("rarity", "");
         boolean shiny = fish.getBooleanOr("shiny", false), mythic = key.equals("mythic");
