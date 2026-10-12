@@ -53,7 +53,7 @@ public final class Discoveries {
     /** A boss or elite world first: key "boss:minecraft:ender_dragon", "elite", "level:50"... */
     public static final class First { public String key, what, player, dim; public UUID uuid; public long time; public int x, y, z, level; public Integer firstLevel; }
     public static final class State {
-        public int version = 3;
+        public int version = 4;
         public List<Found> found = new ArrayList<>(); public List<First> firsts = new ArrayList<>();
         public Map<UUID,JournalBook> journals = new HashMap<>();
     }
@@ -84,6 +84,8 @@ public final class Discoveries {
     private final Map<UUID,JournalBook> journals = new HashMap<>();
     private final holylois.boombox.JournalRequestQueue pages = new holylois.boombox.JournalRequestQueue();
     private boolean dirty;
+    private record Pending(LivingEntity entity,holylois.boombox.DefeatRecord record,int tick,boolean complete,ServerPlayer owner){}
+    private final Map<UUID,Pending> pendingDeaths=new LinkedHashMap<>();
     private Path file;
 
     void registerJournal() {
@@ -99,13 +101,14 @@ public final class Discoveries {
             dirty=true;
         });
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server->{
+            drainDeaths(server);
             for(var entry:pages.drain(System.currentTimeMillis()).entrySet()){
                 var player=server.getPlayerList().getPlayer(entry.getKey());
                 if(player!=null&&PartySupport.ready(player))sendPage(player,entry.getValue());
             }
             if(dirty&&server.getTickCount()%400==0)save();
         });
-        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPING.register(server->{if(dirty)save();});
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPING.register(server->{drainDeaths(server,true);if(dirty)save();pendingDeaths.clear();});
         net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register((handler,server)->pages.forget(handler.player.getUUID()));
     }
     private static long now(){return System.currentTimeMillis()/1000;}
@@ -155,7 +158,7 @@ public final class Discoveries {
                 if(request.filter()==4&&boss!=null&&owns(player.getUUID(),player.getGameProfile().name(),boss.uuid,boss.player))continue;
                 boolean myFirst=first!=null&&hostileType(id)&&owns(player.getUUID(),player.getGameProfile().name(),first.uuid,first.player);
                 entries.add(new JournalState.Entry("kill:"+id,JournalState.KILL,id,"",k==null?"":k.dim,k==null?0:k.x,k==null?0:k.y,k==null?0:k.z,
-                    k==null?0:k.time,count,0,0,k==null?0:k.level,k!=null,myFirst));
+                    k==null?0:k.time,count,0,0,k==null?0:k.level,k!=null,myFirst).withStrongest(k==null?null:k.strongest));
             }
         }
         return JournalBook.page(entries,request);
@@ -288,19 +291,35 @@ public final class Discoveries {
 
     /** Boss and Runeforged firsts, from the AFTER_DEATH hook. Credit goes to the player who earned the kill. */
     void killed(MinecraftServer server, LivingEntity entity) {
-        if (file == null || !(entity.getKillCredit() instanceof ServerPlayer player) || !PartySupport.ready(player)) return;
+        if(!(entity.getKillCredit() instanceof ServerPlayer owner)||!PartySupport.ready(owner))return;
+        if(pendingDeaths.containsKey(entity.getUUID()))return;
+        var memory=(holylois.boombox.DefeatRecord.Memory)entity;var record=memory.holyLoisDefeat();memory.holyLoisDefeat(null);
+        boolean complete=record!=null;
+        if(record==null)record=DefeatCapture.capture(entity);
+        if(pendingDeaths.size()>=256)pendingDeaths.remove(pendingDeaths.keySet().iterator().next());
+        pendingDeaths.put(entity.getUUID(),new Pending(entity,record,server.getTickCount()+2,complete,owner));
+    }
+    void drainDeaths(MinecraftServer server){drainDeaths(server,false);}
+    private void drainDeaths(MinecraftServer server,boolean force){
+        var due=new ArrayList<Pending>();
+        pendingDeaths.values().removeIf(p->{if(force||server.getTickCount()>=p.tick()){due.add(p);return true;}return false;});
+        for(var death:due)if(!death.entity().isAlive()&&death.entity().getHealth()<=0)killedConfirmed(server,death.entity(),death.record(),death.complete(),death.owner());
+    }
+    private void killedConfirmed(MinecraftServer server,LivingEntity entity,holylois.boombox.DefeatRecord record,boolean complete,ServerPlayer player){
+        if (file == null) return;
         String type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
-        int[] rune = Runeforged.levelAndElite(entity);
-        int level=rune==null?0:rune[0];
+        int[] rune = record.level()>0?new int[]{record.level(),record.elite()?1:0}:null;
+        int level=record.level();
         if(type.equals("minecraft:player"))return;
-        boolean fresh=book(player).killed(type,level,entity.level().dimension().identifier().toString(),entity.getBlockX(),entity.getBlockY(),entity.getBlockZ(),now());
+        boolean fresh=book(player).killed(type,level,record.dimension(),record.x(),record.y(),record.z(),record.time());
+        if(complete)book(player).strongest(record);
         if(fresh&&player.getStats().getValue(net.minecraft.stats.Stats.ENTITY_KILLED,entity.getType())<=1)hint(player,JournalState.KILL);
         dirty=true;
         String boss = BOSSES.get(type);
         if (boss == null && entity.getType().builtInRegistryHolder().is(BOSS_TAG)) boss = entity.getName().getString();
         if(!hostileType(type)&&boss==null)return;
         if (boss != null) first(server, player, entity, "boss:" + type, "slew " + boss);
-        var mobFirst=rememberMob(type,player.getGameProfile().name(),entity.level().dimension().identifier().toString(),entity.getBlockX(),entity.getBlockY(),entity.getBlockZ(),now(),level);
+        var mobFirst=rememberMob(type,player.getGameProfile().name(),record.dimension(),record.x(),record.y(),record.z(),record.time(),level);
         if(mobFirst!=null)mobFirst.uuid=player.getUUID();
         if(mobFirst!=null){
             if(boss==null)server.getPlayerList().broadcastSystemMessage(Component.literal("✦ World first: ").withStyle(ChatFormatting.GOLD)

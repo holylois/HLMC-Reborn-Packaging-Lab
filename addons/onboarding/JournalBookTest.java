@@ -32,8 +32,12 @@ public final class JournalBookTest {
         check(book.killed("minecraft:zombie",20,"minecraft:overworld",1,64,2,100),"First personal creature defeat earns a hint");
         check(!book.killed("minecraft:zombie",10,"minecraft:the_nether",3,65,4,200),"Repeat creature defeats stay quiet");
         check(book.kills.get("minecraft:zombie").level==20&&book.kills.get("minecraft:zombie").time==200,"Kills retain the best level and the latest location");
+        var record=new holylois.boombox.DefeatRecord("minecraft:zombie",20,40,false,false,100,"minecraft:overworld",1,64,2,List.of(),List.of(),List.of());
+        book.strongest(record);book.strongest(new holylois.boombox.DefeatRecord("minecraft:zombie",10,80,false,false,200,"minecraft:overworld",3,65,4,List.of(),List.of(),List.of()));
+        check(book.kills.get("minecraft:zombie").strongest.time()==100&&book.kills.get("minecraft:zombie").time==200,"strongest time/location stay separate from latest defeat");
         var alice=UUID.randomUUID();var bob=UUID.randomUUID();var state=new Discoveries.State();state.journals.put(alice,book);state.journals.put(bob,new JournalBook());
         var restored=new Gson().fromJson(new Gson().toJson(state),Discoveries.State.class);
+        check(restored.journals.get(alice).kills.get("minecraft:zombie").strongest.equals(record),"strongest metadata survives the saved journal reload");
         check(restored.journals.get(alice).fish.get("minecraft:cod").count==5&&restored.journals.get(bob).fish.isEmpty(),"Saved journals stay separate by UUID across a reload or name change");
         check(Discoveries.owns(alice,"RenamedAlice",alice,"Alice")&&!Discoveries.owns(bob,"Bob",alice,"Alice"),"World-first credit follows the owner UUID, not everyone who visits");
         check(Discoveries.owns(alice,"ALICE",null,"Alice")&&!Discoveries.owns(alice,"Bob",null,"Alice"),"Legacy firsts use an exact case-insensitive name match");
@@ -60,6 +64,8 @@ public final class JournalBookTest {
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         JournalState.CODEC.encode(buffer,result);check(JournalState.CODEC.decode(buffer).equals(result),"Journal state round-trips every field");buffer.release();
         buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);var request=new JournalRequest(1,2,3,4,"spire",123);
+        var recordPage=new JournalState(1,3,0,1,1,8,"",List.of(new JournalState.Entry("kill:minecraft:zombie",3,"minecraft:zombie","","minecraft:overworld",1,64,2,200,2,0,0,20,true,false).withStrongest(record)));
+        JournalState.CODEC.encode(buffer,recordPage);check(JournalState.CODEC.decode(buffer).equals(recordPage),"strongest record survives bounded v4 packet roundtrip");buffer.clear();
         JournalRequest.CODEC.encode(buffer,request);check(JournalRequest.CODEC.decode(buffer).equals(request),"Read-only requests round-trip without a target identity");buffer.release();
         try{new JournalRequest(1,0,0,9,"");throw new AssertionError("Oversized request accepted");}catch(IllegalArgumentException expected){checked++;}
         try{new JournalRequest(1,0,0,8,"x".repeat(49));throw new AssertionError("Oversized search accepted");}catch(IllegalArgumentException expected){checked++;}
@@ -67,7 +73,7 @@ public final class JournalBookTest {
         var root=Files.createTempDirectory("hl-journal-");var file=root.resolve("holylois/discoveries.json");Files.createDirectories(file.getParent());
         Files.writeString(file,"{\"version\":2,\"found\":[{\"key\":\"overworld|spire|0,0\",\"name\":\"Ice Spire\",\"player\":\"Alice\",\"number\":1,\"first\":true,\"time\":100}],\"firsts\":[]}");
         discoveries.load(null,root);var upgraded=new Gson().fromJson(Files.readString(file),Discoveries.State.class);
-        check(upgraded.version==3&&upgraded.found.size()==1&&upgraded.found.getFirst().name.equals("Ice Spire"),"Version 2 migrates without losing discoveries");
+        check(upgraded.version==4&&upgraded.found.size()==1&&upgraded.found.getFirst().name.equals("Ice Spire"),"Version 2 migrates to snapshot-capable schema 4 without losing discoveries");
         Files.writeString(file,"not valid JSON");
         try{discoveries.load(null,root);throw new AssertionError("Corrupt file accepted");}catch(IllegalStateException expected){checked++;}
         check(Files.readString(file).equals("not valid JSON"),"A broken store is not overwritten with an empty journal");

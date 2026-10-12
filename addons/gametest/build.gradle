@@ -2,4 +2,12 @@
 dependencies {
     compileOnly project(':extras')
     compileOnly project(':auth-ui')
+    compileOnly project(':onboarding')
+}
+// Exercise real capture/record code without bootstrapping account/login services inside an integrated test world.
+tasks.named('jar') {
+    dependsOn project(':onboarding').tasks.named('classes')
+    from(project(':onboarding').sourceSets.main.output.classesDirs) {
+        include 'holylois/DefeatCapture*', 'holylois/Discoveries*', 'holylois/JournalBook*', 'holylois/StatsVisibility*', 'holylois/mixins/DefeatCaptureMixin*'
+    }
 }

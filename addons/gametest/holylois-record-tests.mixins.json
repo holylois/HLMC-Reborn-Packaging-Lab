@@ -1,0 +1,1 @@
+{"required":true,"minVersion":"0.8","package":"holylois.mixins","compatibilityLevel":"JAVA_25","mixins":["DefeatCaptureMixin"],"injectors":{"defaultRequire":1}}

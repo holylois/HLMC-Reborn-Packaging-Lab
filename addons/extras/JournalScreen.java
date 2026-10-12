@@ -19,6 +19,8 @@ public final class JournalScreen extends TravelScreen {
     private boolean loading,detail,timedOut;private long requestedAt=System.currentTimeMillis();private int expectedRequest;
     private int listX,listY,listW,rows,detailX,detailW,detailScroll,maxScroll;
     private static final int ROW=30;
+    private final JournalPreview preview=new JournalPreview();
+    private boolean previewPaused;private float previewRotation;private long previewClock=System.currentTimeMillis();
     public JournalScreen(int tab){super("journal_title");this.tab=tab;loading=true;}
     public JournalScreen(JournalState state){this(state.tab());update(state);}
     static Component label(String key,Object...args){return Component.translatable("holylois.journal."+key,args);}
@@ -62,14 +64,17 @@ public final class JournalScreen extends TravelScreen {
         var entry=selected();
         if(entry!=null&&(!loading)&&(wide()||detail)){
             int dx=wide()?detailX:listX,dw=wide()?detailW:listW,dy=top+panelHeight-68;
+            var target=entry.strongest();String destination=target==null?entry.dimension():target.dimension();
+            int targetX=target==null?entry.x():target.x(),targetY=target==null?entry.y():target.y(),targetZ=target==null?entry.z():target.z();
+            if(entry.strongest()!=null&&entry.strongest().type().equals("minecraft:zombie"))action(dx+(wide()?0:76),top+panelHeight-40,60,label(previewPaused?"rotate":"pause"),()->{previewPaused=!previewPaused;previewClock=System.currentTimeMillis();rebuildWidgets();});
             if(entry.location()){
                 action(dx,dy,(dw-4)/2,label("waypoint"),()->{
-                    if(net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("xaerominimap"))XaeroWaypoints.add(entry.dimension()+" "+entry.x()+" "+entry.y()+" "+entry.z()+" "+name(entry).getString());
+                    if(net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("xaerominimap"))XaeroWaypoints.add(destination+" "+targetX+" "+targetY+" "+targetZ+" "+name(entry).getString());
                 }).active=net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("xaerominimap");
                 action(dx+(dw+4)/2,dy,(dw-4)/2,label("map"),()->{
-                    String map=mapName(entry.dimension());
-                    if(map!=null)defaultHandleClickEvent(new ClickEvent.OpenUrl(URI.create("https://map.holylois.com/#"+map+":"+entry.x()+":"+entry.y()+":"+entry.z()+":120:0:0:0:1:flat")),minecraft,this);
-                }).active=mapName(entry.dimension())!=null;
+                    String map=mapName(destination);
+                    if(map!=null)defaultHandleClickEvent(new ClickEvent.OpenUrl(URI.create("https://map.holylois.com/#"+map+":"+targetX+":"+targetY+":"+targetZ+":120:0:0:0:1:flat")),minecraft,this);
+                }).active=mapName(destination)!=null;
             }
             if(!wide())action(dx,top+panelHeight-40,70,label("back"),()->{detail=false;rebuildWidgets();});
         }
@@ -129,6 +134,7 @@ public final class JournalScreen extends TravelScreen {
     @Override boolean enter(){if(search!=null&&search.isFocused()&&!loading){query=search.getValue().strip();page=0;fetch();return true;}return false;}
     @Override public void tick(){
         super.tick();
+        long clock=System.currentTimeMillis();if(!previewPaused&&JournalHints.motionEnabled())previewRotation+=(clock-previewClock)*0.00035f;previewClock=clock;
         if(loading&&System.currentTimeMillis()-requestedAt>5000){loading=false;timedOut=true;rebuildWidgets();}
         if(state!=null&&!loading&&!timedOut&&state.size()!=rows&&net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(JournalRequest.TYPE)){
             page=state.page()*state.size()/rows;fetch();
@@ -157,6 +163,10 @@ public final class JournalScreen extends TravelScreen {
             int dx=wide()?detailX:listX,dw=wide()?detailW:listW,dy=wide()?listY+6:top+38,max=top+panelHeight-76,boxY=dy-6;
             Ui.box(g,dx-3,boxY,dw+6,Math.max(20,max-boxY+6),Ui.RAISED,Ui.LINE);
             g.nextStratum();
+            if(entry.strongest()!=null&&entry.strongest().type().equals("minecraft:zombie")){
+                int previewHeight=Math.min(80,Math.max(36,(max-boxY)/3));
+                preview.draw(g,entry.strongest(),dx+4,dy,dw-8,previewHeight,false,previewRotation);dy+=previewHeight+8;
+            }
             var lines=new ArrayList<Component>();
             lines.add(title(entry));
             if(tab==0||entry.kind()==JournalState.FEAT)lines.add(summary(entry));
@@ -169,7 +179,8 @@ public final class JournalScreen extends TravelScreen {
                 lines.addAll(rarityLines(entry));
                 if(entry.shiny()>0)lines.add(label("shiny_count",entry.shiny()).copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
             }
-            if(entry.level()>0)lines.add(label(tab==0?"first_level":"level",entry.level()));
+            if(entry.kind()==JournalState.KILL)lines.addAll(recordLines(entry.strongest()));
+            if(entry.level()>0&&(entry.strongest()==null||tab==0))lines.add(label(tab==0?"first_level":"level",entry.level()));
             else if(tab==0&&entry.kind()==JournalState.KILL)lines.add(label("unknown_first_level"));
             if(entry.time()>0){
                 String date=DateTimeFormatter.ofPattern("d MMM yyyy",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(entry.time()));
@@ -179,7 +190,7 @@ public final class JournalScreen extends TravelScreen {
                 lines.add(Component.literal(HomesScreen.dimension(entry.dimension())));
                 lines.add(Component.literal(entry.x()+", "+entry.y()+", "+entry.z()));
             }else lines.add(label("no_location"));
-            dy-=detailScroll;g.enableScissor(dx,boxY,dx+dw,max+2);
+            int textTop=dy;dy-=detailScroll;g.enableScissor(dx,textTop,dx+dw,max+2);
             for(var line:lines){for(var part:font.split(line,dw-8)){g.text(font,part,dx+4,dy,Ui.MUTED,false);dy+=11;}dy+=2;}
             g.disableScissor();maxScroll=Math.max(0,dy+detailScroll-max+10);
             if(maxScroll>0)g.text(font,Component.literal("↕"),dx+dw-8,boxY+2,Ui.MUTED,false);
@@ -197,6 +208,28 @@ public final class JournalScreen extends TravelScreen {
         }
         return lines;
     }
+    public static List<Component> recordLines(DefeatRecord record){
+        if(record==null)return List.of(label("record_missing"));
+        var lines=new ArrayList<Component>();
+        lines.add(label("strongest").copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
+        lines.add(record.level()>0?label("record_level",record.level()):label("unlevelled"));lines.add(label("record_health",record.health()));
+        if(record.elite())lines.add(label("elite"));
+        if(Math.abs(record.scale()-1)>0.01)lines.add(label("record_scale",record.scale()));
+        lines.add(label("record_time",DateTimeFormatter.ofPattern("d MMM yyyy HH:mm:ss",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(record.time()))));
+        lines.add(Component.literal(HomesScreen.dimension(record.dimension())+" "+record.x()+", "+record.y()+", "+record.z()));
+        for(var gear:record.gear())lines.add(label("gear",label("slot_"+gear.slot()).getString(),BuiltInRegistries.ITEM.getOptional(Identifier.parse(gear.item())).map(item->new net.minecraft.world.item.ItemStack(item).getHoverName().getString()).orElse(gear.item())));
+        for(var effect:record.effects()){
+            var value=BuiltInRegistries.MOB_EFFECT.getOptional(Identifier.parse(effect.id()));
+            int color=value.isPresent()&&value.get().getCategory()==net.minecraft.world.effect.MobEffectCategory.HARMFUL?0xFF5555:0x4AA8FF;
+            lines.add(label("effect",value.map(e->Component.translatable(e.getDescriptionId()).getString()).orElse(effect.id()),effect.amplifier()+1,effect.ticks()<0?"∞":effect.ticks()/20).copy().withStyle(s->s.withColor(color)));
+        }
+        for(var affix:record.affixes())lines.add(label("affix",affixName(affix)));
+        return lines;
+    }
+    private static Component affixName(String id){
+        try{var type=Class.forName("com.ultimatearpg.monster.ArpgEliteAffix");var value=type.getMethod("byId",String.class).invoke(null,id);if(value!=null)return Component.translatable((String)type.getMethod("translationKey").invoke(value));}catch(ReflectiveOperationException|LinkageError ignored){}
+        return Component.literal(id);
+    }
     private final class JournalRow extends Button {
         private final JournalState.Entry entry;
         JournalRow(int x,int y,int w,int h,JournalState.Entry entry,Runnable run){super(x,y,w,h,name(entry),b->run.run(),DEFAULT_NARRATION);this.entry=entry;if(font.width(name(entry))>w-36)setTooltip(net.minecraft.client.gui.components.Tooltip.create(name(entry)));}
@@ -205,7 +238,7 @@ public final class JournalScreen extends TravelScreen {
             boolean activeRow=entry.key().equals(selected);
             Ui.box(g,getX(),getY(),getWidth(),getHeight(),activeRow?Ui.GOLD_SOFT:isHovered()?Ui.CONTROL_HOVER:Ui.CONTROL,activeRow?Ui.GOLD:Ui.LINE);
             g.nextStratum();
-            g.item(new net.minecraft.world.item.ItemStack(icon(entry)),getX()+6,getY()+5);
+            if(!preview.draw(g,entry.strongest(),getX()+6,getY()+4,20,20,true,0.35f))g.item(new net.minecraft.world.item.ItemStack(icon(entry)),getX()+6,getY()+5);
             int color=entry.first()?Ui.GOLD:Ui.TEXT;
             var title=font.split(title(entry),getWidth()-36);if(!title.isEmpty())g.text(font,title.getFirst(),getX()+30,getY()+4,color,false);
             var description=font.split(summary(entry),getWidth()-36);if(!description.isEmpty())g.text(font,description.getFirst(),getX()+30,getY()+15,Ui.MUTED,false);

@@ -46,6 +46,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         try {
             context.takeScreenshot("01-title");
             journalFixture();
+            holylois.StrongestJournalChecks.register();
             var world = context.worldBuilder().create();
             world.getConnection().waitForChunksRender();
             context.takeScreenshot("02-world");
@@ -75,6 +76,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "water by camera height", context, world, HolyLoisClientTests::waterByHeight);
             run(failed, "item cards", context, world, HolyLoisClientTests::itemCards);
             run(failed, "holy lois journal", context, world, HolyLoisClientTests::journal);
+            run(failed, "strongest journal record and zombie preview", context, world, holylois.StrongestJournalChecks::run);
             run(failed, "cards over the cinematic camera", context, world, HolyLoisClientTests::cinematicCards);
             run(failed, "hooked school fish arrives as an item", context, world, HolyLoisClientTests::schoolCatch);
             run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);

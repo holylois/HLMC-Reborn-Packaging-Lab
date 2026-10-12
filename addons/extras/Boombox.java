@@ -134,6 +134,7 @@ public final class Boombox implements ModInitializer {
         FishHands.register();
         FilletFood.register();
         LowTierFish.register();
+        JournalFixture.register();
         PayloadTypeRegistry.serverboundPlay().register(BoomboxVolume.TYPE, BoomboxVolume.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(BoomboxVolume.TYPE, (payload, context) -> changeVolume(context.player(), payload));
         loadConfig();

@@ -10,7 +10,7 @@ final class JournalBook {
     static final class Catch {
         String species,dim; long count,time,shiny; double heaviest; int rarities,x,y,z; long[] rarityCounts;
     }
-    static final class Kill { String type,dim; long time; int level,x,y,z; }
+    static final class Kill { String type,dim; long time; int level,x,y,z; holylois.boombox.DefeatRecord strongest; }
     final Map<String,Catch> fish=new HashMap<>();
     final Map<String,Kill> kills=new HashMap<>();
     final Map<String,Long> places=new HashMap<>();
@@ -40,6 +40,10 @@ final class JournalBook {
         return fresh;
     }
     boolean visit(String key,long time){return places.putIfAbsent(key,time)==null;}
+    void strongest(holylois.boombox.DefeatRecord record){
+        var entry=kills.get(record.type());
+        if(entry!=null&&record.level()>=entry.level&&record.strongerThan(entry.strongest))entry.strongest=record;
+    }
 
     static JournalState page(List<JournalState.Entry> entries,JournalRequest request){
         String query=request.search().strip().toLowerCase(Locale.ROOT);

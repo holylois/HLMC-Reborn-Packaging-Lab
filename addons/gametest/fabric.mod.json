@@ -7,6 +7,7 @@
   "authors": ["pjampjam"],
   "license": "MIT",
   "environment": "client",
+  "mixins": ["holylois-record-tests.mixins.json"],
   "entrypoints": {
     "fabric-client-gametest": ["holylois.gametest.HolyLoisClientTests"]
   },
