@@ -76,6 +76,9 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "holy lois journal", context, world, HolyLoisClientTests::journal);
             run(failed, "cards over the cinematic camera", context, world, HolyLoisClientTests::cinematicCards);
             run(failed, "hooked school fish arrives as an item", context, world, HolyLoisClientTests::schoolCatch);
+            run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);
+            run(failed, "crate rarity presentation", context, world, HolyLoisClientTests::cratePresentation);
+            run(failed, "fishing history counts", context, world, HolyLoisClientTests::fishingHistory);
             run(failed, "fish tooltips", context, world, HolyLoisClientTests::fishTooltips);
             run(failed, "fish of thieves eating frames", context, world, HolyLoisClientTests::fishEatingFrames);
             run(failed, "armor 3d", context, world, HolyLoisClientTests::armor3d);
@@ -808,6 +811,77 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         server.runCommand("clear @a");
     }
 
+    private static void shoalCatch(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        world.getServer().runCommand("clear @a");
+        world.getServer().runOnServer(s->{
+            var player=s.getPlayerList().getPlayers().getFirst();
+            var level=(ServerLevel)player.level();
+            var type=BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("fishofthieves:shoal"));
+            var shoal=new com.stevekung.fishofthieves.entity.shoal.Shoal(type,level);
+            shoal.setPos(player.getX(),player.getY(),player.getZ());
+            shoal.getShoalFish().add(new com.stevekung.fishofthieves.entity.shoal.ShoalFishData("fishofthieves:splashtail",java.util.UUID.randomUUID(),new net.minecraft.nbt.CompoundTag()));
+            level.addFreshEntity(shoal);
+            var hook=new net.minecraft.world.entity.projectile.FishingHook(player,level,0,0);
+            hook.setPos(shoal.position());level.addFreshEntity(hook);
+            int before=player.getStats().getValue(net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.FISH_CAUGHT));
+            int result=com.stevekung.fishofthieves.entity.shoal.Shoal.fishUpShoal(hook,player);
+            check(result==4&&!hook.isAlive(),"real FoT shoal retrieval retains rod cost and removes the hook");
+            check(player.getStats().getValue(net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.FISH_CAUGHT))==before+1,"shoal catch counted once");
+            int caught=0;for(int i=0;i<player.getInventory().getContainerSize();i++){
+                var item=player.getInventory().getItem(i);
+                if(BuiltInRegistries.ITEM.getKey(item.getItem()).toString().equals("fishofthieves:splashtail"))caught+=item.getCount();
+            }
+            check(caught==1,"shoal catch gives exactly one fish item");
+            check(level.getEntitiesOfClass(net.minecraft.world.entity.animal.fish.AbstractFish.class,player.getBoundingBox().inflate(8)).isEmpty(),"shoal catch does not spawn a live fish");
+            shoal.discard();
+        });
+        world.getServer().runCommand("clear @a");
+    }
+
+    private static void fishingHistory(ClientGameTestContext context,TestSingleplayerContext world){
+        context.runOnClient(client->{
+            var entry=new holylois.boombox.JournalState.Entry("fish",1,"Cod","","",0,0,0,0,1,10,8,0,false,false,List.of(0L,0L,0L,1L,0L,0L),0);
+            var lines=holylois.boombox.JournalScreen.rarityLines(entry);
+            check(lines.size()==4,"an Epic first catch reveals exactly Common through Epic");
+            for(int i=0;i<3;i++)check(lines.get(i).getString().endsWith(": 0"),"missed lower tier "+i+" shows zero");
+            check(lines.get(3).getString().endsWith(": 1"),"the caught Epic shows its real count");
+            var old=new holylois.boombox.JournalState.Entry("fish",1,"Cod","","",0,0,0,0,1,10,8,0,false,false);
+            check(!holylois.boombox.JournalScreen.rarityLines(old).get(3).getString().endsWith(": 0"),"old untracked Epic count remains unknown");
+        });
+    }
+
+    private static void cratePresentation(ClientGameTestContext context,TestSingleplayerContext world) throws Exception {
+        for(String type:new String[]{"wooden","iron","golden"}){
+            context.runOnClient(client->{
+                var item=new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse("fishing_crates:"+type+"_crate")));
+                String tier=holylois.boombox.CrateStyle.rarity(item);
+                var lines=item.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(client.level),client.player,net.minecraft.world.item.TooltipFlag.NORMAL);
+                check(lines.getFirst().getStyle().getColor().getValue()==(holylois.boombox.FishData.color(tier)&0xFFFFFF),type+" crate tooltip uses "+tier+" color");
+                check(item.getStyledHoverName().getStyle().getColor().getValue()==(holylois.boombox.FishData.color(tier)&0xFFFFFF),type+" crate held name uses its tier color");
+                var border=com.anthonyhilyard.legendarytooltips.LegendaryTooltips.getDefinitionColors(item,0xF0100010,0xF0100010,0x505000FF,0x5028007F,client.level.registryAccess());
+                check(border.startBorder().get()==holylois.boombox.FishData.color(tier)&&border.endBorder().get()==holylois.boombox.FishData.color(tier),type+" crate tooltip border uses the shared fish palette");
+                try {
+                    var cards=Class.forName("holylois.boombox.ItemCards");
+                    var clear=cards.getDeclaredMethod("clear");clear.setAccessible(true);clear.invoke(null);
+                    var last=cards.getDeclaredField("lastShown");last.setAccessible(true);last.setLong(null,0);
+                    var pick=cards.getDeclaredMethod("pickedUp",ItemStack.class);pick.setAccessible(true);pick.invoke(null,item);
+                } catch(ReflectiveOperationException error){throw new IllegalStateException(error);}
+            });
+            context.waitTicks(12);context.takeScreenshot("54-crate-"+type);
+            world.getServer().runCommand("item replace entity @p container.20 with fishing_crates:"+type+"_crate");
+            context.waitTicks(4);
+            context.runOnClient(client->client.gui.setScreen(new InventoryScreen(client.player)));
+            var point=context.computeOnClient(client->{
+                var screen=(InventoryScreen)client.gui.screen();var slot=screen.getMenu().getSlot(20);
+                double scale=client.getWindow().getGuiScale();
+                return new double[]{((int)field(screen,"leftPos")+slot.x+8)*scale,((int)field(screen,"topPos")+slot.y+8)*scale};
+            });
+            context.getInput().setCursorPos(point[0],point[1]);context.waitTicks(5);
+            context.takeScreenshot("54-crate-tooltip-"+type);
+            context.runOnClient(client->client.gui.setScreen(null));
+        }
+    }
+
     /** The owner's repro: standing on a 4-block pillar out of the water, F5, tilting so the camera passes the pillar top. */
     private static void pillarCamera(ClientGameTestContext context, net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext server, String tag) {
         // A real ocean's height (surface y 63) and the pack's render distance 12, as in the owner's world.
@@ -962,13 +1036,13 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             int expected = switch (rolled) { case "rare" -> 40; case "epic" -> 52; case "legendary" -> 64;
                 case "mythic" -> (int) Math.round(Math.min(8, 3.2 + kg / 20) * 20); default -> 32; };
             check(ticks == expected, kind + " eats in " + ticks + " ticks (expected " + expected + ")");
-            // A swatch row right under the name; Fish of Thieves' variant name moves into it, in color, exactly once.
+            // The owner wants clean fish tooltips without color swatches or variant labels.
             String row = context.computeOnClient(client -> {
                 var lines = client.player.getInventory().getItem(20).getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(client.level), client.player, net.minecraft.world.item.TooltipFlag.NORMAL);
                 return lines.size() > 1 ? lines.get(1).getString() : "";
             });
-            check(row.startsWith("■■"), kind + ": swatch row under the name (" + row + ")");
-            if (kind.equals("plain-pondie")) check(row.matches("■+ [A-Z][a-z]+") && !name.contains("=gray"),"pondie variant shown once, in color (" + name + ")");
+            check(!name.contains("■"), kind + ": no fish color swatches (" + row + ")");
+            if (kind.equals("plain-pondie")) check(!row.matches("[A-Z][a-z]+"),"pondie color label hidden (" + row + ")");
             context.takeScreenshot("46-fish-tooltip-" + kind);
             context.runOnClient(client -> client.gui.setScreen(null));
             context.waitTicks(3);
@@ -982,18 +1056,46 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         server.runCommand("gamemode survival @a");
         boolean packOn = context.computeOnClient(client -> client.getResourcePackRepository().getSelectedIds().stream().anyMatch(id -> id.contains("HolyLois-FishEating")));
         check(packOn, "the fish eating pack is enabled in the test client");
-        for (String fish : new String[] {"pondie", "cooked_splashtail"}) {
+        for (String fish : new String[] {"pondie", "cooked_splashtail", "large-pondie"}) {
             server.runCommand("clear @a");
-            server.runCommand("give @p fishofthieves:" + fish);
+            if(fish.equals("large-pondie"))server.runOnServer(s->{
+                var player=s.getPlayerList().getPlayers().getFirst();
+                var stack=new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse("fishofthieves:pondie")));
+                var data=new net.minecraft.nbt.CompoundTag();var trophy=new net.minecraft.nbt.CompoundTag();
+                trophy.putString("rarity","mythic");trophy.putDouble("kg",120);data.put("holylois_fish",trophy);
+                stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(data));
+                player.getInventory().setItem(0,stack);
+            });
+            else server.runCommand("give @p fishofthieves:" + fish);
             context.waitTicks(20);
             // HUD off (F1) so no catch card covers the hand.
             context.runOnClient(client -> { client.player.getInventory().setSelectedSlot(0); client.player.setXRot(20); client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); });
             context.getInput().pressKey(options -> options.keyToggleGui);
             server.runOnServer(s -> s.getPlayerList().getPlayers().forEach(p -> p.getFoodData().setFoodLevel(6)));
             context.getInput().holdKey(options -> options.keyUse);
-            context.waitTicks(22);
+            if(fish.equals("large-pondie")){
+                context.waitTicks(8);context.takeScreenshot("47-eat-large-early-feedback");
+                check(context.computeOnClient(client->client.player.isUsingItem()&&client.player.getUseItemRemainingTicks()>128),"large fish starts eating while most of its meal remains");
+                context.waitTicks(100);
+            }else context.waitTicks(22);
             boolean eating = context.computeOnClient(client -> client.player.isUsingItem());
+            String texture=context.computeOnClient(client->{
+                var state=new net.minecraft.client.renderer.item.ItemStackRenderState();
+                client.getItemModelResolver().updateForLiving(state,client.player.getUseItem(),net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_RIGHT_HAND,client.player);
+                return state.pickParticleMaterial(client.player.getRandom()).sprite().contents().name().toString();
+            });
+            log("eating model "+fish+": "+texture);
             context.takeScreenshot("47-eat-" + fish);
+            context.runOnClient(client->{
+                var stack=client.player.getUseItem();
+                var prop=new net.minecraft.client.renderer.item.properties.numeric.UseDuration(false);
+                log("eating progress "+fish+": total="+stack.getUseDuration(client.player)+" remaining="+client.player.getUseItemRemainingTicks()+" model="+prop.get(stack,client.level,client.player,0));
+                try {
+                    var resource=client.getResourceManager().getResource(Identifier.parse("fishofthieves:items/"+(fish.equals("large-pondie")?"pondie":fish)+".json")).orElseThrow();
+                    log("winning fish model source: "+resource.sourcePackId());
+                }catch(Exception error){throw new IllegalStateException(error);}
+            });
+            check(texture.contains("holylois:item/eating/"),fish+" resolves a real bite-frame model while eating: "+texture);
             context.getInput().releaseKey(options -> options.keyUse);
             context.getInput().pressKey(options -> options.keyToggleGui);
             context.waitTicks(10);

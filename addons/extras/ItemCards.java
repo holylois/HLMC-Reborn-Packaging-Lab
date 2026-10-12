@@ -35,6 +35,7 @@ final class ItemCards {
     static int cardsShown;
 
     static void register() {
+        CrateStyle.register();
         try { if (Files.exists(FILE)) enabled = new com.google.gson.Gson().fromJson(Files.readString(FILE), Boolean.class); } catch (Exception ignored) {}
         net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT.register((d, a) -> d.register(
             net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal("itemcards")
@@ -64,7 +65,11 @@ final class ItemCards {
         int count = stack.getCount();
         String amount = count > 1 ? count + "x " : "";
         if (id.getNamespace().equals("holylois")) return new Card(stack, "legendary", label("holylois"), amount + name);
-        if (id.getNamespace().equals("fishing_crates")) return new Card(stack, "epic", label("crate"), amount + name);
+        String crate=CrateStyle.rarity(id.toString());
+        if (!crate.isEmpty()) {
+            int tier=switch(crate){case "uncommon"->1;case "rare"->2;default->4;};
+            return new Card(stack,crate,label("crate"),Component.translatable("holylois.journal.rarity"+tier).getString()+(count>1?" - "+count+"x":""));
+        }
         var enchants = stack.getEnchantments();
         var stored = stack.get(DataComponents.STORED_ENCHANTMENTS);
         int levels = 0, kinds = 0;

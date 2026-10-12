@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "SchoolCatchMixin",
+    "ShoalItemCatchMixin",
     "AdvancementTabOrderMixin",
     "RelicPlacementMixin",
     "RelicBlockChangeMixin",
@@ -21,6 +22,7 @@
     "FishDeathMessageMixin",
     "FishHandsClickMixin",
     "FishEatTimeMixin",
+    "FishEatFeedbackMixin",
     "FishHandsSlotMixin",
     "FishHandsSwapMixin",
     "InvisibleFrameDropMixin",
@@ -29,6 +31,8 @@
     "DeathSlotsPickupMixin"
   ],
   "client": [
+    "CrateNameMixin",
+    "TooltipPaletteMixin",
     "LiteminerScrollMixin",
     "BetterAdvancementsClickMixin",
     "NemoTooltipMixin",

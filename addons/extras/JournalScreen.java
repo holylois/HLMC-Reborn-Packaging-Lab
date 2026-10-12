@@ -163,13 +163,7 @@ public final class JournalScreen extends TravelScreen {
             lines.add(summary(entry));
             if(entry.kind()==JournalState.FISH){
                 lines.add(label("best",entry.weight()>0?FishData.shortWeight(entry.weight())+" kg":label("unweighed").getString()));
-                String[] tiers={"common","uncommon","rare","epic","legendary","mythic"};
-                for(int i=0;i<6;i++)if((entry.rarities()&(1<<i))!=0){
-                    long count=i<entry.rarityCounts().size()?entry.rarityCounts().get(i):0;
-                    int color=i==0?Ui.TEXT:FishData.color(tiers[i]);
-                    String tier=tiers[i];var rarity=label("rarity"+i).copy().withStyle(s->JournalHints.motionEnabled()?FishData.shine(s.withColor(color&0xFFFFFF),tier):s.withColor(color&0xFFFFFF));
-                    lines.add(rarity.append(Component.literal(": ")).append(count>0?Component.literal(Long.toString(count)):label("old_count")));
-                }
+                lines.addAll(rarityLines(entry));
                 if(entry.shiny()>0)lines.add(label("shiny_count",entry.shiny()).copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
             }
             if(entry.level()>0)lines.add(label("level",entry.level()));
@@ -186,6 +180,18 @@ public final class JournalScreen extends TravelScreen {
             g.disableScissor();maxScroll=Math.max(0,dy+detailScroll-max+10);
             if(maxScroll>0)g.text(font,Component.literal("↕"),dx+dw-8,boxY+2,Ui.MUTED,false);
         }
+    }
+    public static java.util.List<Component> rarityLines(JournalState.Entry entry){
+        var lines=new ArrayList<Component>();
+        String[] tiers={"common","uncommon","rare","epic","legendary","mythic"};
+        int highest=31-Integer.numberOfLeadingZeros(entry.rarities()&63);
+        for(int i=0;i<=highest;i++){
+            long count=i<entry.rarityCounts().size()?entry.rarityCounts().get(i):0;
+            int color=i==0?Ui.TEXT:FishData.color(tiers[i]);
+            String tier=tiers[i];var rarity=label("rarity"+i).copy().withStyle(s->JournalHints.motionEnabled()?FishData.shine(s.withColor(color&0xFFFFFF),tier):s.withColor(color&0xFFFFFF));
+            lines.add(rarity.append(Component.literal(": ")).append(count>0?Component.literal(Long.toString(count)):(entry.rarities()&(1<<i))!=0?label("old_count"):Component.literal("0")));
+        }
+        return lines;
     }
     private final class JournalRow extends Button {
         private final JournalState.Entry entry;

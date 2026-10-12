@@ -6,17 +6,12 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/**
- * Every fish shows its colors (owner 2026-10-11): right under the name a row of swatches from the fish's own texture, and for
- * Fish of Thieves the variant name (Charcoal, Ruby...) in its color instead of the mod's gray line. The order then reads
- * name, look, rarity, weight, effects, catch details. Colors come from make-fish-art.py (assets/holylois/fish_palettes.json).
- */
+/** Hide color swatches and variant labels while retaining variant textures and palette data for future use. */
 public final class FishTooltip {
     private FishTooltip() {}
     private static JsonObject palettes;
@@ -35,15 +30,11 @@ public final class FishTooltip {
         if (lines.isEmpty()) return;
         var look = look(stack);
         if (look == null) return;
-        MutableComponent row = Component.empty();
-        for (int rgb : look.palette()) row.append(Component.literal("■").withStyle(s -> s.withColor(rgb)));
         if (look.nameKey() != null) {
             String name = Component.translatable(look.nameKey()).getString();
-            // Fish of Thieves' own gray variant line goes; the name moves up here in color.
+            // Hide Fish of Thieves' own variant line, too.
             for (int i = lines.size() - 1; i >= 1; i--) if (lines.get(i).getString().equals(name)) lines.remove(i);
-            row.append(" ").append(Component.translatable(look.nameKey()).withStyle(s -> s.withColor(look.color())));
         }
-        lines.add(1, row);
     }
 
     static Look look(ItemStack stack) {

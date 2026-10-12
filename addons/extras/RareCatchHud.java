@@ -99,7 +99,8 @@ public final class RareCatchHud {
             }
         }
         g.text(font,font.plainSubstrByWidth(label,w-56),x+47,y+7,Ui.alpha(color,fade),false);
-        var name=Component.literal(font.plainSubstrByWidth(stack.getHoverName().getString(),w-56)).withStyle(s->FishData.shine(s,rarity));
+        var shown=CrateStyle.rarity(stack).isEmpty()?stack.getHoverName():CrateStyle.name(stack);
+        var name=Component.literal(font.plainSubstrByWidth(shown.getString(),w-56)).withStyle(shown.getStyle()).withStyle(s->FishData.shine(s,rarity));
         g.text(font,name,x+47,y+19,Ui.alpha(Ui.TEXT,fade),false);
         g.text(font,font.plainSubstrByWidth(sub,w-56),x+47,y+31,Ui.alpha(Ui.MUTED,fade),false);
         // Time left.

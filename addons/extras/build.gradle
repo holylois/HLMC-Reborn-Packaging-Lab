@@ -10,6 +10,12 @@ dependencies {
 }
 repositories { mavenCentral() }
 
+// Keep our FoT bite models above the mod's base models even when dev pack discovery interleaves file packs with mods.
+tasks.named('processResources') {
+    from(rootProject.file('fish-eating')) { include 'assets/**' }
+    from(rootProject.file('fish-eating/CREDITS.txt')) { rename { 'FISH-EATING-CREDITS.txt' } }
+}
+
 def wrapJlayer = tasks.register('wrapJlayer', Zip) {
     archiveFileName = 'jlayer-1.0.1-holylois.jar'
     destinationDirectory = layout.buildDirectory.dir('jlayer')
