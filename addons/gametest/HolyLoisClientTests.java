@@ -2175,7 +2175,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         check(sideways > 0.05 && sideways > 3 * forward, "the boombox swings out from the body and back in, not forward (" + sideways + " vs " + forward + ")");
         float size = context.computeOnClient(client -> holylois.boombox.BoomboxPulse.lastScale);
         log("held boombox note size: " + size);
-        check(size > 0.2f && size <= 1.45f/3f, "held notes retain their previous small scale (" + size + ")");
+        check(size > 0.3f && size <= 1.45f/2f, "held notes use the owner-approved 1.5x size (" + size + ")");
         // First person (owner 2026-10-10): the boombox in your own hand pulses, but throws no notes into your view.
         context.runOnClient(client -> { client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON); client.player.setXRot(65); });
         int conesBefore = context.computeOnClient(client -> holylois.boombox.BoomboxPulse.ownCones);

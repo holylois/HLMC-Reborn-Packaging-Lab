@@ -99,7 +99,7 @@ public final class FishTraits {
         }
         if (held && !uncommon && trait.held() != null) {
             var operation = "base".equals(trait.heldOp()) ? AttributeModifier.Operation.ADD_MULTIPLIED_BASE : AttributeModifier.Operation.ADD_VALUE;
-            var modifier = new AttributeModifier(Identifier.fromNamespaceAndPath("holylois", "trophy_fish"), heldAmount(trait.amount(),rarity,shiny,cooked), operation);
+            var modifier = new AttributeModifier(Identifier.fromNamespaceAndPath("holylois", "trophy_fish"), species.equals("minecraft:cod")?codArmor(rarity,FishData.kilograms(stack),shiny,cooked):heldAmount(trait.amount(),rarity,shiny,cooked), operation);
             stack.set(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder().add(trait.held(), modifier, EquipmentSlotGroup.MAINHAND).build());
         }
         return lines;
@@ -107,6 +107,15 @@ public final class FishTraits {
     static double heldAmount(double base,String rarity,boolean shiny,boolean cooked){
         double times=switch(tier(rarity)){case 2->1.5;case 3->2;case 4->3;default->1;}*(shiny?1.5:1);
         return Math.round(base*times*100)/100.0*(cooked?0.5:1);
+    }
+    static double codArmor(String rarity,double kg,boolean shiny,boolean cooked){
+        double base=switch(rarity){case "rare"->2;case "epic"->4;case "legendary"->6;case "mythic"->10;default->0;};
+        if(base==0)return 0;
+        double floor=switch(rarity){case "rare"->1;case "epic"->3;case "legendary"->20;default->40;};
+        double span=switch(rarity){case "rare"->2;case "epic"->17;case "legendary"->20;default->120;};
+        double growth=switch(rarity){case "rare"->1;case "mythic"->4;default->2;};
+        double weight=Double.isFinite(kg)?Math.clamp((kg-floor)/span,0,1):0;
+        return Math.round((base+growth*weight)*(shiny?1.5:1)*10)/10.0*(cooked?0.5:1);
     }
     static void refreshHeld(ItemStack stack){
         var fish=FishData.tag(stack);if(fish==null||!FishData.weighed(stack))return;
@@ -116,7 +125,8 @@ public final class FishTraits {
         var id=Identifier.fromNamespaceAndPath("holylois","trophy_fish");entries.removeIf(e->e.modifier().id().equals(id));
         if(trait.held()!=null&&!fish.getBooleanOr("fillet",false)){
             var operation="base".equals(trait.heldOp())?AttributeModifier.Operation.ADD_MULTIPLIED_BASE:AttributeModifier.Operation.ADD_VALUE;
-            entries.add(new ItemAttributeModifiers.Entry(trait.held(),new AttributeModifier(id,heldAmount(trait.amount(),FishData.rarity(stack),FishData.shiny(stack),fish.getBooleanOr("cooked",false)),operation),EquipmentSlotGroup.MAINHAND));
+            double amount=species.equals("minecraft:cod")?codArmor(FishData.rarity(stack),FishData.kilograms(stack),FishData.shiny(stack),fish.getBooleanOr("cooked",false)):heldAmount(trait.amount(),FishData.rarity(stack),FishData.shiny(stack),fish.getBooleanOr("cooked",false));
+            entries.add(new ItemAttributeModifiers.Entry(trait.held(),new AttributeModifier(id,amount,operation),EquipmentSlotGroup.MAINHAND));
         }
         stack.set(DataComponents.ATTRIBUTE_MODIFIERS,new ItemAttributeModifiers(entries));
     }

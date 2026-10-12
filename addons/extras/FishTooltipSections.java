@@ -15,7 +15,7 @@ public final class FishTooltipSections {
     private FishTooltipSections() {}
     static boolean normalize(ItemStack stack){
         var fish=FishData.tag(stack);
-        if(!FishData.weighed(stack)||fish.getIntOr("held_version",0)==2)return false;
+        if(!FishData.weighed(stack)||fish.getIntOr("held_version",0)==3)return false;
         var lore=stack.get(DataComponents.LORE);if(lore==null)return false;
         FishTraits.refreshHeld(stack);var attributes=stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
         var lines=new ArrayList<Component>();var credit=new ArrayList<Component>();
@@ -36,7 +36,7 @@ public final class FishTooltipSections {
         }
         lines.addAll(credit);stack.set(DataComponents.LORE,new ItemLore(lines));
         stack.set(DataComponents.TOOLTIP_DISPLAY,stack.getOrDefault(DataComponents.TOOLTIP_DISPLAY,TooltipDisplay.DEFAULT).withHidden(DataComponents.ATTRIBUTE_MODIFIERS,true));
-        var data=stack.get(DataComponents.CUSTOM_DATA).copyTag();fish.putBoolean("held_tooltip",true);fish.putInt("held_version",2);data.put(Legends.FISH_KEY,fish);
+        var data=stack.get(DataComponents.CUSTOM_DATA).copyTag();fish.putBoolean("held_tooltip",true);fish.putInt("held_version",3);data.put(Legends.FISH_KEY,fish);
         stack.set(DataComponents.CUSTOM_DATA,CustomData.of(data));return true;
     }
 }

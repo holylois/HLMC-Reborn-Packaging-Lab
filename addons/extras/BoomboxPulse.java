@@ -186,14 +186,14 @@ public final class BoomboxPulse {
                     var cone = first ? speakers.left() : speakers.right();
                     var away = cone.subtract(first ? speakers.right() : speakers.left()).normalize();
                     var push = speakers.front().scale(0.8).add(away.scale(0.6));
-                    hop(mc, cone.x, cone.y, cone.z, push.x, push.z, loud,1f/3f);
+                    hop(mc, cone.x, cone.y, cone.z, push.x, push.z, loud,0.5f);
                     break;
                 }
                 // Not drawn this frame (out of view): about where the box hangs, on the hand's side, out from the body.
                 boolean right = (player.getMainArm() == net.minecraft.world.entity.HumanoidArm.RIGHT) == main;
                 double yaw = Math.toRadians(player.yBodyRot), sideways = right ? -0.45 : 0.45;
                 double rx = Math.cos(yaw), rz = Math.sin(yaw), out = right ? -1 : 1;
-                hop(mc, player.getX() + rx * sideways, player.getY() + 0.35, player.getZ() + rz * sideways, rx * out, rz * out, loud,1f/3f);
+                hop(mc, player.getX() + rx * sideways, player.getY() + 0.35, player.getZ() + rz * sideways, rx * out, rz * out, loud,0.5f);
                 break;
             }
         }

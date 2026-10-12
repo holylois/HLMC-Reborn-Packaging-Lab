@@ -12,6 +12,10 @@ public final class LegendsTest {
         // FishTraits holds mob effects, which need the game's registries.
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
+        check(FishTraits.codArmor("rare",1,false,false)==2&&FishTraits.codArmor("epic",3,false,false)==4&&FishTraits.codArmor("legendary",20,false,false)==6&&FishTraits.codArmor("mythic",40,false,false)==10,"Cod armor grows through trophy tiers to ten at Mythic");
+        check(FishTraits.codArmor("mythic",160,false,false)==14&&FishTraits.codArmor("mythic",2000,false,false)==14,"extra Cod weight adds bounded armor");
+        check(FishTraits.codArmor("mythic",80,false,false)>FishTraits.codArmor("mythic",40,false,false)&&FishTraits.codArmor("mythic",80,true,false)>FishTraits.codArmor("mythic",80,false,false),"weight and Shiny improve Cod armor");
+        check(FishTraits.codArmor("mythic",80,true,true)==FishTraits.codArmor("mythic",80,true,false)/2&&FishTraits.codArmor("common",100,false,false)==0,"cooked stays half strength and Common gets no held armor");
         for(String tier:List.of("rare","epic","legendary","mythic"))for(boolean shiny:new boolean[]{false,true})
             check(FishTraits.heldAmount(0.03,tier,shiny,true)==FishTraits.heldAmount(0.03,tier,shiny,false)/2,"cooked held bonus is exactly half at every trophy tier");
         check(FishTraits.SPECIES.get("minecraft:cod").held()!=null&&FishTraits.SPECIES.get("minecraft:salmon").held()!=null&&FishTraits.SPECIES.get("minecraft:tropical_fish").held()!=null,"vanilla trophies have tool-independent held bonuses");
