@@ -78,9 +78,50 @@ public final class StrongestJournalChecks {
             try{var detail=JournalScreen.class.getDeclaredField("detail");detail.setAccessible(true);detail.setBoolean(screen,true);}catch(ReflectiveOperationException error){throw new IllegalStateException(error);}
             client.gui.setScreen(screen);
         });context.waitTicks(1);context.takeScreenshot("60-strongest-zombie-narrow-detail");
+        stablePreviews(context,world);
         context.runOnClient(client->client.gui.setScreen(null));
         world.getServer().runOnServer(server->{backend=null;});
     }
+    @SuppressWarnings({"rawtypes","unchecked"})
+    private static void stablePreviews(ClientGameTestContext context,TestSingleplayerContext world)throws Exception{
+        context.runOnClient(client->{client.options.guiScale().set(1);client.resizeGui();});
+        for(String type:List.of("minecraft:cave_spider","minecraft:spider","minecraft:slime","minecraft:chicken","minecraft:witch")){
+            var gear=type.endsWith("witch")?List.of(new DefeatRecord.Gear("mainhand","minecraft:potion",-1,false,"","","","")):List.<DefeatRecord.Gear>of();
+            var record=new DefeatRecord(type,10,20,false,false,1,"minecraft:overworld",0,64,0,gear,List.of(),List.of());
+            var entry=new JournalState.Entry("kill:"+type,3,type,"","minecraft:overworld",0,64,0,1,1,0,0,10,true,false).withStrongest(record);
+            context.runOnClient(client->{
+                var entity=new JournalPreview().entity(record);
+                check(entity.onGround()&&entity.isNoGravity()&&((net.minecraft.world.entity.Mob)entity).isNoAi()&&entity.tickCount==0,"GUI "+type+" has no AI, falling or ticking");
+                var state=client.getEntityRenderDispatcher().getRenderer(entity).createRenderState(entity,1);
+                JournalPreview.idleState(state,20,false);
+                if(state instanceof net.minecraft.client.renderer.entity.state.SlimeRenderState slime)check(slime.squish==0,"Slime remains unsquished");
+                if(state instanceof net.minecraft.client.renderer.entity.state.ChickenRenderState chicken)check(chicken.flap==0&&chicken.flapSpeed==0,"Chicken has no airborne wing pose");
+                if(state instanceof net.minecraft.client.renderer.entity.state.WitchRenderState witch)check(!witch.isHoldingPotion,"Witch carrying a potion is not drinking it");
+                var screen=new JournalScreen(new JournalState(1,3,0,1,1,8,"",List.of(entry)));pause(screen);client.gui.setScreen(screen);
+            });
+            context.waitTicks(3);context.takeScreenshot("61-idle-"+type.substring(type.indexOf(':')+1)+"-a");
+            context.waitTicks(25);context.takeScreenshot("61-idle-"+type.substring(type.indexOf(':')+1)+"-b");
+        }
+        var caught=world.getServer().computeOnServer(server->{
+            var level=server.overworld();var fish=(net.minecraft.world.entity.animal.fish.AbstractFish)BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("fishofthieves:splashtail")).create(level,EntitySpawnReason.LOAD);
+            var variantFish=(com.stevekung.fishofthieves.entity.ThievesFish)fish;
+            net.minecraft.core.Registry registry=level.registryAccess().lookupOrThrow(variantFish.getRegistryKey());
+            var holder=registry.get(net.minecraft.resources.ResourceKey.create(variantFish.getRegistryKey(),Identifier.parse("fishofthieves:indigo"))).orElseThrow();variantFish.setVariant(holder);
+            var stack=new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse("fishofthieves:splashtail")));fish.saveToBucketTag(stack);
+            var tag=new net.minecraft.nbt.CompoundTag();var data=new net.minecraft.nbt.CompoundTag();data.putString("rarity","epic");data.putDouble("kg",12);tag.put("holylois_fish",data);stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(tag));
+            var result=JournalFish.capture(stack,1);check(result.variant().equals("fishofthieves:indigo"),"Actual FoT catch component supplies the saved variant");return result;
+        });
+        var fishEntry=new JournalState.Entry("fish:"+caught.species(),1,caught.species(),"","minecraft:overworld",0,64,0,1,1,12,8,0,true,false).withFish(caught);
+        context.runOnClient(client->{var screen=new JournalScreen(new JournalState(1,1,0,1,1,8,"",List.of(fishEntry)));pause(screen);client.gui.setScreen(screen);});
+        context.waitTicks(3);context.takeScreenshot("61-best-fish-water-a");context.waitTicks(25);context.takeScreenshot("61-best-fish-water-b");
+        context.runOnClient(client->{
+            var state=new net.minecraft.client.renderer.entity.state.LivingEntityRenderState();JournalPreview.idleState(state,20,true);check(state.isInWater,"Fish preview uses the water pose");
+            try{var field=JournalScreen.class.getDeclaredField("preview");field.setAccessible(true);var preview=(JournalPreview)field.get(client.gui.screen());var actual=preview.entity(caught.presentation());var fish=(com.stevekung.fishofthieves.entity.ThievesFish)actual;var holder=(net.minecraft.core.Holder<?>)fish.getVariant();check(holder.unwrapKey().orElseThrow().identifier().toString().equals(caught.variant()),"Rendered fish restores the recorded Indigo variant");
+                var basic=preview.entity(new JournalFish(caught.species(),"",0,"common",false,0).presentation());check(Math.abs(actual.getScale()-caught.presentation().scale())<0.02&&actual.getBbHeight()==basic.getBbHeight(),"Fish preview preserves FoT fixed bounds and the recorded visual scale");
+            }catch(ReflectiveOperationException error){throw new IllegalStateException(error);}
+        });
+    }
+    private static void pause(JournalScreen screen){try{var field=JournalScreen.class.getDeclaredField("previewPaused");field.setAccessible(true);field.setBoolean(screen,true);}catch(ReflectiveOperationException error){throw new IllegalStateException(error);}}
     private static void kill(net.minecraft.server.MinecraftServer server,int level,net.minecraft.world.item.Item helmet,boolean cancel){
         kill(server,"minecraft:zombie",level,helmet,cancel);
     }

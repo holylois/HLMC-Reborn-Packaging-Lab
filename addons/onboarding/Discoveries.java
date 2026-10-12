@@ -98,6 +98,7 @@ public final class Discoveries {
             boolean fresh=book(player).caught(BuiltInRegistries.ITEM.getKey(fish.getItem()).toString(),fish.getCount(),FishData.kilograms(fish),FishData.rarity(fish),FishData.shiny(fish),
                 player.level().dimension().identifier().toString(),player.getBlockX(),player.getBlockY(),player.getBlockZ(),now());
             if(fresh)hint(player,JournalState.FISH);
+            book(player).fishAppearance(holylois.boombox.JournalFish.capture(fish,now()));
             dirty=true;
         });
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server->{
@@ -147,7 +148,7 @@ public final class Discoveries {
             if(request.filter()==4)for(var f:firsts.values())if(!f.key.startsWith("mob:")&&owns(player.getUUID(),player.getGameProfile().name(),f.uuid,f.player))
                 entries.add(new JournalState.Entry(f.key,JournalState.FEAT,f.what,StatsVisibility.display(f.player),f.dim,f.x,f.y,f.z,f.time,1,0,0,f.level,true,true).withStrongest(f.record).withSubject(firstType(f)));
             for(var f:own.fish.values())entries.add(new JournalState.Entry("fish:"+f.species,JournalState.FISH,f.species,"",f.dim,f.x,f.y,f.z,f.time,f.count,f.heaviest,f.rarities,0,true,false,
-                f.rarityCounts==null?java.util.List.of():java.util.Arrays.stream(f.rarityCounts).boxed().toList(),f.shiny));
+                f.rarityCounts==null?java.util.List.of():java.util.Arrays.stream(f.rarityCounts).boxed().toList(),f.shiny).withSubject(f.species).withFish(f.best));
             for(var type:BuiltInRegistries.ENTITY_TYPE){
                 long count=player.getStats().getValue(net.minecraft.stats.Stats.ENTITY_KILLED,type);
                 if(count<=0)continue;

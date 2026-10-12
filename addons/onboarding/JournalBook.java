@@ -8,7 +8,7 @@ import holylois.boombox.JournalRequest;
 final class JournalBook {
     static final List<String> RARITIES=List.of("common","uncommon","rare","epic","legendary","mythic");
     static final class Catch {
-        String species,dim; long count,time,shiny; double heaviest; int rarities,x,y,z; long[] rarityCounts;
+        String species,dim; long count,time,shiny; double heaviest; int rarities,x,y,z; long[] rarityCounts; holylois.boombox.JournalFish best;
     }
     static final class Kill { String type,dim; long time; int level,x,y,z; holylois.boombox.DefeatRecord strongest; }
     final Map<String,Catch> fish=new HashMap<>();
@@ -39,6 +39,7 @@ final class JournalBook {
         entry.level=Math.max(entry.level,level);entry.time=time;entry.dim=dim;entry.x=x;entry.y=y;entry.z=z;
         return fresh;
     }
+    void fishAppearance(holylois.boombox.JournalFish record){var entry=fish.get(record.species());if(entry!=null&&record.kg()>=entry.heaviest&&record.betterThan(entry.best))entry.best=record;}
     boolean visit(String key,long time){return places.putIfAbsent(key,time)==null;}
     void strongest(holylois.boombox.DefeatRecord record){
         var entry=kills.get(record.type());

@@ -23,6 +23,8 @@ public final class JournalPreview {
     private Object level;
     private final long clockStarted=net.minecraft.util.Util.getMillis();
     private static int nextPreviewId=-1_000_000;
+    private static final java.util.Set<net.minecraft.world.entity.Entity> GUI_ENTITIES=java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
+    private static boolean animationGuard;
     public LivingEntity entity(DefeatRecord record){
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||record==null||record.type().equals("minecraft:player"))return null;
         if(level!=mc.level){cache.clear();level=mc.level;}
@@ -32,9 +34,12 @@ public final class JournalPreview {
         var created=type.get().create(mc.level,EntitySpawnReason.LOAD);if(!(created instanceof LivingEntity zombie))return null;
         zombie.setId(nextPreviewId--);if(!record.appearanceId().isEmpty())zombie.setUUID(java.util.UUID.fromString(record.appearanceId()));
         if(zombie instanceof Mob mob)mob.setNoAi(true);
+        zombie.setNoGravity(true);zombie.setOnGround(true);zombie.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        GUI_ENTITIES.add(zombie);guardAnimations();
         zombie.setSilent(true);zombie.setPermanentlyInvulnerable(true);
         if(zombie instanceof Zombie z)z.setBaby(record.baby());else if(zombie instanceof AgeableMob a)a.setBaby(record.baby());
         var scale=zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.SCALE);if(scale!=null)scale.setBaseValue(record.scale());
+        zombie.refreshDimensions();
         zombie.setPos(mc.player.position());
         for(var gear:record.gear()){
             var item=BuiltInRegistries.ITEM.getOptional(Identifier.parse(gear.item()));if(item.isEmpty())continue;var stack=new ItemStack(item.get());
@@ -52,19 +57,45 @@ public final class JournalPreview {
         cache.put(record,zombie);return zombie;
     }
     public boolean draw(GuiGraphicsExtractor g,DefeatRecord record,int x,int y,int width,int height,boolean portrait,float rotation){
+        return draw(g,record,null,x,y,width,height,portrait,rotation);
+    }
+    @SuppressWarnings({"rawtypes","unchecked"})
+    public boolean draw(GuiGraphicsExtractor g,DefeatRecord record,JournalFish caught,int x,int y,int width,int height,boolean portrait,float rotation){
         var entity=entity(record);if(entity==null)return false;
+        if(entity instanceof com.stevekung.fishofthieves.entity.ThievesFish fish){
+            fish.setNoFlip(true);
+            if(caught!=null&&!caught.variant().isEmpty()){
+                var registry=Minecraft.getInstance().level.registryAccess().lookupOrThrow(fish.getRegistryKey());
+                registry.get(net.minecraft.resources.ResourceKey.create(fish.getRegistryKey(),Identifier.parse(caught.variant()))).ifPresent(value->fish.setVariant(value));
+            }
+        }
         var renderer=Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entity);
         float age=(net.minecraft.util.Util.getMillis()-clockStarted)/50f;
-        entity.tickCount=(int)age;
-        var state=renderer.createRenderState(entity,age-(int)age);
+        var state=renderer.createRenderState(entity,1);
+        idleState(state,JournalHints.motionEnabled()?age:0,entity instanceof net.minecraft.world.entity.animal.fish.AbstractFish);
         state.shadowPieces.clear();state.outlineColor=0;
         state.lightCoords=net.minecraft.util.LightCoordsUtil.pack(15,15);
-        if(state instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState living){living.bodyRot=180;living.yRot=0;living.xRot=0;living.deathTime=0;living.walkAnimationSpeed=0;living.walkAnimationPos=0;}
-        int scale=portrait?40:Math.max(1,(int)Math.min((width-12)/Math.max(0.1f,entity.getBbWidth()*2.0f),(height-12)/Math.max(0.1f,entity.getBbHeight()*1.3f)));
-        float focus=portrait?(entity.isBaby()?0.82f:1.65f):entity.getBbHeight()*0.55f;
+        float span=record.type().equals("minecraft:cave_spider")?4.5f:record.type().equals("minecraft:spider")?2.7f:2.0f;
+        boolean fish=entity instanceof net.minecraft.world.entity.animal.fish.AbstractFish;
+        // FoT uses fixed collision dimensions even when the rendered trophy is scaled.
+        float visualWidth=fish?2.5f*entity.getScale():entity.getBbWidth()*span;
+        float visualHeight=fish?0.8f*entity.getScale():entity.getBbHeight()*1.3f;
+        int scale=portrait?40:Math.max(1,(int)Math.min((width-12)/Math.max(0.1f,visualWidth),(height-12)/Math.max(0.1f,visualHeight)));
+        float focus=portrait?(entity.isBaby()?0.82f:1.65f):fish?entity.getScale()*0.35f:entity.getBbHeight()*0.55f;
         g.entity(state,scale,new Vector3f(0,focus,0),new Quaternionf().rotateZ((float)Math.PI).rotateY(rotation),new Quaternionf(),x,y,x+width,y+height);
         if(!portrait&&record.elite()&&!record.affixes().isEmpty())aura(g,record,x,y,width,height,age);
         return true;
+    }
+    public static void idleState(net.minecraft.client.renderer.entity.state.EntityRenderState state,float age,boolean fish){
+        state.ageInTicks=age;
+        if(state instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState living){living.bodyRot=180;living.yRot=0;living.xRot=0;living.deathTime=0;living.walkAnimationSpeed=0;living.walkAnimationPos=0;living.isInWater=fish;living.pose=net.minecraft.world.entity.Pose.STANDING;}
+        if(state instanceof net.minecraft.client.renderer.entity.state.SlimeRenderState slime)slime.squish=0;
+        if(state instanceof net.minecraft.client.renderer.entity.state.ChickenRenderState chicken){chicken.flap=0;chicken.flapSpeed=0;}
+        if(state instanceof net.minecraft.client.renderer.entity.state.WitchRenderState witch){witch.isHoldingPotion=false;witch.isHoldingItem=false;}
+    }
+    private static void guardAnimations(){
+        if(animationGuard)return;animationGuard=true;
+        try{traben.entity_model_features.EMFAnimationApi.registerVanillaModelCondition(entity->entity instanceof net.minecraft.world.entity.Entity actual&&GUI_ENTITIES.contains(actual));}catch(Exception|LinkageError error){Boombox.LOG.warn("Journal preview animation guard unavailable",error);}
     }
     /** Bounded GUI-only motes in the recorded elite palette; never spawn world particles. */
     private static void aura(GuiGraphicsExtractor g,DefeatRecord record,int x,int y,int width,int height,float age){
@@ -81,6 +112,7 @@ public final class JournalPreview {
         try{var quality=Class.forName("com.ultimatearpg.item.ArpgItemQuality");var value=quality.getMethod("fromEliteAffixCount",int.class).invoke(null,count);return (int)quality.getMethod("color").invoke(value)&0xFFFFFF;}catch(ReflectiveOperationException|LinkageError ignored){return Ui.GOLD&0xFFFFFF;}
     }
     public static DefeatRecord presentation(JournalState.Entry entry){
+        if(entry.kind()==JournalState.FISH)return entry.bestFish()!=null?entry.bestFish().presentation():new JournalFish(entry.name(),"",entry.weight(),"common",false,0).presentation();
         if(entry.strongest()!=null)return entry.strongest();
         return entry.subject().isEmpty()?null:new DefeatRecord(entry.subject(),0,20,false,false,0,"minecraft:overworld",0,0,0,java.util.List.of(),java.util.List.of(),java.util.List.of());
     }

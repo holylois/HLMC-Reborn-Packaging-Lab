@@ -178,7 +178,8 @@ public final class JournalScreen extends TravelScreen {
             var presentation=JournalPreview.presentation(entry);
             if(presentation!=null){
                 int previewHeight=Math.min(80,Math.max(36,(max-boxY)/3));
-                if(preview.draw(g,presentation,dx+6,dy,dw-12,previewHeight,false,previewRotation))dy+=previewHeight+6;
+                float angle=previewRotation+(entry.kind()==JournalState.FISH?(float)Math.PI/2:0);
+                if(preview.draw(g,presentation,entry.bestFish(),dx+6,dy,dw-12,previewHeight,false,angle))dy+=previewHeight+6;
             }
             var lines=new ArrayList<Component>();
             lines.add(title(entry));
@@ -193,7 +194,7 @@ public final class JournalScreen extends TravelScreen {
                 if(entry.shiny()>0)lines.add(label("shiny_count",entry.shiny()).copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
             }
             if(entry.kind()==JournalState.KILL||entry.kind()==JournalState.FEAT&&entry.strongest()!=null)lines.addAll(recordLines(entry.strongest(),tab==0||entry.kind()==JournalState.FEAT));
-            if(presentation!=null&&entry.strongest()==null)lines.add(label("appearance_missing"));
+            if(presentation!=null&&entry.strongest()==null&&entry.bestFish()==null)lines.add(label("appearance_missing"));
             if(entry.level()>0&&entry.strongest()==null)lines.add(label(tab==0?"first_level":"level",entry.level()));
             else if(tab==0&&entry.kind()==JournalState.KILL&&entry.strongest()==null)lines.add(label("unknown_first_level"));
             if(entry.time()>0&&(tab!=0||entry.strongest()==null)){

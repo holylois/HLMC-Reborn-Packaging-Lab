@@ -22,6 +22,11 @@ public final class JournalBookTest {
         check(cod.rarityCounts[0]==1&&cod.rarityCounts[2]==1&&cod.rarityCounts[3]==1,"Rarity counts come only from actual catches");
         book.caught("minecraft:cod",2,3,"legendary",true,"minecraft:overworld",0,64,0,104);
         check(cod.shiny==2&&cod.rarityCounts[4]==2,"Shiny catches also count in their rarity tier");
+        var caughtBest=new holylois.boombox.JournalFish("minecraft:cod","",8.5,"epic",false,101);
+        book.fishAppearance(caughtBest);book.fishAppearance(new holylois.boombox.JournalFish("minecraft:cod","",3,"legendary",true,104));
+        check(cod.best.equals(caughtBest),"Heaviest actual appearance stays separate from a newer lighter catch");
+        var oldBest=new JournalBook();oldBest.caught("minecraft:cod",1,20,"mythic",false,"minecraft:overworld",0,64,0,1);oldBest.fishAppearance(caughtBest);
+        check(oldBest.fish.get("minecraft:cod").best==null,"A lighter new fish cannot fabricate the missing historical heaviest appearance");
         var legacy=new Gson().fromJson("{\"fish\":{\"minecraft:cod\":{\"species\":\"minecraft:cod\",\"count\":10,\"rarities\":4}}}",JournalBook.class);
         legacy.caught("minecraft:cod",1,1,"rare",false,"minecraft:overworld",0,64,0,105);
         check(legacy.fish.get("minecraft:cod").count==11&&legacy.fish.get("minecraft:cod").rarityCounts[2]==1,"Legacy totals are preserved without inventing old per-rarity counts");
@@ -38,6 +43,7 @@ public final class JournalBookTest {
         var alice=UUID.randomUUID();var bob=UUID.randomUUID();var state=new Discoveries.State();state.journals.put(alice,book);state.journals.put(bob,new JournalBook());
         var restored=new Gson().fromJson(new Gson().toJson(state),Discoveries.State.class);
         check(restored.journals.get(alice).kills.get("minecraft:zombie").strongest.equals(record),"strongest metadata survives the saved journal reload");
+        check(restored.journals.get(alice).fish.get("minecraft:cod").best.equals(caughtBest),"Best fish appearance survives saved journal reload");
         check(restored.journals.get(alice).fish.get("minecraft:cod").count==5&&restored.journals.get(bob).fish.isEmpty(),"Saved journals stay separate by UUID across a reload or name change");
         check(Discoveries.owns(alice,"RenamedAlice",alice,"Alice")&&!Discoveries.owns(bob,"Bob",alice,"Alice"),"World-first credit follows the owner UUID, not everyone who visits");
         check(Discoveries.owns(alice,"ALICE",null,"Alice")&&!Discoveries.owns(alice,"Bob",null,"Alice"),"Legacy firsts use an exact case-insensitive name match");
@@ -66,7 +72,9 @@ public final class JournalBookTest {
         JournalState.CODEC.encode(buffer,result);check(JournalState.CODEC.decode(buffer).equals(result),"Journal state round-trips every field");buffer.release();
         buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);var request=new JournalRequest(1,2,3,4,"spire",123);
         var recordPage=new JournalState(1,3,0,1,1,8,"",List.of(new JournalState.Entry("kill:minecraft:zombie",3,"minecraft:zombie","","minecraft:overworld",1,64,2,200,2,0,0,20,true,false).withStrongest(record)));
-        JournalState.CODEC.encode(buffer,recordPage);check(JournalState.CODEC.decode(buffer).equals(recordPage),"strongest record and entity subject survive bounded v5 packet roundtrip");buffer.clear();
+        JournalState.CODEC.encode(buffer,recordPage);check(JournalState.CODEC.decode(buffer).equals(recordPage),"strongest record and entity subject survive bounded v6 packet roundtrip");buffer.clear();
+        var fishPage=new JournalState(1,1,0,1,1,8,"",List.of(new JournalState.Entry("fish:minecraft:cod",1,"minecraft:cod","","minecraft:overworld",0,64,0,104,5,8.5,25,0,true,false).withFish(caughtBest)));
+        JournalState.CODEC.encode(buffer,fishPage);check(JournalState.CODEC.decode(buffer).equals(fishPage),"Best fish appearance survives bounded v6 packet roundtrip");buffer.clear();
         JournalRequest.CODEC.encode(buffer,request);check(JournalRequest.CODEC.decode(buffer).equals(request),"Read-only requests round-trip without a target identity");buffer.release();
         try{new JournalRequest(1,0,0,9,"");throw new AssertionError("Oversized request accepted");}catch(IllegalArgumentException expected){checked++;}
         try{new JournalRequest(1,0,0,8,"x".repeat(49));throw new AssertionError("Oversized search accepted");}catch(IllegalArgumentException expected){checked++;}
