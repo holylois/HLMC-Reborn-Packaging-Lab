@@ -59,6 +59,8 @@ public final class JournalScreen extends TravelScreen {
             }
         }
         var entry=selected();
+        boolean fishFooter=entry!=null&&entry.kind()==JournalState.FISH&&!loading&&(wide()||detail);
+        int footerCount=wide()?3:4;
         if(entry!=null&&!loading&&(wide()||detail)){
             int dx=wide()?detailX:listX,dw=wide()?detailW:listW;
             var target=entry.strongest();String destination=target==null?entry.dimension():target.dimension();
@@ -66,10 +68,11 @@ public final class JournalScreen extends TravelScreen {
             var fish=selectedFish(entry);boolean hasLocation=entry.kind()==JournalState.FISH?fish!=null&&fish.location():entry.location();
             if(entry.kind()==JournalState.FISH){
                 if(fish!=null){destination=fish.dimension();targetX=fish.x();targetY=fish.y();targetZ=fish.z();}
-                action(dx+(wide()?66:132),footer,Math.min(100,dw-(wide()?66:132)-66),label(fishRarest?"record_rarest":"record_heaviest"),()->{fishRarest=!fishRarest;detailScroll=0;rebuildWidgets();});
+                int slot=wide()?1:2;
+                action(left+layout.detailFooterX(slot,footerCount),footer,layout.detailFooterWidth(slot,footerCount),label(fishRarest?"record_rarest":"record_heaviest"),()->{fishRarest=!fishRarest;detailScroll=0;rebuildWidgets();});
             }
             final String dest=destination;final int px=targetX,py=targetY,pz=targetZ;
-            if(JournalPreview.presentation(entry)!=null)action(dx+(wide()?0:66),footer,60,label(previewPaused?"rotate":"pause"),()->{previewPaused=!previewPaused;previewClock=System.currentTimeMillis();rebuildWidgets();});
+            if(JournalPreview.presentation(entry)!=null)action(fishFooter?left+layout.detailFooterX(wide()?0:1,footerCount):dx+(wide()?0:66),footer,fishFooter?layout.detailFooterWidth(wide()?0:1,footerCount):60,label(previewPaused?"rotate":"pause"),()->{previewPaused=!previewPaused;previewClock=System.currentTimeMillis();rebuildWidgets();});
             if(entry.location()||entry.kind()==JournalState.FISH){
                 int halfAction=(dw-gap)/2,y=top+layout.actionsY();
                 action(dx,y,halfAction,label("waypoint"),()->{
@@ -80,14 +83,14 @@ public final class JournalScreen extends TravelScreen {
                     if(map!=null)defaultHandleClickEvent(new ClickEvent.OpenUrl(URI.create("https://map.holylois.com/#"+map+":"+px+":"+py+":"+pz+":120:0:0:0:1:flat")),minecraft,this);
                 }).active=hasLocation&&mapName(dest)!=null;
             }
-            if(!wide())action(dx,footer,60,label("back"),()->{detail=false;rebuildWidgets();});
+            if(!wide())action(dx,footer,fishFooter?layout.detailFooterWidth(0,footerCount):60,label("back"),()->{detail=false;rebuildWidgets();});
         }
         if(!detail||wide()){
             action(listX,footer,22,Component.literal("<"),()->{page--;fetch();}).active=!loading&&page>0;
             action(listX+28,footer,22,Component.literal(">"),()->{page++;fetch();}).active=!loading&&state!=null&&page+1<state.pages();
             if(tab==1){int star=wide()?listX+listW-22:listX+content-88;var b=action(star,footer,22,label("filter4"),()->filter(tab,4));b.active=!loading;b.setTooltip(net.minecraft.client.gui.components.Tooltip.create(label("your_first")));}
         }
-        action(listX+content-60,footer,60,label("close"),this::onClose);
+        action(fishFooter?left+layout.detailFooterX(footerCount-1,footerCount):listX+content-60,footer,fishFooter?layout.detailFooterWidth(footerCount-1,footerCount):60,label("close"),this::onClose);
         if(timedOut)action(listX+Math.max(0,(listW-80)/2),listY+56,80,label("retry"),this::fetch);
     }
     private JournalState.Entry selected(){return state==null?null:state.entries().stream().filter(e->e.key().equals(selected)).findFirst().orElse(null);}

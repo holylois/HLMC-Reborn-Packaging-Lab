@@ -250,5 +250,6 @@
   "key.holylois.journal": "Holy Lois Journal",
   "key.category.holylois.journal": "Holy Lois",
   "holylois.crate.tip": "Place this crate in the world.",
-  "holylois.crate.open": "Break it with the right tool to collect loot."
+  "holylois.crate.open": "Break it with the right tool to collect loot.",
+  "enchantment.autosmelt.auto_smelt": "Smelting"
 }

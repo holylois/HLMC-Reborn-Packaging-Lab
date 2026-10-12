@@ -78,6 +78,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "holy lois journal", context, world, HolyLoisClientTests::journal);
             run(failed, "strongest journal record and zombie preview", context, world, holylois.StrongestJournalChecks::run);
             run(failed, "fish records and catch milestones", context, world, holylois.CollectionChecks::run);
+            run(failed, "smelting enchantment compatibility", context, world, holylois.SmeltingChecks::run);
             run(failed, "cards over the cinematic camera", context, world, HolyLoisClientTests::cinematicCards);
             run(failed, "hooked school fish arrives as an item", context, world, HolyLoisClientTests::schoolCatch);
             run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);
@@ -1015,7 +1016,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var fish=(net.minecraft.world.entity.animal.fish.AbstractFish)net.minecraft.world.entity.EntityType.loadEntityRecursive(tag,level,new net.minecraft.world.entity.EntitySpawnRequest(net.minecraft.world.entity.EntitySpawnReason.LOAD,false),net.minecraft.world.entity.EntityProcessor.NOP);
             var item=holylois.boombox.SwimmingFish.identity(fish).copy();
             var data=item.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag();var trophy=data.getCompound("holylois_fish").orElseThrow();
-            trophy.putString("rarity","mythic");trophy.putDouble("kg",80);data.put("holylois_fish",trophy);
+            trophy.putString("rarity","mythic");trophy.putDouble("kg",80);trophy.putDouble("swim_kg",80);data.put("holylois_fish",trophy);
             item.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(data));
             ((holylois.boombox.SwimmingFish.Memory)fish).holyLoisFish(item);holylois.boombox.SwimmingFish.applyScale(fish,item);
             var output=net.minecraft.world.level.storage.TagValueOutput.createWithContext(net.minecraft.util.ProblemReporter.DISCARDING,level.registryAccess());fish.saveWithoutId(output);

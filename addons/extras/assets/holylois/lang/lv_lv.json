@@ -250,5 +250,6 @@
   "key.holylois.journal": "Holy Lois žurnāls",
   "key.category.holylois.journal": "Holy Lois",
   "holylois.crate.tip": "Novieto šo kasti pasaulē.",
-  "holylois.crate.open": "Salauz ar piemērotu rīku, lai savāktu laupījumu."
+  "holylois.crate.open": "Salauz ar piemērotu rīku, lai savāktu laupījumu.",
+  "enchantment.autosmelt.auto_smelt": "Kausēšana"
 }

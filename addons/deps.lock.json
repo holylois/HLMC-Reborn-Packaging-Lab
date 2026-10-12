@@ -1,6 +1,6 @@
 {
-  "comment": "Compile-only jars for the Holy Lois add-ons: the 1.9.0 mod set (pack + server). Regenerate with the private work/stage-mods-190.py; fetch with python addons/fetch-deps.py.",
-  "pack": "1.9.0-next",
+  "comment": "Hash-locked compile/test jars for the Holy Lois 2.0.0 pack and server candidate.",
+  "pack": "2.0.0-candidate",
   "jars": {
     "3d-armor-0.9.4.2-mod.jar": {
       "url": "https://cdn.modrinth.com/data/XhxKIfGG/versions/ap0X7Uod/3d-armor-0.9.4.2-mod.jar",
@@ -19,6 +19,12 @@
       "sha256": "5505a777b64762a1094cc5ecbb41df0306cd2831f8df3327cbfe2a02ba45be85",
       "size": 84824816,
       "side": "client"
+    },
+    "Auto Smelt 26.3.jar": {
+      "url": "https://mediafilez.forgecdn.net/files/9083/250/Auto%20Smelt%2026.3.jar",
+      "sha256": "2b0c655ce85607655523a98c90b2285547d25617b8af7f870376e7dd391d3446",
+      "size": 9217,
+      "side": "both"
     },
     "BetterAdvancements-Fabric-26.3-0.6.0.78.jar": {
       "url": "https://cdn.modrinth.com/data/Q2OqKxDG/versions/Y2FyQ15a/BetterAdvancements-Fabric-26.3-0.6.0.78.jar",
@@ -498,18 +504,20 @@
       "size": 1937364,
       "side": "both"
     },
-    "polymer-bundled-0.18.3+26.3.jar": {
-      "url": "https://cdn.modrinth.com/data/xGdtZczs/versions/jTMRPG70/polymer-bundled-0.18.3%2B26.3.jar",
-      "sha256": "409ec1d37a317e48a3d2f625c11b1cf644afa5f471f428dab85b0190389365de",
-      "size": 1412622,
-      "side": "server",
+    "polymer-bundled-0.18.4+26.3.jar": {
+      "url": "https://cdn.modrinth.com/data/xGdtZczs/versions/G0fTdl8M/polymer-bundled-0.18.4%2B26.3.jar",
+      "sha256": "66ae7528b57278fa2f0ffe2c4a94842af13350176d948532be67c9d25f05947f",
+      "size": 1420031,
       "project": "xGdtZczs",
-      "version": "jTMRPG70"
+      "version": "G0fTdl8M",
+      "side": "server"
     },
-    "puzzleslib-v26.3.13-mc26.3.x+fabric.jar": {
-      "url": "https://cdn.modrinth.com/data/QAGBst4M/versions/rINxzqi2/puzzleslib-v26.3.13-mc26.3.x%2Bfabric.jar",
-      "sha256": "11e5586f2aca7735714ff4a8357c4c1fca141fb8392a3aff38c8fd76dcb5eaf5",
-      "size": 1092416,
+    "puzzleslib-v26.3.14-mc26.3.x+fabric.jar": {
+      "url": "https://cdn.modrinth.com/data/QAGBst4M/versions/7SSd41Tf/puzzleslib-v26.3.14-mc26.3.x%2Bfabric.jar",
+      "sha256": "d3d272c69f8227607acbb8c92ef4058419b56038f86a3f27651f47a815bd16ad",
+      "size": 1092880,
+      "project": "QAGBst4M",
+      "version": "7SSd41Tf",
       "side": "both"
     },
     "resourcepackoverrides-v26.3.0-mc26.3.x+fabric.jar": {

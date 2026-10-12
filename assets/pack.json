@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "1.10.0",
+  "version": "2.0.0",
   "minecraft": "26.3",
   "fabric": "0.19.5",
   "java": 25,
@@ -46,6 +46,13 @@
       "url": "https://cdn.modrinth.com/data/lhGA9TYQ/versions/1pMaB6So/architectury-fabric-22.0.5.jar",
       "size": 622542,
       "sha256": "c6a60979f75fdf07a97971711b42529bc84cd7e4c873625d2ce0faf34278ecda",
+      "policy": "managed"
+    },
+    {
+      "path": "mods/Auto Smelt 26.3.jar",
+      "url": "https://mediafilez.forgecdn.net/files/9083/250/Auto%20Smelt%2026.3.jar",
+      "size": 9217,
+      "sha256": "2b0c655ce85607655523a98c90b2285547d25617b8af7f870376e7dd391d3446",
       "policy": "managed"
     },
     {
@@ -252,17 +259,17 @@
       "policy": "managed"
     },
     {
-      "path": "mods/holylois-auth-ui-1.1.1+26.3.jar",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.9.1/holylois-auth-ui-1.1.1+26.3.jar",
-      "size": 6540267,
-      "sha256": "75069144a22766da93430be806f3b08c80a1688a42e87584bdc1f17c9288b681",
+      "path": "mods/holylois-auth-ui-1.1.2+26.3.jar",
+      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.0/holylois-auth-ui-1.1.2+26.3.jar",
+      "size": 6540375,
+      "sha256": "e331c28b490356017448b820445cd0ae541031809e120c002ed3efcfcbfe7279",
       "policy": "managed"
     },
     {
       "path": "mods/holylois-extras-1.8.0+26.3.jar",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.10.0/holylois-extras-1.8.0+26.3.jar",
-      "size": 862382,
-      "sha256": "db2715c5c76c846c1b27ee2cd1642097d92fbc59570a1be7886c3e31f4d622e5",
+      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.0/holylois-extras-1.8.0+26.3.jar",
+      "size": 1200128,
+      "sha256": "146c55b293e476ac5786da8c2c8ad100568810909caaa528fba6553c15ee3ec2",
       "policy": "managed"
     },
     {
@@ -462,10 +469,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/puzzleslib-v26.3.13-mc26.3.x+fabric.jar",
-      "url": "https://cdn.modrinth.com/data/QAGBst4M/versions/rINxzqi2/puzzleslib-v26.3.13-mc26.3.x%2Bfabric.jar",
-      "size": 1092416,
-      "sha256": "11e5586f2aca7735714ff4a8357c4c1fca141fb8392a3aff38c8fd76dcb5eaf5",
+      "path": "mods/puzzleslib-v26.3.14-mc26.3.x+fabric.jar",
+      "url": "https://cdn.modrinth.com/data/QAGBst4M/versions/7SSd41Tf/puzzleslib-v26.3.14-mc26.3.x%2Bfabric.jar",
+      "size": 1092880,
+      "sha256": "d3d272c69f8227607acbb8c92ef4058419b56038f86a3f27651f47a815bd16ad",
       "policy": "managed"
     },
     {
@@ -617,7 +624,7 @@
     },
     {
       "path": "resourcepacks/HolyLois-FishEating.zip",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.10.0/HolyLois-FishEating.zip",
+      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.0/HolyLois-FishEating.zip",
       "size": 200986,
       "sha256": "a79d9e47abbae91a759fbafed3189bf9694482279a04a19456785ee61a6d11fb",
       "policy": "managed",
@@ -733,35 +740,51 @@
   ],
   "defaults": {
     "path": "defaults.zip",
-    "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.10.0/defaults.zip",
+    "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.0/defaults.zip",
     "size": 54091,
-    "sha256": "5c110d89575d4118fe3982ef75141193d6966ef6a3c94aac63ece107336d6fd9",
+    "sha256": "888def39bf1115b204ec6589aacc50e3efca8ae57ed8554a7f2ecb7009359ec7",
     "policy": "seed"
   },
   "history": [
     {
-      "version": "1.10.0",
-      "date": "2026-10-11",
-      "summary": "Your adventures have a journal. New places, better catches and a cleaner look.",
+      "version": "2.0.0",
+      "date": "2026-10-12",
+      "summary": "Holy Lois 2.0: your adventure journal, trophy fishing and more dungeons to explore.",
       "added": [
+        "My journal records your strongest confirmed creature defeats. Living creatures, including Witches, have rotating previews with Pause and saved gear. Named elite traits stay in the details, with a matching persistent aura around the preview. New world firsts preserve the original defeat. Creature icons use familiar drops; details scroll only when needed.",
         "Open /journal for your fish collection, visited places and lifetime creature defeats. Search entries and add a personal waypoint or open their recorded location on the map.",
-        "World firsts has its own Journal tab: first discoveries, bosses, elites and the first defeat of each creature type. Ordinary creature firsts get a quiet gold chat line.",
-        "Fish collections remember the species, rarities and heaviest measured trophy you have caught. Personal records stay with your profile after a name change.",
+        "World firsts has its own Journal tab: first discoveries, bosses, elites and the first defeat of each hostile creature type. Passive kills stay in your personal history.",
+        "Fish collections keep separate Heaviest and Rarest catches, with their own model, date and map location. Rarity and Shiny break record ties. Earlier counts and weight records stay intact; missing historical appearances and locations are never invented.",
+        "Earn A Myth on the Line, A Shining Legend and A Shining Myth for your first real Mythic, Shiny Legendary and Shiny Mythic catches. Gifts and command-generated items do not award these milestones. The existing Legendary achievement stays unchanged.",
+        "A quiet Journal notice marks your first fish species, creature type or notable place. Nearby updates combine; repeated catches and defeats stay quiet. Use /journalalerts on or off to choose.",
         "Notable pickups get a short item card. Use /itemcards on or off to choose whether to show them.",
         "Easy Anvils and Easy Magic keep items in their blocks and improve repairs and enchanting. Enchantment re-rolls have a cost.",
-        "More mineshafts, ruins, towers, towns and other structures await in newly generated land. Their treasure chests can hold legends and Runeforged loot."
+        "More mineshafts, ruins, towers, towns and other structures await in newly generated land. Their treasure chests can hold legends and Runeforged loot.",
+        "Smelting is a new pickaxe enchantment, available from enchanting tables and librarian books. Mined iron, copper and gold become ingots, and ancient debris becomes netherite scrap. Fortune stays useful; Silk Touch is incompatible."
       ],
       "updated": [
-        "Fish and fillets have a thin rarity outline around their inventory picture. Legendary and Mythic names and outlines shimmer in their colours.",
-        "Fish tooltips show their own colour palette and variant name. Fish of Thieves fish shrink bite by bite while eaten.",
+        "Journal models keep a stable idle pose, spiders fit their leg span, and Witches no longer use their recorded potion. Fish entries preview the heaviest catch in a swimming pose; new catches save Fish of Thieves variants without inventing old appearances.",
+        "Fish and fillets have a thin rarity outline around their inventory picture. Legendary stays gold with a white shine; Mythic keeps its moving colour gradient.",
+        "Fish tooltips omit colour swatches and variant labels. Fish of Thieves fish shrink bite by bite while eaten, and large meals start their eating feedback promptly.",
+        "Fish tooltips separate eaten effects from held bonuses, with catcher/date last. Matching Uncommon pickups merge into older stacks. Treasure maps have a readable name and numbered inscription. New world-first kills preserve their first defeated level.",
+        "Vanilla trophy fish also have useful held bonuses: Cod armor scales with rarity and weight, starting at 10 for Mythic; Salmon movement speed and Tropical Fish swimming. Cooked whole fish retain stronger eaten effects but have half the raw held bonus. Placed boombox notes are half as large; handheld notes are 1.5 times their previously reduced size.",
+        "Wooden, Iron and Golden Crates share the fish rarity palette as Uncommon, Rare and Legendary. Their cards show the name once; loot contents are unchanged.",
         "Cooked trophy fish give stronger, longer effects; fillets can be eaten even when you are full. Rarer trophy fish take longer to eat.",
-        "Hooked swimming fish arrive as fish items with a weight and rarity roll, including when fishing from a boat.",
+        "Swimming and shoal fish keep their rarity and Fish of Thieves variant when caught. Common and Uncommon stack without weight; Uncommon has short effects and a green outline. Rare and above keep trophy weights. Bigger fish swim in wider circles, natural shoals include vanilla fish, and catches fly from the hook toward you before pickup.",
         "Explorer maps use the proper holding pose and first-person map view. Held boomboxes sway more gently.",
+        "Held boombox music notes are smaller. Disabled Holy Lois buttons keep the ordinary cursor, and selected Journal tabs are easier to read.",
+        "Empty Journal categories explain how to start a collection. Clipped names have tooltips, and entry dates say what happened.",
+        "World-first discovery names are plain yellow, with a star in the description and a personal firsts filter. Creature icons use familiar drops; long fish details scroll. Refreshing keeps the previous list visible.",
+        "REI's favorite button and left panel are hidden by default without deleting saved favorites. Crate tooltips explain how to place and break them for loot.",
         "Use /cinematic on or off and /cinematic fishing on or off to control the idle and fishing cameras.",
         "Shader names are shorter and sorted from light to heavy. Required animation packs stay enabled while your own resource packs remain available.",
         "The website has a cleaner background, and daily-coins help now explains that coins arrive when you join.",
+        "Updated stable libraries, including Puzzles Lib and Polymer. Your existing keybinds and settings stay yours.",
         "Placing a one-item fish back into its slot no longer leaves it stuck on your cursor after a quick double-click.",
         "Login and registration forms hide the game HUD until the transition finishes.",
+        "The Journal no longer gets stuck after a resize or quick filter change. If the server does not respond, Retry lets you try again.",
+        "Delayed Journal replies no longer reopen a closed menu or replace newer results.",
+        "Fish and item cards remain visible over the cinematic camera; /cinematiccards on|off is your choice. Journal notices wait until visible, then show quiet outlined text near chat. Use /journalalerts motion off to stop their pop and Journal text shine.",
         "Uploaded song links must contain real MP3 or WAV audio. BlueMap's updated renderer fixes lost low-resolution tile writes."
       ],
       "removed": []
