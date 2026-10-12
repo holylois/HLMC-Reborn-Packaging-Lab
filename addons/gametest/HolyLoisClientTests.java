@@ -78,6 +78,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "hooked school fish arrives as an item", context, world, HolyLoisClientTests::schoolCatch);
             run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);
             run(failed, "persistent shoal fish and swimming sizes", context, world, HolyLoisClientTests::shoalIdentity);
+            run(failed, "fish variant models", context, world, HolyLoisClientTests::fishVariantModels);
             run(failed, "quiet favorites and first descriptions", context, world, HolyLoisClientTests::uiRefinements);
             run(failed, "crate rarity presentation", context, world, HolyLoisClientTests::cratePresentation);
             run(failed, "fishing history counts", context, world, HolyLoisClientTests::fishingHistory);
@@ -842,6 +843,25 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             shoal.discard();
         });
         world.getServer().runCommand("clear @a");
+    }
+
+    private static void fishVariantModels(ClientGameTestContext context,TestSingleplayerContext world){
+        context.runOnClient(client->{
+            var raw=new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse("fishofthieves:splashtail")));
+            var data=new net.minecraft.nbt.CompoundTag();data.putString("splashtail_variant","fishofthieves:ruby");
+            raw.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(data));
+            var trophy=raw.copy();var tag=data.copy();var weight=new net.minecraft.nbt.CompoundTag();
+            weight.putString("rarity","rare");weight.putDouble("kg",2);tag.put("holylois_fish",weight);
+            trophy.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(tag));
+            var pictures=new ArrayList<String>();
+            for(var stack:List.of(raw,trophy)){
+                var state=new net.minecraft.client.renderer.item.ItemStackRenderState();
+                client.getItemModelResolver().updateForLiving(state,stack,net.minecraft.world.item.ItemDisplayContext.GUI,client.player);
+                pictures.add(state.pickParticleMaterial(client.player.getRandom()).sprite().contents().name().toString());
+            }
+            log("FoT variant textures: plain="+pictures.get(0)+" weighed="+pictures.get(1));
+            check(pictures.get(0).contains("ruby_splashtail")&&pictures.get(0).equals(pictures.get(1)),"rarity data does not replace the visible FoT variant texture");
+        });
     }
 
     private static void uiRefinements(ClientGameTestContext context,TestSingleplayerContext world){
