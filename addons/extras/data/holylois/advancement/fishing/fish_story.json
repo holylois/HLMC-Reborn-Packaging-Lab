@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:cod"
+    },
+    "title": "Fish Story",
+    "description": "Catch a Rare fish or better: it keeps its weight forever",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "rare": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "predicates": {
+              "minecraft:custom_data": "{holylois_fish:{rarity:\"rare\"}}"
+            }
+          }
+        ]
+      }
+    },
+    "epic": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "predicates": {
+              "minecraft:custom_data": "{holylois_fish:{rarity:\"epic\"}}"
+            }
+          }
+        ]
+      }
+    },
+    "legendary": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "predicates": {
+              "minecraft:custom_data": "{holylois_fish:{rarity:\"legendary\"}}"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "parent": "holylois:root",
+  "requirements": [
+    [
+      "rare",
+      "epic",
+      "legendary"
+    ]
+  ]
+}

@@ -13,17 +13,19 @@ public record JournalState(int tab, int filter, int page, int pages, int total, 
     public JournalState(int tab,int filter,int page,int pages,int total,int size,String search,List<Entry> entries){this(tab,filter,page,pages,total,size,search,entries,0);}
     public static final int FISH=1, PLACE=2, KILL=3, FEAT=4;
     public record Entry(String key, int kind, String name, String by, String dimension, int x, int y, int z,
-                        long time, long count, double weight, int rarities, int level, boolean location, boolean first,List<Long> rarityCounts,long shiny,DefeatRecord strongest,String subject,JournalFish bestFish) {
+                        long time, long count, double weight, int rarities, int level, boolean location, boolean first,List<Long> rarityCounts,long shiny,DefeatRecord strongest,String subject,JournalFish bestFish,JournalFish rarestFish) {
+        public Entry(String key,int kind,String name,String by,String dimension,int x,int y,int z,long time,long count,double weight,int rarities,int level,boolean location,boolean first,List<Long> rarityCounts,long shiny,DefeatRecord strongest,String subject,JournalFish bestFish){this(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,strongest,subject,bestFish,null);}
         public Entry(String key,int kind,String name,String by,String dimension,int x,int y,int z,long time,long count,double weight,int rarities,int level,boolean location,boolean first,List<Long> rarityCounts,long shiny,DefeatRecord strongest,String subject){this(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,strongest,subject,null);}
         public Entry(String key,int kind,String name,String by,String dimension,int x,int y,int z,long time,long count,double weight,int rarities,int level,boolean location,boolean first,List<Long> rarityCounts,long shiny,DefeatRecord strongest){this(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,strongest,strongest==null?(kind==KILL&&name.matches("[a-z0-9_.-]+:[a-z0-9_./-]+")?name:""):strongest.type());}
         public Entry(String key,int kind,String name,String by,String dimension,int x,int y,int z,long time,long count,double weight,int rarities,int level,boolean location,boolean first){this(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,List.of(),0,null);}
         public Entry(String key,int kind,String name,String by,String dimension,int x,int y,int z,long time,long count,double weight,int rarities,int level,boolean location,boolean first,List<Long> rarityCounts,long shiny){this(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,null);}
-        public Entry withStrongest(DefeatRecord record){return new Entry(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,record,record==null?subject:record.type(),bestFish);}
-        public Entry withSubject(String id){return new Entry(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,strongest,id,bestFish);}
-        public Entry withFish(JournalFish fish){return new Entry(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,strongest,subject,fish);}
+        public Entry withStrongest(DefeatRecord record){return new Entry(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,record,record==null?subject:record.type(),bestFish,rarestFish);}
+        public Entry withSubject(String id){return new Entry(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,strongest,id,bestFish,rarestFish);}
+        public Entry withFish(JournalFish fish){return new Entry(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,strongest,subject,fish,rarestFish);}
+        public Entry withRarest(JournalFish fish){return new Entry(key,kind,name,by,dimension,x,y,z,time,count,weight,rarities,level,location,first,rarityCounts,shiny,strongest,subject,bestFish,fish);}
         public Entry{rarityCounts=List.copyOf(rarityCounts);if(rarityCounts.size()>6||rarityCounts.stream().anyMatch(v->v<0)||shiny<0)throw new IllegalArgumentException("Invalid fish totals");if(subject==null||subject.length()>128||!subject.isEmpty()&&!subject.matches("[a-z0-9_.-]+:[a-z0-9_./-]+"))throw new IllegalArgumentException("Invalid Journal subject");}
     }
-    public static final Type<JournalState> TYPE = new Type<>(Identifier.fromNamespaceAndPath("holylois", "journal_page_v6"));
+    public static final Type<JournalState> TYPE = new Type<>(Identifier.fromNamespaceAndPath("holylois", "journal_page_v7"));
     private static final com.google.gson.Gson JSON=new com.google.gson.Gson();
     public JournalState {
         if(tab<0||tab>1||filter<0||filter>4||page<0||pages<1||page>=pages||total<0||size<1||size>8||search.length()>48||entries.size()>size||requestId<0)
@@ -40,6 +42,7 @@ public record JournalState(int tab, int filter, int page, int pages, int total, 
             b.writeBoolean(e.strongest!=null);if(e.strongest!=null)b.writeUtf(JSON.toJson(e.strongest),32768);
             b.writeUtf(e.subject,128);
             b.writeBoolean(e.bestFish!=null);if(e.bestFish!=null)b.writeUtf(JSON.toJson(e.bestFish),2048);
+            b.writeBoolean(e.rarestFish!=null);if(e.rarestFish!=null)b.writeUtf(JSON.toJson(e.rarestFish),2048);
         }
     }, b -> {
         int tab=b.readVarInt(),filter=b.readVarInt(),page=b.readVarInt(),pages=b.readVarInt(),total=b.readVarInt(),size=b.readVarInt();String search=b.readUtf(48);
@@ -51,7 +54,8 @@ public record JournalState(int tab, int filter, int page, int pages, int total, 
             var counts=new ArrayList<Long>();for(int tier=0;tier<tiers;tier++)counts.add(b.readVarLong());
             var enriched=new Entry(entry.key,entry.kind,entry.name,entry.by,entry.dimension,entry.x,entry.y,entry.z,entry.time,entry.count,entry.weight,entry.rarities,entry.level,entry.location,entry.first,counts,b.readVarLong());
             var appearance=b.readBoolean()?enriched.withStrongest(JSON.fromJson(b.readUtf(32768),DefeatRecord.class)):enriched;
-            var subject=appearance.withSubject(b.readUtf(128));entries.add(b.readBoolean()?subject.withFish(JSON.fromJson(b.readUtf(2048),JournalFish.class)):subject);
+            var subject=appearance.withSubject(b.readUtf(128));var fish=b.readBoolean()?subject.withFish(JSON.fromJson(b.readUtf(2048),JournalFish.class)):subject;
+            entries.add(b.readBoolean()?fish.withRarest(JSON.fromJson(b.readUtf(2048),JournalFish.class)):fish);
         }
         return new JournalState(tab,filter,page,pages,total,size,search,entries,requestId);
     });

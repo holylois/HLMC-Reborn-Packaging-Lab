@@ -1,4 +1,10 @@
 {
+  "holylois.journal.record_heaviest": "Heaviest",
+  "holylois.journal.record_rarest": "Rarest",
+  "holylois.journal.record_weight": "Weight: %s",
+  "holylois.journal.record_shiny": "Shiny catch",
+  "holylois.journal.record_caught": "Record caught: %s",
+  "holylois.journal.fish_record_missing": "This catch's appearance was not recorded yet.",
   "holylois.journal.first_record": "First recorded defeat",
   "holylois.journal.appearance_missing": "Original appearance was not recorded.",
   "holylois.journal.strongest": "Strongest recorded defeat",

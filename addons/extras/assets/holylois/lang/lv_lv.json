@@ -1,4 +1,10 @@
 {
+  "holylois.journal.record_heaviest": "Smagākais",
+  "holylois.journal.record_rarest": "Retākais",
+  "holylois.journal.record_weight": "Svars: %s",
+  "holylois.journal.record_shiny": "Spīdīgs loms",
+  "holylois.journal.record_caught": "Rekords noķerts: %s",
+  "holylois.journal.fish_record_missing": "Šī loma izskats vēl nav ierakstīts.",
   "holylois.journal.first_record": "Pirmā pierakstītā uzvara",
   "holylois.journal.appearance_missing": "Sākotnējais izskats netika pierakstīts.",
   "holylois.journal.strongest": "Spēcīgākais pierakstītais pretinieks",

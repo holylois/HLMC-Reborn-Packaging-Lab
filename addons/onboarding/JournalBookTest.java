@@ -25,6 +25,12 @@ public final class JournalBookTest {
         var caughtBest=new holylois.boombox.JournalFish("minecraft:cod","",8.5,"epic",false,101);
         book.fishAppearance(caughtBest);book.fishAppearance(new holylois.boombox.JournalFish("minecraft:cod","",3,"legendary",true,104));
         check(cod.best.equals(caughtBest),"Heaviest actual appearance stays separate from a newer lighter catch");
+        check(cod.rarest!=null&&cod.rarest.rarity().equals("legendary")&&cod.rarest.shiny(),"Rarest keeps the lighter Shiny Legendary while Heaviest stays Epic");
+        var located=new holylois.boombox.JournalFish("minecraft:cod","",12,"epic",false,110).at("minecraft:overworld",10,64,20);
+        book.caught("minecraft:cod",1,12,"epic",false,"minecraft:overworld",10,64,20,110);book.fishAppearance(located);
+        book.caught("minecraft:cod",1,1,"common",false,"minecraft:the_nether",90,70,90,111);
+        check(cod.best.equals(located)&&cod.best.x()==10&&cod.best.time()==110&&cod.x==90&&cod.time==111,"Winning catch owns its location/time independently from the latest catch");
+        check(new Gson().fromJson("{\"species\":\"minecraft:cod\",\"variant\":\"\",\"kg\":8.5,\"rarity\":\"epic\",\"shiny\":false,\"time\":101}",holylois.boombox.JournalFish.class).dimension().isEmpty(),"Older saved appearances do not invent a catch location");
         var oldBest=new JournalBook();oldBest.caught("minecraft:cod",1,20,"mythic",false,"minecraft:overworld",0,64,0,1);oldBest.fishAppearance(caughtBest);
         check(oldBest.fish.get("minecraft:cod").best==null,"A lighter new fish cannot fabricate the missing historical heaviest appearance");
         var legacy=new Gson().fromJson("{\"fish\":{\"minecraft:cod\":{\"species\":\"minecraft:cod\",\"count\":10,\"rarities\":4}}}",JournalBook.class);
@@ -43,8 +49,8 @@ public final class JournalBookTest {
         var alice=UUID.randomUUID();var bob=UUID.randomUUID();var state=new Discoveries.State();state.journals.put(alice,book);state.journals.put(bob,new JournalBook());
         var restored=new Gson().fromJson(new Gson().toJson(state),Discoveries.State.class);
         check(restored.journals.get(alice).kills.get("minecraft:zombie").strongest.equals(record),"strongest metadata survives the saved journal reload");
-        check(restored.journals.get(alice).fish.get("minecraft:cod").best.equals(caughtBest),"Best fish appearance survives saved journal reload");
-        check(restored.journals.get(alice).fish.get("minecraft:cod").count==5&&restored.journals.get(bob).fish.isEmpty(),"Saved journals stay separate by UUID across a reload or name change");
+        check(restored.journals.get(alice).fish.get("minecraft:cod").best.equals(located)&&restored.journals.get(alice).fish.get("minecraft:cod").rarest.equals(cod.rarest),"Both fish records survive saved journal reload");
+        check(restored.journals.get(alice).fish.get("minecraft:cod").count==7&&restored.journals.get(bob).fish.isEmpty(),"Saved journals stay separate by UUID across a reload or name change");
         check(Discoveries.owns(alice,"RenamedAlice",alice,"Alice")&&!Discoveries.owns(bob,"Bob",alice,"Alice"),"World-first credit follows the owner UUID, not everyone who visits");
         check(Discoveries.owns(alice,"ALICE",null,"Alice")&&!Discoveries.owns(alice,"Bob",null,"Alice"),"Legacy firsts use an exact case-insensitive name match");
         check(Discoveries.hostile(net.minecraft.world.entity.MobCategory.MONSTER,false)&&!Discoveries.hostile(net.minecraft.world.entity.MobCategory.CREATURE,false)&&!Discoveries.hostile(net.minecraft.world.entity.MobCategory.WATER_AMBIENT,false),"Passive and fish categories do not get world-first kills");
@@ -73,7 +79,7 @@ public final class JournalBookTest {
         buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);var request=new JournalRequest(1,2,3,4,"spire",123);
         var recordPage=new JournalState(1,3,0,1,1,8,"",List.of(new JournalState.Entry("kill:minecraft:zombie",3,"minecraft:zombie","","minecraft:overworld",1,64,2,200,2,0,0,20,true,false).withStrongest(record)));
         JournalState.CODEC.encode(buffer,recordPage);check(JournalState.CODEC.decode(buffer).equals(recordPage),"strongest record and entity subject survive bounded v6 packet roundtrip");buffer.clear();
-        var fishPage=new JournalState(1,1,0,1,1,8,"",List.of(new JournalState.Entry("fish:minecraft:cod",1,"minecraft:cod","","minecraft:overworld",0,64,0,104,5,8.5,25,0,true,false).withFish(caughtBest)));
+        var fishPage=new JournalState(1,1,0,1,1,8,"",List.of(new JournalState.Entry("fish:minecraft:cod",1,"minecraft:cod","","minecraft:overworld",0,64,0,104,5,8.5,25,0,true,false).withFish(located).withRarest(cod.rarest)));
         JournalState.CODEC.encode(buffer,fishPage);check(JournalState.CODEC.decode(buffer).equals(fishPage),"Best fish appearance survives bounded v6 packet roundtrip");buffer.clear();
         JournalRequest.CODEC.encode(buffer,request);check(JournalRequest.CODEC.decode(buffer).equals(request),"Read-only requests round-trip without a target identity");buffer.release();
         try{new JournalRequest(1,0,0,9,"");throw new AssertionError("Oversized request accepted");}catch(IllegalArgumentException expected){checked++;}

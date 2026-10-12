@@ -1,0 +1,19 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:tropical_fish"
+    },
+    "title": "A Myth on the Line",
+    "description": "Catch your first Mythic fish",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "caught": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "holylois:fishing/fish_story"
+}

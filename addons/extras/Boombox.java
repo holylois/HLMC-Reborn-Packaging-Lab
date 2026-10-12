@@ -115,6 +115,7 @@ public final class Boombox implements ModInitializer {
         PayloadTypeRegistry.clientboundPlay().register(BoomboxNear.TYPE, BoomboxNear.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(RareCatchNotice.TYPE,RareCatchNotice.CODEC);
         JournalProtocol.register();
+        FishMilestones.register();
         if (net.fabricmc.loader.api.FabricLoader.getInstance().getEnvironmentType()==net.fabricmc.api.EnvType.CLIENT) {
             PayloadTypeRegistry.clientboundPlay().register(HomeState.TYPE,HomeState.CODEC);
             PayloadTypeRegistry.clientboundPlay().register(MenuOpen.TYPE,MenuOpen.CODEC);

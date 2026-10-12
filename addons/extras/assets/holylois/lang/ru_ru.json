@@ -1,4 +1,10 @@
 {
+  "holylois.journal.record_heaviest": "Тяжелейший",
+  "holylois.journal.record_rarest": "Редчайший",
+  "holylois.journal.record_weight": "Вес: %s",
+  "holylois.journal.record_shiny": "Блестящий улов",
+  "holylois.journal.record_caught": "Рекорд пойман: %s",
+  "holylois.journal.fish_record_missing": "Внешний вид этого улова ещё не записан.",
   "holylois.journal.first_record": "Первая записанная победа",
   "holylois.journal.appearance_missing": "Первоначальный вид не был записан.",
   "holylois.journal.strongest": "Сильнейший записанный противник",

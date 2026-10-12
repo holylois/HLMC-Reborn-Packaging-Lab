@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 /** Collection browser: tabs, filters and search beside a selected entry with explicit location actions. */
 public final class JournalScreen extends TravelScreen {
     private JournalState state;private int tab,filter,page;private String query="",selected="";private EditBox search;
-    private boolean loading,detail,timedOut;private long requestedAt=System.currentTimeMillis();private int expectedRequest;
+    private boolean loading,detail,timedOut,fishRarest;private long requestedAt=System.currentTimeMillis();private int expectedRequest;
     private int listX,listY,listW,rows,detailX,detailW,detailScroll,maxScroll;
     private JournalLayout layout;
     private final JournalPreview preview=new JournalPreview();
@@ -63,16 +63,22 @@ public final class JournalScreen extends TravelScreen {
             int dx=wide()?detailX:listX,dw=wide()?detailW:listW;
             var target=entry.strongest();String destination=target==null?entry.dimension():target.dimension();
             int targetX=target==null?entry.x():target.x(),targetY=target==null?entry.y():target.y(),targetZ=target==null?entry.z():target.z();
+            var fish=selectedFish(entry);boolean hasLocation=entry.kind()==JournalState.FISH?fish!=null&&fish.location():entry.location();
+            if(entry.kind()==JournalState.FISH){
+                if(fish!=null){destination=fish.dimension();targetX=fish.x();targetY=fish.y();targetZ=fish.z();}
+                action(dx+(wide()?66:132),footer,Math.min(100,dw-(wide()?66:132)-66),label(fishRarest?"record_rarest":"record_heaviest"),()->{fishRarest=!fishRarest;detailScroll=0;rebuildWidgets();});
+            }
+            final String dest=destination;final int px=targetX,py=targetY,pz=targetZ;
             if(JournalPreview.presentation(entry)!=null)action(dx+(wide()?0:66),footer,60,label(previewPaused?"rotate":"pause"),()->{previewPaused=!previewPaused;previewClock=System.currentTimeMillis();rebuildWidgets();});
-            if(entry.location()){
+            if(entry.location()||entry.kind()==JournalState.FISH){
                 int halfAction=(dw-gap)/2,y=top+layout.actionsY();
                 action(dx,y,halfAction,label("waypoint"),()->{
-                    if(net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("xaerominimap"))XaeroWaypoints.add(destination+" "+targetX+" "+targetY+" "+targetZ+" "+name(entry).getString());
-                }).active=net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("xaerominimap");
+                    if(net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("xaerominimap"))XaeroWaypoints.add(dest+" "+px+" "+py+" "+pz+" "+name(entry).getString());
+                }).active=hasLocation&&net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("xaerominimap");
                 action(dx+halfAction+gap,y,dw-halfAction-gap,label("map"),()->{
-                    String map=mapName(destination);
-                    if(map!=null)defaultHandleClickEvent(new ClickEvent.OpenUrl(URI.create("https://map.holylois.com/#"+map+":"+targetX+":"+targetY+":"+targetZ+":120:0:0:0:1:flat")),minecraft,this);
-                }).active=mapName(destination)!=null;
+                    String map=mapName(dest);
+                    if(map!=null)defaultHandleClickEvent(new ClickEvent.OpenUrl(URI.create("https://map.holylois.com/#"+map+":"+px+":"+py+":"+pz+":120:0:0:0:1:flat")),minecraft,this);
+                }).active=hasLocation&&mapName(dest)!=null;
             }
             if(!wide())action(dx,footer,60,label("back"),()->{detail=false;rebuildWidgets();});
         }
@@ -85,6 +91,7 @@ public final class JournalScreen extends TravelScreen {
         if(timedOut)action(listX+Math.max(0,(listW-80)/2),listY+56,80,label("retry"),this::fetch);
     }
     private JournalState.Entry selected(){return state==null?null:state.entries().stream().filter(e->e.key().equals(selected)).findFirst().orElse(null);}
+    private JournalFish selectedFish(JournalState.Entry entry){return fishRarest?entry.rarestFish():entry.bestFish();}
     public static Component name(JournalState.Entry e){
         var id=Identifier.tryParse(e.name());
         if(id!=null&&e.kind()==JournalState.FISH)return capitalize(BuiltInRegistries.ITEM.getOptional(id).map(item->item.getName(new net.minecraft.world.item.ItemStack(item))).orElse(Component.literal(e.name())));
@@ -175,11 +182,12 @@ public final class JournalScreen extends TravelScreen {
             int dx=wide()?detailX:listX,dw=wide()?detailW:listW,boxY=wide()?listY:top+32,dy=boxY+6,max=top+layout.actionsY()-JournalLayout.GAP-6;
             Ui.box(g,dx,boxY,dw,max-boxY+6,Ui.RAISED,Ui.LINE);
             g.nextStratum();
-            var presentation=JournalPreview.presentation(entry);
+            var fish=selectedFish(entry);
+            var presentation=entry.kind()==JournalState.FISH&&fishRarest&&fish==null?null:JournalPreview.presentation(entry.kind()==JournalState.FISH?entry.withFish(fish):entry);
             if(presentation!=null){
                 int previewHeight=Math.min(80,Math.max(36,(max-boxY)/3));
                 float angle=previewRotation+(entry.kind()==JournalState.FISH?(float)Math.PI/2:0);
-                if(preview.draw(g,presentation,entry.bestFish(),dx+6,dy,dw-12,previewHeight,false,angle))dy+=previewHeight+6;
+                if(preview.draw(g,presentation,fish,dx+6,dy,dw-12,previewHeight,false,angle))dy+=previewHeight+6;
             }
             var lines=new ArrayList<Component>();
             lines.add(title(entry));
@@ -189,7 +197,17 @@ public final class JournalScreen extends TravelScreen {
                 lines.add(entry.kind()==JournalState.PLACE?label("visited"):summary(entry));
             }
             if(entry.kind()==JournalState.FISH){
-                lines.add(label("best",entry.weight()>0?FishData.shortWeight(entry.weight())+" kg":label("unweighed").getString()));
+                lines.add(label(fishRarest?"record_rarest":"record_heaviest").copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
+                if(fish!=null){
+                    lines.add(label("record_weight",fish.kg()>0?FishData.shortWeight(fish.kg())+" kg":label("unweighed").getString()));
+                    lines.add(label("rarity"+JournalFish.rank(fish.rarity())).copy().withStyle(s->s.withColor(FishData.color(fish.rarity())&0xFFFFFF)));
+                    if(fish.shiny())lines.add(label("record_shiny").copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
+                    lines.add(label("record_caught",DateTimeFormatter.ofPattern("d MMM yyyy HH:mm:ss",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(fish.time()))));
+                    if(fish.location())lines.add(Component.literal(HomesScreen.dimension(fish.dimension())+" "+fish.x()+", "+fish.y()+", "+fish.z()));else lines.add(label("no_location"));
+                }else{
+                    if(!fishRarest)lines.add(label("best",entry.weight()>0?FishData.shortWeight(entry.weight())+" kg":label("unweighed").getString()));
+                    lines.add(label("fish_record_missing"));
+                }
                 lines.addAll(rarityLines(entry));
                 if(entry.shiny()>0)lines.add(label("shiny_count",entry.shiny()).copy().withStyle(s->s.withColor(Ui.GOLD&0xFFFFFF)));
             }
@@ -201,10 +219,10 @@ public final class JournalScreen extends TravelScreen {
                 String date=DateTimeFormatter.ofPattern("d MMM yyyy",Locale.getDefault()).withZone(ZoneId.systemDefault()).format(Instant.ofEpochSecond(entry.time()));
                 lines.add(label(tab==0||entry.kind()==JournalState.FEAT?"first_on":entry.kind()==JournalState.FISH?"caught_on":entry.kind()==JournalState.KILL?"defeated_on":"visited_on",date));
             }
-            if((tab!=0||entry.strongest()==null)&&entry.location()){
+            if(entry.kind()!=JournalState.FISH&&(tab!=0||entry.strongest()==null)&&entry.location()){
                 lines.add(Component.literal(HomesScreen.dimension(entry.dimension())));
                 lines.add(Component.literal(entry.x()+", "+entry.y()+", "+entry.z()));
-            }else if(!entry.location())lines.add(label("no_location"));
+            }else if(entry.kind()!=JournalState.FISH&&!entry.location())lines.add(label("no_location"));
             int textTop=dy,contentHeight=0;
             for(var line:lines)contentHeight+=font.split(line,dw-8).size()*11+2;
             maxScroll=detailOverflow(contentHeight,max+2-textTop);detailScroll=Math.clamp(detailScroll,0,maxScroll);
