@@ -1,6 +1,6 @@
 # Holy Lois: Reborn launcher and add-ons
 
-Launcher 1.4.3 installs and updates the signed Holy Lois pack for Minecraft 26.3. Pick how you play (I own Minecraft, or Play with a name), install, then Play. One button follows the state (Install, Update, Repair, Play), the account card shows your skin head, and the main screen keeps the most used keys and commands in view, with gold kept for the main action. Built-in pack: 2.0.0.
+Launcher 1.4.4 installs and updates the signed Holy Lois pack for Minecraft 26.3. Pick how you play (I own Minecraft, or Play with a name), install, then Play. One button follows the state (Install, Update, Repair, Play), the account card shows your skin head, and the main screen keeps the most used keys and commands in view, with gold kept for the main action. Built-in pack: 2.0.1.
 
 [Download the launcher](https://github.com/pjampjam/HLMC-Reborn-Packaging-Lab/releases/latest/download/HolyLoisReborn.exe). [Player guide](https://github.com/pjampjam/HLMC-Reborn/blob/main/PLAYER-GUIDE.md). [Admin guide](https://github.com/pjampjam/HLMC-Reborn/blob/main/ADMIN-GUIDE.md).
 
@@ -14,7 +14,13 @@ Launcher 1.4.3 embeds pack 2.0.0, a Journal reference and authored release notes
 
 ## Build
 
-Use the .NET10 SDK on Windows and run `./build.ps1 -Version 1.4.3`. Add `-Package` for the release EXE. Sources under `addons/` target the pinned Fabric26.3 APIs; their server build scripts compile against the installed libraries and run the relevant checks. Do not ship private preview/probe mods.
+Use the .NET10 SDK on Windows and run `./build.ps1 -Version 1.4.4`. Add `-Package` for the release EXE. Sources under `addons/` target the pinned Fabric26.3 APIs; their server build scripts compile against the installed libraries and run the relevant checks. Do not ship private preview/probe mods.
+
+For a quiet pack patch, append `--silent` to the publisher's `prepare-pack` command. It signs the new version while
+retaining the previous public history. Omit the flag for an announced release. The launcher derives the quiet policy
+from that signed history, so older launchers keep reading the same schema. The Update button still follows the pack
+version; a quiet patch does not highlight the previous announcement as new. Mutable pack/app metadata requests use
+fresh paired identities and no-cache headers; verified immutable downloads retain their normal cache.
 
 ## Release integrity
 

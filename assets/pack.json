@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "2.0.0",
+  "version": "2.0.1",
   "minecraft": "26.3",
   "fabric": "0.19.5",
   "java": 25,
@@ -266,10 +266,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/holylois-extras-1.8.0+26.3.jar",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.0/holylois-extras-1.8.0+26.3.jar",
-      "size": 1200128,
-      "sha256": "146c55b293e476ac5786da8c2c8ad100568810909caaa528fba6553c15ee3ec2",
+      "path": "mods/holylois-extras-1.8.1+26.3.jar",
+      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.1/holylois-extras-1.8.1+26.3.jar",
+      "size": 1206665,
+      "sha256": "50efc419b57b4bd2d79a3f12c927bd0f5abd2e6d3f1ad1431a6eecba1087dc02",
       "policy": "managed"
     },
     {

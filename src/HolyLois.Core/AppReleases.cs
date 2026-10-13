@@ -63,22 +63,8 @@ public sealed class AppReleaseFeed(HttpClient http, string publicKey)
 {
     public async Task<SignedAppRelease> FetchAsync(CancellationToken token)
     {
-        var catalog = await ReadAsync(AppReleasePolicy.FeedUrl, 65536, token);
-        var signature = await ReadAsync(AppReleasePolicy.FeedUrl + ".sig", 512, token);
-        var result = new SignedAppRelease(catalog, signature);
+        var pair = await SignedChannel.FetchAsync(http, AppReleasePolicy.FeedUrl, 65536, token);
+        var result = new SignedAppRelease(pair.Content, pair.Signature);
         _ = AppReleasePolicy.Parse(result, publicKey); return result;
-    }
-
-    private async Task<byte[]> ReadAsync(string url, int limit, CancellationToken token)
-    {
-        using var response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
-        response.EnsureSuccessStatusCode();
-        ManifestSecurity.ValidateDownloadUri(response.RequestMessage?.RequestUri?.AbsoluteUri ?? url);
-        if (response.Content.Headers.ContentLength > limit) throw new InvalidDataException("App metadata exceeds its size limit.");
-        using var output = new MemoryStream(); await using var input = await response.Content.ReadAsStreamAsync(token);
-        var buffer = new byte[8192]; int count;
-        while ((count = await input.ReadAsync(buffer, token)) > 0)
-        { if (output.Length + count > limit) throw new InvalidDataException("App metadata exceeds its size limit."); output.Write(buffer, 0, count); }
-        return output.ToArray();
     }
 }

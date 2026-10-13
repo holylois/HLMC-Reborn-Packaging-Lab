@@ -7,7 +7,11 @@ namespace HolyLois.Core;
 public sealed record PackFile(string Path, string Url, long Size, string Sha256, string Policy = "managed",
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool? AutoEnable = null);
 public sealed record PackManifest(int Schema, string Version, string Minecraft, string Fabric,
-    int Java, string Server, PackFile[] Files, PackFile[] LoaderFiles, PackFile? Defaults = null, ReleaseNote[]? History = null, bool ApplyDefaultsOnUpdate = false);
+    int Java, string Server, PackFile[] Files, PackFile[] LoaderFiles, PackFile? Defaults = null, ReleaseNote[]? History = null, bool ApplyDefaultsOnUpdate = false)
+{
+    // This is derived from signed history. Extra wire fields would break strict older launchers.
+    [JsonIgnore] public bool SilentPatch => History is not { Length: > 0 } || History[0].Version != Version;
+}
 /// <summary>One release in the pack history: Added (new), Updated (shown as Changed), Fixed (launcher 1.4.2+, optional so older
 /// launchers still read manifests without it) and Removed.</summary>
 public sealed record ReleaseNote(string Version, string Date, string Summary, string[] Added, string[] Removed, string[] Updated,

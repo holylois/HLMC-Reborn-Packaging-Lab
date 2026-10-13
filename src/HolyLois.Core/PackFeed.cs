@@ -25,26 +25,8 @@ public sealed class PackFeed(HttpClient client, string publicKey)
 
     public async Task<SignedPack> FetchAsync(CancellationToken token)
     {
-        var json = await ReadAsync(StableUrl, 2 * 1024 * 1024, token);
-        var signature = await ReadAsync(StableUrl + ".sig", 512, token);
-        return new(json, signature);
-    }
-
-    private async Task<byte[]> ReadAsync(string url, int limit, CancellationToken token)
-    {
-        using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
-        response.EnsureSuccessStatusCode();
-        ManifestSecurity.ValidateDownloadUri(response.RequestMessage?.RequestUri?.AbsoluteUri ?? url);
-        if (response.Content.Headers.ContentLength > limit) throw new InvalidDataException("Release metadata is too large.");
-        using var output = new MemoryStream();
-        await using var input = await response.Content.ReadAsStreamAsync(token);
-        var buffer = new byte[8192]; int count;
-        while ((count = await input.ReadAsync(buffer, token)) > 0)
-        {
-            if (output.Length + count > limit) throw new InvalidDataException("Release metadata is too large.");
-            output.Write(buffer, 0, count);
-        }
-        return output.ToArray();
+        var pair = await SignedChannel.FetchAsync(client, StableUrl, 2 * 1024 * 1024, token);
+        return new(pair.Content, pair.Signature);
     }
 
     public static Dictionary<string, byte[]> ReadDefaults(byte[] bytes)

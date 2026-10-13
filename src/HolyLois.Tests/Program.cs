@@ -8,6 +8,7 @@ var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "test-output"
 Directory.CreateDirectory(root);
 var tests = new List<(string Name, Func<Task> Run)>();
 var passed = 0;
+tests.Add(("Signed update channels stay fresh and silent patches remain compatible", SignedChannelTests.RunAsync));
 tests.Add(("Player notes translate presentation while retaining signed identity and a safe fallback", () => {
     var note = new ReleaseNote("1.10.0", "2026-10-11", "Signed summary", ["Signed addition"], [], ["Signed change"]);
     var bytes = Encoding.UTF8.GetBytes("""

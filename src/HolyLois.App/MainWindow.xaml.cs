@@ -177,6 +177,7 @@ public partial class MainWindow : ThemedWindow
         NewsCard.Visibility = latest is null ? Visibility.Collapsed : Visibility.Visible;
         if (latest is null) return;
         latest = Localize.Note(latest);
+        available = available && !context.Manifest.SilentPatch;
         NewsEyebrow.Text = (available ? string.Format(T("UpdateReady"), context.Manifest.Version) : T("LatestNews") + "  -  " + latest.Version) + "  -  " + latest.Date;
         NewsTitle.Text = latest.Summary;
         NewsCard.BorderBrush = (Brush)FindResource(available ? "Gold" : "Line");

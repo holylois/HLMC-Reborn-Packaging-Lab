@@ -29,13 +29,17 @@ switch (args[0])
         AtomicFiles.Write(args[5], catalog);
         using (var rsa = Load(args[1])) AtomicFiles.Write(args[5] + ".sig", rsa.SignData(catalog, HashAlgorithmName.SHA256, RSASignaturePadding.Pss));
         Console.WriteLine("Created signed catalog; no files were published."); break;
-    case "prepare-pack" when args.Length is 7 or 8:
-        await PreparePack(args[1], args[2], args[3], args[4], args[5], args[6], args.Length == 8 ? args[7] : null); break;
+    case "prepare-pack" when args.Length >= 7:
+        var options = args.Skip(7).ToArray();
+        var selection = options.Where(x => x != "--silent").ToArray();
+        if (selection.Length > 1 || selection.Any(x => x.StartsWith("--", StringComparison.Ordinal)) || options.Count(x => x == "--silent") > 1)
+            throw new ArgumentException("Use prepare-pack KEY BASE PROFILE VERSION DEFAULTS OUTPUT [SELECTION] [--silent].");
+        await PreparePack(args[1], args[2], args[3], args[4], args[5], args[6], selection.SingleOrDefault(), options.Contains("--silent")); break;
     default: throw new ArgumentException("Invalid publisher command.");
 }
 static RSA Load(string path) { var rsa = RSA.Create(); rsa.ImportFromPem(File.ReadAllText(path)); return rsa; }
 
-static async Task PreparePack(string key, string baseManifest, string profile, string version, string defaultsZip, string output, string? selection)
+static async Task PreparePack(string key, string baseManifest, string profile, string version, string defaultsZip, string output, string? selection, bool silent)
 {
     var previous = JsonSerializer.Deserialize<PackManifest>(File.ReadAllBytes(baseManifest), JsonSettings.Options)!;
     ManifestSecurity.Validate(previous);
@@ -91,7 +95,7 @@ static async Task PreparePack(string key, string baseManifest, string profile, s
         before.Keys.Where(p => !after.ContainsKey(p)).Select(Path.GetFileName).Select(n => n!).ToArray(),
         after.Keys.Where(p => before.TryGetValue(p, out var old) && old.Sha256 != after[p].Sha256).Select(Path.GetFileName).Select(n => n!).Concat(defaultBytes.SequenceEqual(File.ReadAllBytes(defaultsZip)) ? [] : new[] { "Shared settings" }).ToArray());
     var next = previous with { Version = version, Files = files.ToArray(), Defaults = bundle, ApplyDefaultsOnUpdate = true,
-        History = new[] { note }.Concat(previous.History ?? []).Take(20).ToArray() };
+        History = silent ? previous.History : new[] { note }.Concat(previous.History ?? []).Take(20).ToArray() };
     ManifestSecurity.Validate(next); Directory.CreateDirectory(output);
     AtomicFiles.WriteJson(Path.Combine(output,"pack.json"), next);
     using (var rsa = Load(key)) AtomicFiles.Write(Path.Combine(output,"pack.json.sig"), rsa.SignData(File.ReadAllBytes(Path.Combine(output,"pack.json")), HashAlgorithmName.SHA256, RSASignaturePadding.Pss));
