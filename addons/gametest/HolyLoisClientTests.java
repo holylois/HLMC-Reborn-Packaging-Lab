@@ -1004,7 +1004,10 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
     private static void shoalIdentity(ClientGameTestContext context,TestSingleplayerContext world){
         var server=world.getServer();
         server.runCommand("clear @a");
+        // The preceding shoal catch moves the angler far away. This pond must be inside the client's loaded area.
+        server.runCommand("tp @a 6 -59 -3 -90 12");
         server.runCommand("fill 3 -64 -5 18 -59 8 water");
+        world.getConnection().waitForChunksRender();
         server.runOnServer(s->{
             var player=s.getPlayerList().getPlayers().getFirst();var level=(ServerLevel)player.level();
             var type=BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("fishofthieves:shoal"));
