@@ -26,6 +26,7 @@ final class ManagedPackChecks {
         });
         context.waitFor(client -> client.gui.overlay()==null,400);
         context.waitTicks(5);context.takeScreenshot("managed-packs-hidden");
+        checkFolder(context);
         context.runOnClient(client -> client.gui.setScreen(null));
         var folder=context.computeOnClient(client -> client.gameDirectory.toPath().resolve("resourcepacks"));
         byte[] metadata;
@@ -58,6 +59,62 @@ final class ManagedPackChecks {
         context.runOnClient(client -> {
             require(client.getResourceManager().getResource(Identifier.parse("minecraft:emf/cem/player.jem")).orElseThrow().sourcePackId().equals("file/FA+Player-v1.1.zip"),"Player animations changed after locked-pack reload");
             org.slf4j.LoggerFactory.getLogger("HolyLoisTest").info("Managed packs hidden/fixed, required order restored, personal packs/reload and player resource verified");
+        });
+    }
+    private static holylois.boombox.ManagedPackMenu.GroupEntry folder(net.minecraft.client.gui.screens.Screen screen) {
+        var groups=screen.children().stream().filter(net.minecraft.client.gui.screens.packs.TransferableSelectionList.class::isInstance)
+            .map(net.minecraft.client.gui.screens.packs.TransferableSelectionList.class::cast)
+            .flatMap(list->list.children().stream()).filter(holylois.boombox.ManagedPackMenu.GroupEntry.class::isInstance).toList();
+        require(groups.size()==1,"Expected one read-only managed folder, got "+groups.size());
+        return (holylois.boombox.ManagedPackMenu.GroupEntry)groups.getFirst();
+    }
+    private static void checkFolder(ClientGameTestContext context) {
+        var parent=context.computeOnClient(client->client.gui.screen());
+        var selected=context.computeOnClient(client->List.copyOf(client.getResourcePackRepository().getSelectedIds()));
+        var point=context.computeOnClient(client->{
+            var search=(net.minecraft.client.gui.components.EditBox)parent.children().stream()
+                .filter(net.minecraft.client.gui.components.EditBox.class::isInstance).findFirst().orElseThrow();
+            search.setValue("Fresh Animations");folder(parent);
+            search.setValue("zz-holylois-no-matching-pack");
+            require(parent.children().stream().filter(net.minecraft.client.gui.screens.packs.TransferableSelectionList.class::isInstance)
+                .map(net.minecraft.client.gui.screens.packs.TransferableSelectionList.class::cast)
+                .flatMap(list->list.children().stream()).noneMatch(entry->holylois.boombox.ManagedPackMenu.ID.equals(entry.getPackId())),"Folder ignored search");
+            search.setValue("");
+            var group=folder(parent);double scale=client.getWindow().getGuiScale();
+            require(client.getResourcePackRepository().getPack(holylois.boombox.ManagedPackMenu.ID)==null,"Folder became a real pack");
+            return new double[]{(group.getContentX()+45)*scale,(group.getContentY()+8)*scale};
+        });
+        context.getInput().setCursorPos(point[0],point[1]);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+        context.waitTicks(3);
+        context.runOnClient(client->{
+            require(client.gui.screen() instanceof holylois.boombox.ManagedResourcesScreen,"Folder click did not open contents");
+            var contents=(holylois.boombox.ManagedResourcesScreen)client.gui.screen();
+            require(contents.packIds().equals(holylois.boombox.BundledPackOrder.IDS.reversed()),"Folder priority differs from actual managed order");
+            require(contents.children().size()==1,"Read-only contents gained pack controls");
+            require(List.copyOf(client.getResourcePackRepository().getSelectedIds()).equals(selected),"Viewing contents changed selection");
+            int width=contents.width,height=contents.height;
+            contents.resize(640,480);
+            require(!contents.mouseScrolled(320,240,0,-1),"Contents scroll despite fitting in the panel");
+            contents.resize(width,height);
+        });
+        context.takeScreenshot("managed-folder-contents");
+        context.runOnClient(client->client.gui.screen().mouseScrolled(client.gui.screen().width/2.,client.gui.screen().height/2.,0,-100));
+        context.waitTicks(3);context.takeScreenshot("managed-folder-contents-bottom");
+        context.clickScreenButton("holylois.resources.back");context.waitTicks(3);
+        context.runOnClient(client->{
+            require(client.gui.screen()==parent,"Back lost the original pack screen");
+            var list=parent.children().stream().filter(net.minecraft.client.gui.screens.packs.TransferableSelectionList.class::isInstance)
+                .map(net.minecraft.client.gui.screens.packs.TransferableSelectionList.class::cast)
+                .filter(value->value.children().stream().anyMatch(entry->entry.getPackId().equals(holylois.boombox.ManagedPackMenu.ID))).findFirst().orElseThrow();
+            list.setSelected(folder(parent));list.setFocused(folder(parent));parent.setFocused(list);
+        });
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN);context.waitTicks(3);
+        context.runOnClient(client->require(client.gui.screen() instanceof holylois.boombox.ManagedResourcesScreen,"Keyboard could not open managed contents"));
+        context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE);context.waitTicks(3);
+        context.runOnClient(client->{
+            require(client.gui.screen()==parent,"Escape lost the original pack screen");
+            require(List.copyOf(client.getResourcePackRepository().getSelectedIds()).equals(selected),"Folder navigation changed selected packs");
         });
     }
     private static void checkOrder(net.minecraft.server.packs.repository.PackRepository repo) {

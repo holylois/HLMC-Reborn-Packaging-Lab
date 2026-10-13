@@ -49,6 +49,8 @@ Built on the server with `compile-extras.py` against the installed Minecraft 26.
   resource-repository rebuild, with FA+Player above JustExpressions, above mod assets and below personal/server overlays.
   This also works after fixed packs are omitted from saved options. Players can add/select/reorder their own packs.
   Managed policy is restored on startup without changing personal pack settings.
+  The read-only Holy Lois Resources folder lists the active bundled packs and their purpose, highest priority first.
+  It never becomes a pack in the saved selection; personal packs remain independent.
 - Held boombox notes accept world/body speaker coordinates only. Vanilla first-person hands and inventory avatars
   cannot overwrite their world anchors; stale or distant anchors use the carrying hand instead.
 

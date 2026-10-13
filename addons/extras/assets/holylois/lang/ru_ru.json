@@ -251,5 +251,19 @@
   "key.category.holylois.journal": "Holy Lois",
   "holylois.crate.tip": "Поставьте этот ящик в мире.",
   "holylois.crate.open": "Разбейте подходящим инструментом, чтобы забрать добычу.",
-  "enchantment.autosmelt.auto_smelt": "Плавка"
+  "enchantment.autosmelt.auto_smelt": "Плавка",
+  "holylois.travel.managed_resources_title": "Ресурсы Holy Lois",
+  "holylois.resources.title": "Ресурсы Holy Lois",
+  "holylois.resources.summary": "%s пакетов - Всегда активны",
+  "holylois.resources.open": "Нажмите для просмотра",
+  "holylois.resources.explanation": "Эти пакеты всегда активны. Holy Lois сохраняет их порядок. Свои пакеты можно добавить отдельно.",
+  "holylois.resources.priority": "Сначала высший приоритет",
+  "holylois.resources.back": "Назад",
+  "holylois.resources.pack0": "Анимации еды и её употребления.",
+  "holylois.resources.pack1": "Анимации еды из Farmer's Delight.",
+  "holylois.resources.pack2": "Анимации поедания улова из Fish of Thieves.",
+  "holylois.resources.pack3": "Выразительные движения и позы существ.",
+  "holylois.resources.pack4": "Анимации сундуков, лодок и вагонеток.",
+  "holylois.resources.pack5": "Выражения лиц игроков.",
+  "holylois.resources.pack6": "Анимации игроков на основе Fresh Animations."
 }

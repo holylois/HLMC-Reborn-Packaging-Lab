@@ -36,6 +36,7 @@
   ],
   "client": [
     "BundledPackOrderMixin",
+    "ManagedPackScreenMixin",
     "CrateNameMixin",
     "TooltipPaletteMixin",
     "ShoalRadiusMixin",

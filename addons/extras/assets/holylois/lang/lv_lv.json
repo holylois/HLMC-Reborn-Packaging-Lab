@@ -251,5 +251,19 @@
   "key.category.holylois.journal": "Holy Lois",
   "holylois.crate.tip": "Novieto šo kasti pasaulē.",
   "holylois.crate.open": "Salauz ar piemērotu rīku, lai savāktu laupījumu.",
-  "enchantment.autosmelt.auto_smelt": "Kausēšana"
+  "enchantment.autosmelt.auto_smelt": "Kausēšana",
+  "holylois.travel.managed_resources_title": "Holy Lois resursi",
+  "holylois.resources.title": "Holy Lois resursi",
+  "holylois.resources.summary": "%s pakas - Vienmēr aktīvas",
+  "holylois.resources.open": "Noklikšķini, lai apskatītu",
+  "holylois.resources.explanation": "Šīs pakas vienmēr ir aktīvas. Holy Lois saglabā to secību. Savas pakas vari pievienot atsevišķi.",
+  "holylois.resources.priority": "Augstākā prioritāte vispirms",
+  "holylois.resources.back": "Atpakaļ",
+  "holylois.resources.pack0": "Animēti ēdiena modeļi un ēšana.",
+  "holylois.resources.pack1": "Farmer's Delight ēdienu ēšanas animācijas.",
+  "holylois.resources.pack2": "Fish of Thieves loma ēšanas animācijas.",
+  "holylois.resources.pack3": "Izteiksmīgākas radību kustības un pozas.",
+  "holylois.resources.pack4": "Lāžu, laivu un vagonešu animācijas.",
+  "holylois.resources.pack5": "Spēlētāju sejas izteiksmes.",
+  "holylois.resources.pack6": "Spēlētāju animācijas uz Fresh Animations pamata."
 }

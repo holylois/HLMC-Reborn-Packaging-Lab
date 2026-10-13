@@ -251,5 +251,19 @@
   "key.category.holylois.journal": "Holy Lois",
   "holylois.crate.tip": "Place this crate in the world.",
   "holylois.crate.open": "Break it with the right tool to collect loot.",
-  "enchantment.autosmelt.auto_smelt": "Smelting"
+  "enchantment.autosmelt.auto_smelt": "Smelting",
+  "holylois.travel.managed_resources_title": "Holy Lois Resources",
+  "holylois.resources.title": "Holy Lois Resources",
+  "holylois.resources.summary": "%s packs - Always active",
+  "holylois.resources.open": "Click to view",
+  "holylois.resources.explanation": "These packs are always active. Holy Lois keeps their order fixed. You can add your own packs separately.",
+  "holylois.resources.priority": "Highest priority first",
+  "holylois.resources.back": "Back",
+  "holylois.resources.pack0": "Animated food and eating models.",
+  "holylois.resources.pack1": "Eating animations for Farmer's Delight food.",
+  "holylois.resources.pack2": "Eating frames for Fish of Thieves catches.",
+  "holylois.resources.pack3": "More expressive creature movement and poses.",
+  "holylois.resources.pack4": "Animations for chests, boats and minecarts.",
+  "holylois.resources.pack5": "Facial expressions for players.",
+  "holylois.resources.pack6": "Player animations that build on Fresh Animations."
 }
