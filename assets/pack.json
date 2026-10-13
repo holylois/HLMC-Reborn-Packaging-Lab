@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "2.0.1",
+  "version": "2.0.2",
   "minecraft": "26.3",
   "fabric": "0.19.5",
   "java": 25,
@@ -266,10 +266,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/holylois-extras-1.8.1+26.3.jar",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.1/holylois-extras-1.8.1+26.3.jar",
-      "size": 1206665,
-      "sha256": "50efc419b57b4bd2d79a3f12c927bd0f5abd2e6d3f1ad1431a6eecba1087dc02",
+      "path": "mods/holylois-extras-1.8.2+26.3.jar",
+      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.2/holylois-extras-1.8.2+26.3.jar",
+      "size": 1228630,
+      "sha256": "68515dbe9475edbb16b40bd94c062b5b778000e35f8753c7810fa9cf58a1db2e",
       "policy": "managed"
     },
     {
@@ -762,6 +762,7 @@
         "More mineshafts, ruins, towers, towns and other structures await in newly generated land. Their treasure chests can hold legends and Runeforged loot.",
         "Smelting is a new pickaxe enchantment, available from enchanting tables and librarian books. Mined iron, copper and gold become ingots, and ancient debris becomes netherite scrap. Fortune stays useful; Silk Touch is incompatible."
       ],
+      "removed": [],
       "updated": [
         "Journal models keep a stable idle pose, spiders fit their leg span, and Witches no longer use their recorded potion. Fish entries preview the heaviest catch in a swimming pose; new catches save Fish of Thieves variants without inventing old appearances.",
         "Fish and fillets have a thin rarity outline around their inventory picture. Legendary stays gold with a white shine; Mythic keeps its moving colour gradient.",
@@ -786,8 +787,7 @@
         "Delayed Journal replies no longer reopen a closed menu or replace newer results.",
         "Fish and item cards remain visible over the cinematic camera; /cinematiccards on|off is your choice. Journal notices wait until visible, then show quiet outlined text near chat. Use /journalalerts motion off to stop their pop and Journal text shine.",
         "Uploaded song links must contain real MP3 or WAV audio. BlueMap's updated renderer fixes lost low-resolution tile writes."
-      ],
-      "removed": []
+      ]
     },
     {
       "version": "1.9.4",

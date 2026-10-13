@@ -1008,7 +1008,10 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         // The preceding shoal catch moves the angler far away. This pond must be inside the client's loaded area.
         server.runCommand("tp @a 6 -59 -3 -90 12");
         server.runCommand("fill 3 -64 -5 18 -59 8 water");
+        // Waiting on the old rendered chunks can return before the teleport packet has reached the client.
+        context.waitFor(client->client.player.blockPosition().closerThan(new BlockPos(6,-59,-3),2),200);
         world.getConnection().waitForChunksRender();
+        var fixture=new java.util.concurrent.atomic.AtomicInteger();
         server.runOnServer(s->{
             var player=s.getPlayerList().getPlayers().getFirst();var level=(ServerLevel)player.level();
             var type=BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("fishofthieves:shoal"));
@@ -1034,10 +1037,12 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             check(holylois.boombox.FishData.kilograms(holylois.boombox.SwimmingFish.identity(released))==80&&released.getScale()>3,"bucket capture/release keeps the fish identity instead of rerolling it");
             shoal.getShoalFish().set(0,new com.stevekung.fishofthieves.entity.shoal.ShoalFishData(entry.id(),entry.uuid(),saved));
             check(holylois.boombox.ShoalFishIdentity.radius(shoal)>2,"a giant fish widens its school's circle/bubbles");
-            level.addFreshEntity(shoal);
+            check(level.addFreshEntity(shoal),"the test shoal is added to the loaded pond");fixture.set(shoal.getId());
         });
         context.runOnClient(client->{client.player.setYRot(-90);client.player.setXRot(12);});
-        context.waitTicks(25);
+        context.waitFor(client->client.level.getEntity(fixture.get()) instanceof com.stevekung.fishofthieves.entity.shoal.Shoal,200);
+        context.waitFor(client->client.level.getEntity(fixture.get()) instanceof com.stevekung.fishofthieves.entity.shoal.Shoal shoal
+            &&shoal.getShoalFishClient().stream().anyMatch(f->f.getScale()>3),200);
         context.runOnClient(client->{
             var shoals=client.level.getEntitiesOfClass(com.stevekung.fishofthieves.entity.shoal.Shoal.class,new net.minecraft.world.phys.AABB(2,-65,-6,20,-55,10));
             log("client shoal diagnostics: entities="+shoals.size()+" request channel="+net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.canSend(com.stevekung.fishofthieves.network.RequestServerShoalFishPacket.TYPE));

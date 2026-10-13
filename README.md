@@ -1,6 +1,6 @@
 # Holy Lois: Reborn launcher and add-ons
 
-Launcher 1.4.4 installs and updates the signed Holy Lois pack for Minecraft 26.3. Pick how you play (I own Minecraft, or Play with a name), install, then Play. One button follows the state (Install, Update, Repair, Play), the account card shows your skin head, and the main screen keeps the most used keys and commands in view, with gold kept for the main action. Built-in pack: 2.0.1.
+Launcher 1.4.4 installs and updates the signed Holy Lois pack for Minecraft 26.3. Pick how you play (I own Minecraft, or Play with a name), install, then Play. One button follows the state (Install, Update, Repair, Play), the account card shows your skin head, and the main screen keeps the most used keys and commands in view, with gold kept for the main action. Built-in pack: 2.0.1. Current online pack: 2.0.2.
 
 [Download the launcher](https://github.com/pjampjam/HLMC-Reborn-Packaging-Lab/releases/latest/download/HolyLoisReborn.exe). [Player guide](https://github.com/pjampjam/HLMC-Reborn/blob/main/PLAYER-GUIDE.md). [Admin guide](https://github.com/pjampjam/HLMC-Reborn/blob/main/ADMIN-GUIDE.md).
 
