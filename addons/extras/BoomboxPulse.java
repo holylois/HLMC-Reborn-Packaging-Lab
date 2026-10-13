@@ -84,7 +84,7 @@ public final class BoomboxPulse {
         if (broken || model == null || heldLevels.isEmpty() || mc.level == null
             || !(holder instanceof net.minecraft.client.renderer.entity.state.AvatarRenderState avatar)) return;
         var entity = mc.level.getEntity(avatar.id);
-        if (entity != null) heldCones(entity.getUUID(), model, pose, collector, light);
+        if (entity != null) heldCones(entity.getUUID(), model, pose, collector, light, entity);
     }
 
     /** First person: the boombox in your own hand pulses too (FirstPersonBoomboxMixin captures its pose the same way). */
@@ -92,12 +92,13 @@ public final class BoomboxPulse {
         var model = captured; captured = null;
         var mc = Minecraft.getInstance();
         if (broken || model == null || heldLevels.isEmpty() || mc.player == null) return;
-        heldCones(mc.player.getUUID(), model, pose, collector, light);
+        // Vanilla hands use camera space, not a world/body pose. They must never seed world-note positions.
+        heldCones(mc.player.getUUID(), model, pose, collector, light, null);
     }
     /** Frames in which the cones of your own held boombox were drawn, from the body or the vanilla hand (gametest). */
     public static int ownCones;
 
-    private static boolean heldCones(java.util.UUID id, PoseStack.Pose model, PoseStack pose, net.minecraft.client.renderer.SubmitNodeCollector collector, int light) {
+    private static boolean heldCones(java.util.UUID id, PoseStack.Pose model, PoseStack pose, net.minecraft.client.renderer.SubmitNodeCollector collector, int light, net.minecraft.world.entity.Entity holder) {
         var mc = Minecraft.getInstance();
         if(RenderedRodTip.shadowPass())return false;
         var heard = heldLevels.get(id);
@@ -116,7 +117,9 @@ public final class BoomboxPulse {
                 at[i] = cam.add(v.x(),v.y(),v.z());
             }
             var front = model.pose().transformDirection(0, 0, -1, new org.joml.Vector3f()).normalize();
-            heldSpeakers.put(id, new Speakers(at[0], at[1], new net.minecraft.world.phys.Vec3(front.x(), front.y(), front.z()), System.currentTimeMillis()));
+            // Inventory/GUI models can render the same player with screen coordinates. Keep only real nearby world anchors.
+            if (holder != null && SpeakerAnchor.near(holder.position(), at[0], at[1]))
+                heldSpeakers.put(id, new Speakers(at[0], at[1], new net.minecraft.world.phys.Vec3(front.x(), front.y(), front.z()), System.currentTimeMillis()));
             for (float side : new float[]{-3.5f, 3.5f}) {
                 pose.pushPose();
                 pose.last().set(model);
@@ -148,6 +151,7 @@ public final class BoomboxPulse {
         if (mc.options.particles().get() == net.minecraft.server.level.ParticleStatus.MINIMAL) return;
         var note = mc.particleEngine.createParticle(net.minecraft.core.particles.ParticleTypes.NOTE, x, y, z, (beats++ % 25) / 24.0, 0, 0);
         if (note == null) return;
+        lastNotePosition = new net.minecraft.world.phys.Vec3(x,y,z);
         double push = 0.07 + loud * 0.13;
         note.setParticleSpeed(sx * push, 0.07 + loud * 0.07, sz * push);
         lastScale = (0.55f + loud * 0.9f)*size;
@@ -157,6 +161,7 @@ public final class BoomboxPulse {
 
     /** Size of the last note (gametest). */
     public static float lastScale;
+    public static net.minecraft.world.phys.Vec3 lastNotePosition;
 
     /** The two speaker cones of a held boombox in the world and the way its front faces, from the last frame it was drawn. */
     public record Speakers(net.minecraft.world.phys.Vec3 left, net.minecraft.world.phys.Vec3 right, net.minecraft.world.phys.Vec3 front, long at) {}
@@ -181,7 +186,7 @@ public final class BoomboxPulse {
                 float loud = heldShown.getOrDefault(id, entry.getValue().value());
                 boolean first = !lastSide.getOrDefault(id, false); lastSide.put(id, first);
                 var speakers = heldSpeakers.get(id);
-                if (speakers != null && now - speakers.at() < 500) {
+                if (speakers != null && now - speakers.at() < 500 && SpeakerAnchor.near(player.position(), speakers.left(), speakers.right())) {
                     // Out of one speaker cone, left and right in turn (owner 2026-10-10): forward out of the grille and off to its side.
                     var cone = first ? speakers.left() : speakers.right();
                     var away = cone.subtract(first ? speakers.right() : speakers.left()).normalize();

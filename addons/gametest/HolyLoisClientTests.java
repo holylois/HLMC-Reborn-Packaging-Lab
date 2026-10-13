@@ -50,6 +50,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var world = context.worldBuilder().create();
             world.getConnection().waitForChunksRender();
             context.takeScreenshot("02-world");
+            run(failed, "fresh installation defaults", context, world, FreshDefaultsChecks::run);
             run(failed, "inventory opens", context, world, HolyLoisClientTests::inventoryOpens);
             run(failed, "enter submits the login form", context, world, HolyLoisClientTests::enterSubmitsLogin);
             run(failed, "menus and daily card", context, world, HolyLoisClientTests::menusAndDailyCard);
@@ -2194,6 +2195,27 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         int firstNotes = context.computeOnClient(client -> (int) field(holylois.boombox.BoomboxPulse.class, "beats")) - notesBefore;
         log("first-person boombox: " + cones + " cone frames, " + firstNotes + " notes");
         check(cones > 10 && firstNotes == 0, "the boombox in your own hand pulses without notes in first person (" + cones + ", " + firstNotes + ")");
+        server.runCommand("item replace entity @a weapon.mainhand with fishing_rod");
+        server.runCommand("item replace entity @a weapon.offhand with holylois:boombox");
+        context.waitTicks(5);
+        // Fishing camera changes must never reuse a camera-space/GUI position as a world particle anchor.
+        for (var camera : net.minecraft.client.CameraType.values()) {
+            context.runOnClient(client -> { client.options.setCameraType(camera); client.player.setXRot(-45); });
+            for (int t=0;t<18;t++) { int frame=t; context.runOnClient(client -> holylois.boombox.BoomboxPulse.heardHeld(me,music(frame))); context.waitTicks(1); }
+            if (camera.isFirstPerson()) continue;
+            context.runOnClient(client -> {
+                var position=holylois.boombox.BoomboxPulse.lastNotePosition;
+                check(position != null && position.distanceTo(client.player.position()) < 3, "Offhand notes stay at the player after camera switch: " + position);
+            });
+        }
+        context.runOnClient(client -> client.gui.setScreen(new InventoryScreen(client.player)));
+        context.waitTicks(5);
+        context.runOnClient(client -> {
+            var at=holylois.boombox.BoomboxPulse.heldSpeakers.get(me);
+            check(at == null || at.left().distanceTo(client.player.position()) < 3, "Inventory avatar cannot seed sky notes");
+            client.gui.setScreen(null);
+        });
+        context.takeScreenshot("17-boombox-offhand-after-camera-switch");
         server.runCommand("clear @a");
     }
 

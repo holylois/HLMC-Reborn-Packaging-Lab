@@ -36,6 +36,9 @@ strayJars.each { prefix, jar ->
     withoutStrays.configure { from zip }
 }
 def clientJars = { lockedJars(['client', 'both']).findAll { jar -> !strayJars.values().contains(jar.name) } }
+// A separate first-launch profile catches defaults bugs that a warmed test folder hides.
+def gameTestName = System.getenv('HOLYLOIS_TEST_PROFILE') ?: 'gametest'
+if (!(gameTestName ==~ /[a-zA-Z0-9_-]+/)) throw new GradleException('HOLYLOIS_TEST_PROFILE must be a folder name under addons/run')
 
 def syncClientMods = tasks.register('syncClientMods', Sync) {
     from clientJars()
@@ -50,7 +53,7 @@ def syncGameTestMods = tasks.register('syncGameTestMods', Sync) {
     from project(':extras').tasks.named('jar')
     from project(':auth-ui').tasks.named('jar')
     from project(':gametest').tasks.named('jar')
-    into rootProject.file('run/gametest/mods')
+    into rootProject.file("run/${gameTestName}/mods")
 }
 def syncServerMods = tasks.register('syncServerMods', Sync) {
     from lockedJars(['server', 'both'])
@@ -68,7 +71,7 @@ loom {
         client { runDir = '../run/client'; vmArgs '-Xmx4G'; programArgs '--username', 'HolyLoisTester' }
         clientGameTest {
             client()
-            runDir = '../run/gametest'
+            runDir = "../run/${gameTestName}"
             vmArgs '-Xmx4G', '-Dfabric.client.gametest', '-Dfabric.client.gametest.disableJoinAsyncStackTraces=true'
         }
         server { runDir = '../run/server'; vmArgs '-Xmx4G', '-Dholylois.commandAudit=true' }
@@ -79,7 +82,7 @@ loom {
     tasks.register("syncLegends${side}", Copy) {
         from rootProject.file('../../HLMC-Reborn/server/legends')
         include '*.json'
-        into rootProject.file("run/${side == 'GameTest' ? 'gametest' : side.toLowerCase()}/config")
+        into rootProject.file("run/${side == 'GameTest' ? gameTestName : side.toLowerCase()}/config")
     }
 }
 tasks.named('runClient') { dependsOn syncClientMods, 'syncLegendsClient' }

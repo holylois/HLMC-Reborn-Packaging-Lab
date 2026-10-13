@@ -42,7 +42,14 @@ Built on the server with `compile-extras.py` against the installed Minecraft 26.
 - Advancement tabs are ordered: Holy Lois, then Minecraft, Nether, End, Adventure, Husbandry, then mods alphabetically.
 - Nemo's Enchantments' own "Hold Shift" descriptions are skipped; Enchantment Descriptions shows them directly.
 - One-time REI defaults before mods load (`ClientDefaults`): the item list shows only while searching and the developer
-  Tags tab is hidden. Each change runs once and only while REI's original value is still set.
+  Tags tab is hidden. Favorites stay saved but their panel/button is hidden; the item list scrolls without page arrows.
+  A minimal config is seeded before REI's first read, so these choices also apply on a fresh install.
+  Later personal choices stay intact. New-install FOV is 90; established FOV and keybinds are preserved.
+- The bundled animation packs stay visible and required. Their configured order is repaired once, with FA+Player above
+  JustExpressions. In 26.3, fixed-position packs disappear from the saved selection and return in alphabetical order
+  on reload, so they use normal saved positions instead. Only the seven known bundled packs are migrated.
+- Held boombox notes accept world/body speaker coordinates only. Vanilla first-person hands and inventory avatars
+  cannot overwrite their world anchors; stale or distant anchors use the carrying hand instead.
 
 - Tool swap (`ToolSwap`, 1.3.1): when the held pickaxe, axe, shovel, hoe, sword or shears breaks, an unenchanted spare of the same kind is
   swapped into the hand slot (lowest material first, then the most worn; spares with 5% or less durability are skipped; enchanted
