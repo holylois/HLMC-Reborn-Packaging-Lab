@@ -35,6 +35,7 @@
     "DeathSlotsPickupMixin"
   ],
   "client": [
+    "BundledPackOrderMixin",
     "CrateNameMixin",
     "TooltipPaletteMixin",
     "ShoalRadiusMixin",

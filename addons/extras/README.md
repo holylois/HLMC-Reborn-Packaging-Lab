@@ -45,9 +45,10 @@ Built on the server with `compile-extras.py` against the installed Minecraft 26.
   Tags tab is hidden. Favorites stay saved but their panel/button is hidden; the item list scrolls without page arrows.
   A minimal config is seeded before REI's first read, so these choices also apply on a fresh install.
   Later personal choices stay intact. New-install FOV is 90; established FOV and keybinds are preserved.
-- The bundled animation packs stay visible and required. Their configured order is repaired once, with FA+Player above
-  JustExpressions. In 26.3, fixed-position packs disappear from the saved selection and return in alphabetical order
-  on reload, so they use normal saved positions instead. Only the seven known bundled packs are migrated.
+- The seven bundled animation packs stay hidden, required and fixed. Their canonical order is enforced on each client
+  resource-repository rebuild, with FA+Player above JustExpressions, above mod assets and below personal/server overlays.
+  This also works after fixed packs are omitted from saved options. Players can add/select/reorder their own packs.
+  Managed policy is restored on startup without changing personal pack settings.
 - Held boombox notes accept world/body speaker coordinates only. Vanilla first-person hands and inventory avatars
   cannot overwrite their world anchors; stale or distant anchors use the carrying hand instead.
 

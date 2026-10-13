@@ -87,7 +87,7 @@ public final class ClientDefaults implements PreLaunchEntrypoint {
     }
 
     private static void repairResourcePacks(Path game, Path config, java.util.Set<String> done) throws java.io.IOException {
-        if (done.contains("animation-pack-order-v2")) return;
+        boolean migrateOrder = !done.contains("managed-pack-lock-v1");
         var file = config.resolve("resourcepackoverrides.json");
         if (!Files.exists(file)) return;
         var gson = new com.google.gson.GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -98,20 +98,21 @@ public final class ClientDefaults implements PreLaunchEntrypoint {
         var bundled = new java.util.ArrayList<String>();
         for (var id : order) {
             String name = id.getAsString();
-            if (!java.util.Set.of("file/EatingAnimation-1.0.1.zip", "file/EatingAnimation-FarmersDelight-1.20-26.x.zip",
-                "file/HolyLois-FishEating.zip", "file/FreshAnimations_v1.10.5.zip", "file/FA+Objects-v2.1.2.zip",
-                "file/JustExpressions_v1.2.1.zip", "file/FA+Player-v1.1.zip").contains(name)
+            if (!BundledPackOrder.IDS.contains(name)
                 || !Files.isRegularFile(game.resolve("resourcepacks").resolve(name.substring(5)))) continue;
             var pack = overrides.getAsJsonObject(name);
-            if (pack == null || !pack.has("required") || !pack.get("required").getAsBoolean()) continue;
-            // Fixed packs are excluded from options.txt in 26.3 and reinserted alphabetically on reload.
-            pack.addProperty("fixed_position", false);
-            pack.addProperty("hidden", false);
+            if (pack == null) { pack = new com.google.gson.JsonObject(); overrides.add(name, pack); }
+            // The runtime repository hook maintains order even after fixed packs disappear from saved options.
+            pack.addProperty("required", true);
+            pack.addProperty("fixed_position", true);
+            pack.addProperty("hidden", true);
+            pack.addProperty("default_position", "bottom");
             pack.addProperty("force_compatible", true);
             bundled.add(name);
         }
         if (bundled.isEmpty()) return;
         Files.writeString(file, gson.toJson(json) + "\n", StandardCharsets.UTF_8);
+        if (!migrateOrder) return;
         for (var options : java.util.List.of(game.resolve("options.txt"), config.resolve("yosbr/options.txt"))) {
             if (!Files.exists(options)) continue;
             String text = Files.readString(options);
@@ -130,6 +131,6 @@ public final class ClientDefaults implements PreLaunchEntrypoint {
             String next = match.replaceFirst(java.util.regex.Matcher.quoteReplacement("resourcePacks:" + selected));
             Files.writeString(options, next, StandardCharsets.UTF_8);
         }
-        done.add("animation-pack-order-v2");
+        done.add("managed-pack-lock-v1");
     }
 }

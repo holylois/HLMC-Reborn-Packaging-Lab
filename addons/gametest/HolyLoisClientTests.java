@@ -51,6 +51,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             world.getConnection().waitForChunksRender();
             context.takeScreenshot("02-world");
             run(failed, "fresh installation defaults", context, world, FreshDefaultsChecks::run);
+            run(failed, "managed resource packs", context, world, ManagedPackChecks::run);
             run(failed, "inventory opens", context, world, HolyLoisClientTests::inventoryOpens);
             run(failed, "enter submits the login form", context, world, HolyLoisClientTests::enterSubmitsLogin);
             run(failed, "menus and daily card", context, world, HolyLoisClientTests::menusAndDailyCard);
