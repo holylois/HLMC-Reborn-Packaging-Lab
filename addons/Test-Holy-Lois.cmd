@@ -22,5 +22,5 @@ python wait-test-server.py --check-running || goto failed
 goto client
 :failed
 echo.
-echo Something failed above. Send a screenshot of this window to Claude.
+echo Something failed above. Send the error above to your assistant.
 pause

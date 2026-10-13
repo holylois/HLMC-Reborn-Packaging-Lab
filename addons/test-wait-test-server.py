@@ -16,7 +16,7 @@ class ReadinessTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             log=Path(directory)/'latest.log'
             log.write_text('Failed to start the minecraft server\n',encoding='utf-8')
-            with patch.object(server.socket,'create_connection') as connection:
+            with patch.object(server,'minecraft_ready') as connection:
                 self.assertEqual(server.wait(log),1)
                 connection.assert_not_called()
 
@@ -24,9 +24,9 @@ class ReadinessTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             log=Path(directory)/'latest.log'
             log.write_text('Done (12.5s)! For help, type "help"\n',encoding='utf-8')
-            with patch.object(server.socket,'create_connection',return_value=MagicMock()) as connection:
+            with patch.object(server,'minecraft_ready',return_value=True) as connection:
                 self.assertEqual(server.wait(log),0)
-                connection.assert_called_once_with(('127.0.0.1',25565),timeout=1)
+                connection.assert_called_once_with()
 
     def test_previous_log_is_not_ready(self):
         self.assertEqual(server.status('Starting minecraft server version 26.3'),'waiting')
@@ -47,10 +47,50 @@ class ReadinessTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             log=Path(directory)/'latest.log'
             log.write_text('Done (12.5s)! For help, type "help"\n',encoding='utf-8')
-            with patch.object(server.socket,'create_connection',return_value=MagicMock()):
+            with patch.object(server,'minecraft_ready',return_value=True):
                 self.assertEqual(server.check_running(log),0)
-            with patch.object(server.socket,'create_connection',side_effect=ConnectionRefusedError):
+            with patch.object(server,'minecraft_ready',return_value=False):
                 self.assertEqual(server.check_running(log),1)
+
+    def test_rotated_log_does_not_block_running_server(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log=Path(directory)/'latest.log'
+            log.write_text('Server empty for 60 seconds, pausing\n',encoding='utf-8')
+            with patch.object(server,'minecraft_ready',return_value=True):
+                self.assertEqual(server.check_running(log),0)
+            log.unlink()
+            with patch.object(server,'minecraft_ready',return_value=True):
+                self.assertEqual(server.check_running(log),0)
+
+    def test_status_reply_handles_fragmented_packets(self):
+        payload=server.json.dumps({'players':{'online':0},'version':{'name':'26.3'}}).encode()
+        body=b'\x00'+server.varint(len(payload))+payload
+        data=bytearray(server.varint(len(body))+body)
+        stream=MagicMock()
+        def receive(length):
+            chunk=bytes(data[:min(length,3)])
+            del data[:len(chunk)]
+            return chunk
+        stream.recv.side_effect=receive
+        connection=MagicMock()
+        connection.__enter__.return_value=stream
+        with patch.object(server.socket,'create_connection',return_value=connection):
+            self.assertTrue(server.minecraft_ready())
+        stream.sendall.assert_called_once()
+
+    def test_socket_without_minecraft_reply_is_not_ready(self):
+        for response in [b'',b'HTTP/1.1 200 OK',b'\xff'*5]:
+            stream=MagicMock()
+            data=bytearray(response)
+            def receive(length):
+                chunk=bytes(data[:length]);del data[:length];return chunk
+            stream.recv.side_effect=receive
+            connection=MagicMock()
+            connection.__enter__.return_value=stream
+            with patch.object(server.socket,'create_connection',return_value=connection):
+                self.assertFalse(server.minecraft_ready())
+        with patch.object(server.socket,'create_connection',side_effect=ConnectionRefusedError):
+            self.assertFalse(server.minecraft_ready())
 
 
 if __name__=='__main__':

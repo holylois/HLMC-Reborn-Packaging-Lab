@@ -1,5 +1,7 @@
-"""Wait for the private server's ready line and loopback socket; fail before opening a disconnected client."""
+"""Check the private Minecraft server itself; rotated logs must not block reopening the client."""
+import json
 import socket
+import struct
 import sys
 import time
 from pathlib import Path
@@ -13,6 +15,57 @@ def status(text):
     return 'waiting'
 
 
+def varint(value):
+    result=bytearray()
+    while True:
+        byte=value & 127
+        value >>= 7
+        result.append(byte | (128 if value else 0))
+        if not value:
+            return bytes(result)
+
+
+def read_exact(stream,length):
+    result=bytearray()
+    while len(result)<length:
+        chunk=stream.recv(length-len(result))
+        if not chunk:
+            raise OSError('Incomplete Minecraft status reply')
+        result.extend(chunk)
+    return bytes(result)
+
+
+def read_varint(stream):
+    value=0
+    for shift in range(0,35,7):
+        byte=read_exact(stream,1)[0]
+        value |= (byte & 127) << shift
+        if not byte & 128:
+            return value
+    raise OSError('Invalid Minecraft status length')
+
+
+def minecraft_ready():
+    try:
+        with socket.create_connection(('127.0.0.1',25565),timeout=5) as stream:
+            host=b'localhost'
+            hello=b'\x00'+varint(0)+varint(len(host))+host+struct.pack('>H',25565)+b'\x01'
+            stream.sendall(varint(len(hello))+hello+b'\x01\x00')
+            length=read_varint(stream)
+            if not 2<length<1024**2 or read_varint(stream)!=0:
+                return False
+            count=read_varint(stream)
+            if not 0<count<=length-2:
+                return False
+            reply=json.loads(read_exact(stream,count))
+            # Do not log or retain the optional player-name sample.
+            online=reply['players']['online']
+            version=reply['version']['name']
+            return type(online) is int and online>=0 and isinstance(version,str) and bool(version)
+    except (OSError,ValueError,KeyError,TypeError):
+        return False
+
+
 def wait(log, timeout=180):
     started=time.time()
     deadline=time.monotonic()+timeout
@@ -23,13 +76,9 @@ def wait(log, timeout=180):
             if state=='failed':
                 print(f'Test server failed to start. See {log}. Minecraft was not opened.')
                 return 1
-            if state=='ready':
-                try:
-                    with socket.create_connection(('127.0.0.1',25565),timeout=1):
-                        print('Private test server ready on localhost:25565.')
-                        return 0
-                except OSError:
-                    pass
+            if state=='ready' and minecraft_ready():
+                print('Private test server ready on localhost:25565.')
+                return 0
         time.sleep(1)
     print(f'Test server did not become ready within {timeout} seconds. See {log}. Minecraft was not opened.')
     return 1
@@ -45,12 +94,10 @@ def check_free():
 
 
 def check_running(log):
-    if log.exists() and status(log.read_text(encoding='utf-8',errors='replace'))=='ready':
-        try:
-            with socket.create_connection(('127.0.0.1',25565),timeout=1):
-                return 0
-        except OSError:
-            pass
+    # A long-running server can rotate/truncate latest.log after its original Done line.
+    if minecraft_ready():
+        print('Private test server ready on localhost:25565.')
+        return 0
     print('The private test server is not ready. Use Test-Holy-Lois.cmd to start both server and client.')
     return 1
 
