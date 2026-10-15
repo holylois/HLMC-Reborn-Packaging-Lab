@@ -1,6 +1,6 @@
 {
-  "comment": "Hash-locked compile/test jars for the Holy Lois 2.0.0 pack and server candidate.",
-  "pack": "2.0.0-candidate",
+  "comment": "Hash-locked compile/test jars for the Holy Lois 2.0.3 pack and server.",
+  "pack": "2.0.3",
   "jars": {
     "3d-armor-0.9.4.2-mod.jar": {
       "url": "https://cdn.modrinth.com/data/XhxKIfGG/versions/ap0X7Uod/3d-armor-0.9.4.2-mod.jar",
@@ -308,16 +308,16 @@
       "size": 242764,
       "side": "client"
     },
-    "entity_model_features-3.3.11-26.3-fabric.jar": {
-      "url": "https://cdn.modrinth.com/data/4I1XuqiY/versions/N7d5LddE/entity_model_features-3.3.11-26.3-fabric.jar",
-      "sha256": "a73ce8463f8ae342cd9428e0b9298bb2d265083d732703cfc12f8f2ef335e3c1",
-      "size": 664472,
+    "entity_model_features-3.3.12-26.3-fabric.jar": {
+      "url": "https://cdn.modrinth.com/data/4I1XuqiY/versions/vF6qLXsA/entity_model_features-3.3.12-26.3-fabric.jar",
+      "sha256": "4a8b04d26c94909a3ba9f08972fb475e7d39f715f666f99a294017baaa37cb69",
+      "size": 665386,
       "side": "client"
     },
-    "entity_texture_features-7.2.5-26.3-fabric.jar": {
-      "url": "https://cdn.modrinth.com/data/BVzZfTc1/versions/O8J3sxxp/entity_texture_features-7.2.5-26.3-fabric.jar",
-      "sha256": "22c72cb53e97779b1fea82741fa7932e2b43e44dc3b7c21c772affe46568a56d",
-      "size": 792734,
+    "entity_texture_features-7.2.6-26.3-fabric.jar": {
+      "url": "https://cdn.modrinth.com/data/BVzZfTc1/versions/OOEycXyN/entity_texture_features-7.2.6-26.3-fabric.jar",
+      "sha256": "9ae73892099aa759e0cfc0ccb1fcba3986e27a7c743ad5832310ba8ca58f644a",
+      "size": 793054,
       "side": "client"
     },
     "entityculling-fabric-1.11.3-mc26.3.jar": {
@@ -332,10 +332,10 @@
       "size": 1019973,
       "side": "server"
     },
-    "fabric-api-0.162.0+26.3.jar": {
-      "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/v2j28coa/fabric-api-0.162.0%2B26.3.jar",
-      "sha256": "8626c189b702f466800b1c8ddac6203cf8a1e0bdaee75a5f9a33b18c2baa81b1",
-      "size": 1772377,
+    "fabric-api-0.163.0+26.3.jar": {
+      "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/bq3SsNGk/fabric-api-0.163.0%2B26.3.jar",
+      "sha256": "4969f5197ebedaf681cc913e4258c8bd17ccb98029db52a29e9b48e998267a2d",
+      "size": 1774707,
       "side": "both"
     },
     "fabric-language-kotlin-1.14.2+kotlin.2.4.21.jar": {
@@ -512,12 +512,10 @@
       "version": "G0fTdl8M",
       "side": "server"
     },
-    "puzzleslib-v26.3.14-mc26.3.x+fabric.jar": {
-      "url": "https://cdn.modrinth.com/data/QAGBst4M/versions/7SSd41Tf/puzzleslib-v26.3.14-mc26.3.x%2Bfabric.jar",
-      "sha256": "d3d272c69f8227607acbb8c92ef4058419b56038f86a3f27651f47a815bd16ad",
-      "size": 1092880,
-      "project": "QAGBst4M",
-      "version": "7SSd41Tf",
+    "puzzleslib-v26.3.15-mc26.3.x+fabric.jar": {
+      "url": "https://cdn.modrinth.com/data/QAGBst4M/versions/68hLXNWE/puzzleslib-v26.3.15-mc26.3.x%2Bfabric.jar",
+      "sha256": "dc79d1970ebcf3ab017b4519656bf3200066b93e821ca4f591cff5e07c9202c1",
+      "size": 1093312,
       "side": "both"
     },
     "resourcepackoverrides-v26.3.0-mc26.3.x+fabric.jar": {
