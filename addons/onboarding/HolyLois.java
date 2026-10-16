@@ -242,7 +242,7 @@ public final class HolyLois implements ModInitializer {
             } catch (Exception e) {
                 int count = failures.merge(id,1,Integer::sum);
                 LOG.warn("First-join RTP attempt {} failed for {}",count,name,e);
-                if (count >= 3) player.sendSystemMessage(Component.literal("Automatic placement failed. You can use /rtp; contact pjampjam if it keeps failing."));
+                if (count >= 3) player.sendSystemMessage(Component.literal("Automatic placement failed. You can use /rtp; contact Pastor if it keeps failing."));
             }
         }
     }
@@ -264,7 +264,7 @@ public final class HolyLois implements ModInitializer {
                     arrivalProtection(server,id);
                 } catch (Exception error) {
                     randomRespawns.remove(id);
-                    player.sendSystemMessage(Component.literal("Random respawn failed. Use /rtp or contact pjampjam."));
+                    player.sendSystemMessage(Component.literal("Random respawn failed. Use /rtp or contact Pastor."));
                     LOG.warn("Random respawn failed for {}",player.getGameProfile().name(),error);
                 }
             }

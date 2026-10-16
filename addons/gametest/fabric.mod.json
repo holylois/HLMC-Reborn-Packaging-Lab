@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "name": "Holy Lois client tests",
   "description": "Automated in-game tests for the Holy Lois add-ons (gradlew :dev:runClientGameTest). Never shipped to players.",
-  "authors": ["pjampjam"],
+  "authors": ["Holy Lois"],
   "license": "MIT",
   "environment": "client",
   "mixins": ["holylois-record-tests.mixins.json"],

@@ -40,7 +40,7 @@ final class SupportCommand {
 
     private static void usage(ServerPlayer player) {
         player.sendSystemMessage(Component.literal("✦ Need help?").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-            .append(Component.literal("\n/support MESSAGE - pjampjam gets it on Discord right away and replies in game."
+            .append(Component.literal("\n/support MESSAGE - Pastor gets it on Discord right away and replies in game."
                 + "\nStart with bug, help or grief if it fits, e.g. /support grief someone broke my farm"
                 + "\n/report PLAYER REASON - report a player privately. /donate - help pay for the server.")
                 .withStyle(style -> style.withColor(ChatFormatting.YELLOW).withBold(false))));
@@ -84,7 +84,7 @@ final class SupportCommand {
             if (other != player && Commands.hasPermission(Commands.LEVEL_GAMEMASTERS).test(other.createCommandSourceStack())) other.sendSystemMessage(note);
         player.sendSystemMessage(Component.literal(kind.equals("report")
             ? "✦ Report sent privately to the staff. Thank you."
-            : "✦ Sent! pjampjam gets it on Discord now and will reply here or there.").withStyle(ChatFormatting.GREEN));
+            : "✦ Sent! Pastor gets it on Discord now and will reply here or there.").withStyle(ChatFormatting.GREEN));
         return 1;
     }
 }

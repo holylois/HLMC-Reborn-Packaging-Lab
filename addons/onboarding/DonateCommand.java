@@ -38,7 +38,7 @@ final class DonateCommand {
 
     static MutableComponent message() {
         var text = Component.literal("♥ Donate to Holy Lois").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-            .append(Component.literal("\nHoly Lois is run by pjampjam for friends. If you want to help with the domain and future upgrades, "
+            .append(Component.literal("\nHoly Lois is run by Pastor for friends. If you want to help with the domain and future upgrades, "
                 + "you can send crypto to one of these. It never buys anything in game; it just keeps the lights on.")
                 .withStyle(style -> style.withColor(ChatFormatting.GRAY).withBold(false)));
         for (var wallet : WALLETS)

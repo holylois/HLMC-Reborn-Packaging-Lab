@@ -29,7 +29,7 @@ Sources: [SignPath requirements](https://signpath.org/terms.html), [Certum open-
 
 ## What a signature fixes
 
-A trusted Authenticode signature verifies the publisher and the signed file. Setting Company to pjampjam is only file metadata. A certificate normally displays a validated identity, not an arbitrary nickname. Our RSA-signed update catalog verifies launcher updates but does not become a Windows publisher certificate.
+A trusted Authenticode signature verifies the publisher and the signed file. Setting Company to Holy Lois is only file metadata. A certificate normally displays a validated identity, not an arbitrary nickname. Our RSA-signed update catalog verifies launcher updates but does not become a Windows publisher certificate.
 
 New signed standalone applications may still show SmartScreen while reputation builds. Paying extra for EV solely to eliminate that warning is not recommended by Microsoft's current documentation. Signing is not an antivirus clearance or a guarantee against future detections. Self-signed certificates are unsuitable for friends' public downloads and we will not ask them to install a root certificate.
 

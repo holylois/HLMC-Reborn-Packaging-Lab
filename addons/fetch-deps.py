@@ -20,7 +20,7 @@ fetched = 0
 for name, entry in lock.items():
     target = DEPS / name
     if target.exists() and sha256(target) == entry['sha256']: continue
-    request = urllib.request.Request(entry['url'], headers={'User-Agent': 'pjampjam/holylois-addons-build'})
+    request = urllib.request.Request(entry['url'], headers={'User-Agent': 'holylois/holylois-addons-build'})
     data = urllib.request.urlopen(request, timeout=120).read()
     if hashlib.sha256(data).hexdigest() != entry['sha256']: sys.exit(f'Hash mismatch for {name}; refusing to use it.')
     target.write_bytes(data); fetched += 1
