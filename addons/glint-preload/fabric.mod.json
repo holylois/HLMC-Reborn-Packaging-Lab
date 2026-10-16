@@ -31,7 +31,7 @@
     "modmenu": {
       "parent": "holylois-extras",
       "links": {
-        "modmenu.discord": "https://discord.gg/FzBJSZwY2c",
+        "modmenu.discord": "https://holylois.com/discord",
         "modmenu.donate": "https://holylois.com/donate"
       }
     }

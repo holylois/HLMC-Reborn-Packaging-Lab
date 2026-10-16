@@ -126,7 +126,7 @@ public sealed class LaunchWindow : ThemedWindow
 /// <summary>Copy, save and send actions for a report, shared by the start window, the crash window and Settings.</summary>
 public static class ReportActions
 {
-    public const string DiscordUrl = "https://discord.gg/FzBJSZwY2c";
+    public const string DiscordUrl = "https://holylois.com/discord";
 
     public static string Copy(ClientContext context)
     {
