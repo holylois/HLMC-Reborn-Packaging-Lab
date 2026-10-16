@@ -108,6 +108,15 @@ public final class OnboardingTest {
         check(!AudioUrlGuard.isPublic(ip("::1"))&&!AudioUrlGuard.isPublic(ip("fd12::1"))&&!AudioUrlGuard.isPublic(ip("fe80::1"))&&!AudioUrlGuard.isPublic(ip("::ffff:10.0.0.1"))&&AudioUrlGuard.isPublic(ip("1.1.1.1"))&&AudioUrlGuard.isPublic(ip("2606:4700::1111")),"IPv6 private and mapped addresses are blocked, public ones pass");
         check(rejects("http://example.com/a.mp3")&&rejects("file:///etc/passwd")&&rejects("https://user:pw@example.com/a.mp3")&&!rejects("https://example.com/a.mp3"),"Only plain https links are accepted");
         check(AudioUrlGuard.waitMs(null,5000)==0&&AudioUrlGuard.waitMs(1000L,6000)==15000&&AudioUrlGuard.waitMs(1000L,30000)==0,"One audio link per player every 20 seconds");
+        check(Quiet.quiet("PJAMPJAM")&&!Quiet.quiet("pjampjam2")&&!Quiet.quiet("Elza")&&!Quiet.quiet(null),"Quiet names match whole names in any case");
+        {var staff=new net.minecraft.server.players.NameAndId(new java.util.UUID(0,1),"pjanpjan");var friend=new net.minecraft.server.players.NameAndId(new java.util.UUID(0,2),"Elza");
+         java.util.function.Predicate<net.minecraft.server.players.NameAndId> isStaff=p->p.name().equals("pjanpjan");
+         var status=new net.minecraft.network.protocol.status.ServerStatus(net.minecraft.network.chat.Component.literal("Holy Lois"),java.util.Optional.of(new net.minecraft.network.protocol.status.ServerStatus.Players(3,2,java.util.List.of(staff,friend))),java.util.Optional.empty(),java.util.Optional.empty(),false);
+         var shown=Hidden.withoutStaff(status,1,isStaff).players().orElseThrow();
+         check(shown.online()==1&&shown.max()==2&&shown.sample().equals(java.util.List.of(friend))&&Hidden.withoutStaff(status,0,isStaff)==status,"Server list hides staff and keeps one free slot");
+         var row=(java.util.function.Function<net.minecraft.server.players.NameAndId,net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.Entry>)p->new net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.Entry(p.id(),new com.mojang.authlib.GameProfile(p.id(),p.name()),true,0,net.minecraft.world.level.GameType.SURVIVAL,null,true,0,null);
+         var rows=Hidden.unlisted(java.util.List.of(row.apply(staff),row.apply(friend)),friend.id(),isStaff);
+         check(rows!=null&&!rows.get(0).listed()&&rows.get(1).listed()&&Hidden.unlisted(java.util.List.of(row.apply(staff)),staff.id(),isStaff)==null&&Hidden.unlisted(java.util.List.of(row.apply(friend)),staff.id(),isStaff)==null,"Tab list unlists staff for others, never for themselves");}
         check(Seen.lastSeen("Bob",0,3*86_400_000L+5000).startsWith("Bob was last on 3 days ago")&&Seen.lastSeen("Bob",0,90*60_000L).contains("1h 30m ago"),"/seen says how long ago a player was on");
         System.out.println("Passed " + checked + " onboarding, AFK ledger, secret code and quiet name, greeting, name day, bot wall, leaderboard, discovery, death, daily reward, chair, holiday, donate, land, rtp, support and combat checks");
     }

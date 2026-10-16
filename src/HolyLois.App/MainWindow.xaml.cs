@@ -24,7 +24,7 @@ public partial class MainWindow : ThemedWindow
     private string? nameNote;
     public MainWindow(ClientContext context)
     {
-        this.context = context; InitializeComponent();
+        this.context = context; InitializeComponent(); NameHints.Attach(NameBox, NameHint, context);
         progressClock.Tick += (_,_) => ProgressDetails.Text = progressDetail + "  -  " + T("WorkingTime") + " " + operationTime.Elapsed.ToString(@"m\:ss"); Localize.Apply(this, context.Settings.Language);
         LanguageChoice.SelectedIndex = context.Settings.Language == "en" ? 1 : context.Settings.Language == "lv" ? 2 : 0;
         Closing += OnClosing; 

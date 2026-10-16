@@ -52,7 +52,9 @@ public sealed class NameWindow : ThemedWindow
         System.Windows.Automation.AutomationProperties.SetName(box, Localize.Text("NameNew"));
         var use = new Button { Content = Localize.Text("NameUse"), Style = (Style)Application.Current.Resources["PrimaryButton"], Margin = new Thickness(8, 0, 0, 0), Padding = new Thickness(14, 8, 14, 8) };
         Grid.SetColumn(use, 1); row.Children.Add(box); row.Children.Add(use);
-        panel.Children.Add(row); panel.Children.Add(error);
+        var hint = new TextBlock { FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 0), Visibility = Visibility.Collapsed };
+        NameHints.Attach(box, hint, context);
+        panel.Children.Add(row); panel.Children.Add(hint); panel.Children.Add(error);
         void Save()
         {
             var name = box.Text.Trim();

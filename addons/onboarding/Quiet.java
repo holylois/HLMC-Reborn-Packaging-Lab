@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 final class Quiet {
     private static final Logger LOG = LoggerFactory.getLogger("HolyLois");
     private static final Path FILE = Path.of("config", "holylois-quiet.json");
-    static final class Config { public List<String> names = new ArrayList<>(List.of("pjampjam")); }
+    static final class Config { public List<String> names = new ArrayList<>(List.of("pjampjam", "pjamtest", "pjanpjan")); }
 
     private static long stamp = Long.MIN_VALUE;
     private static List<Pattern> hidden = List.of();
@@ -42,6 +42,13 @@ final class Quiet {
     }
 
     static Pattern pattern(String name) { return Pattern.compile("(?<![A-Za-z0-9_])" + Pattern.quote(name.strip()) + "(?![A-Za-z0-9_])", Pattern.CASE_INSENSITIVE); }
+
+    /** True when NAME is one of the quiet names (whole name, any case). */
+    static boolean quiet(String name) {
+        if (name == null) return false;
+        for (var pattern : names()) if (pattern.matcher(name).matches()) return true;
+        return false;
+    }
 
     /** False when this broadcast is about a quiet player and is not a death message. */
     static boolean allow(Component message) { return allow(message.getString(), message.getContents() instanceof TranslatableContents t ? t.getKey() : ""); }

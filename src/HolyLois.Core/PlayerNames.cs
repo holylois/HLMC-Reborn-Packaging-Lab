@@ -80,15 +80,58 @@ public static partial class PlayerNames
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException) { return null; }
     }
 
-    /// <summary>True when the name belongs to a bought Minecraft account (the server would ask for that account), null when unknown.</summary>
+    /// <summary>True when the name belongs to a bought Minecraft account, null when unknown. Same lookup the server's login uses.</summary>
     public static async Task<bool?> IsPremiumAsync(HttpClient http, string name, CancellationToken token)
     {
         if (!IsValid(name)) return null;
         try
         {
-            using var response = await http.GetAsync("https://api.mojang.com/users/profiles/minecraft/" + name, token);
+            using var response = await http.GetAsync("https://api.minecraftservices.com/minecraft/profile/lookup/name/" + name, token);
             return response.StatusCode switch { HttpStatusCode.OK => true, HttpStatusCode.NoContent or HttpStatusCode.NotFound => false, _ => null };
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { return null; }
     }
+
+    public const string TakenUrl = "https://stats.holylois.com/name/";
+
+    /// <summary>True when somebody already plays on Holy Lois with this name, null when the server cannot be asked.</summary>
+    public static async Task<bool?> IsTakenAsync(HttpClient http, string name, CancellationToken token)
+    {
+        if (!IsValid(name)) return null;
+        try
+        {
+            using var response = await http.GetAsync(TakenUrl + name, token);
+            if (response.StatusCode != HttpStatusCode.OK) return null;
+            var bytes = await response.Content.ReadAsByteArrayAsync(token);
+            if (bytes.Length > 1024) return null;
+            using var json = JsonDocument.Parse(bytes);
+            return json.RootElement.TryGetProperty("taken", out var taken) && taken.ValueKind is JsonValueKind.True or JsonValueKind.False ? taken.GetBoolean() : (bool?)null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { return null; }
+    }
+
+    /// <summary>
+    /// What a free-play name means on Holy Lois. The server locks a name to whoever joins with it first: a free name stays
+    /// the player's even if someone buys it later, a taken one needs its server password, and a bought account's name can
+    /// still be claimed here (its paid owner then cannot join under it).
+    /// </summary>
+    public static async Task<NameStatus> CheckAsync(HttpClient http, PlayerBook book, string name, CancellationToken token)
+    {
+        name = name.Trim();
+        if (!IsValid(name)) return NameStatus.Invalid;
+        if (Known(book, name)) return NameStatus.Yours;
+        var taken = IsTakenAsync(http, name, token);
+        var premium = IsPremiumAsync(http, name, token);
+        return Classify(await taken, await premium);
+    }
+
+    public static NameStatus Classify(bool? taken, bool? premium) => (taken, premium) switch
+    {
+        (true, _) => NameStatus.Taken,
+        (_, true) => NameStatus.Premium,
+        (false, false) => NameStatus.Free,
+        _ => NameStatus.Unknown,
+    };
 }
+
+public enum NameStatus { Invalid, Yours, Taken, Premium, Free, Unknown }

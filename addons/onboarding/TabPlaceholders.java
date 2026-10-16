@@ -23,9 +23,11 @@ final class TabPlaceholders {
             (context, argument) -> PlaceholderResult.value(Component.literal(String.format("%,d", BotWall.get().today))));
         Placeholders.registerServer(Identifier.fromNamespaceAndPath("holylois", "bots_latest"),
             (context, argument) -> PlaceholderResult.value(Component.literal(BotWall.latest(BotWall.get()))));
-        // Matches the server list (MiniMOTD "just x more"): always one free slot shown, e.g. 3/4.
+        // Matches the server list (MiniMOTD "just x more"): always one free slot shown, e.g. 3/4. Staff are not counted (Hidden).
         Placeholders.registerServer(Identifier.fromNamespaceAndPath("holylois", "slots"),
-            (context, argument) -> PlaceholderResult.value(Component.literal(String.valueOf(context.server().getPlayerCount() + 1))));
+            (context, argument) -> PlaceholderResult.value(Component.literal(String.valueOf(Hidden.visible(context.server()).size() + 1))));
+        Placeholders.registerServer(Identifier.fromNamespaceAndPath("holylois", "online"),
+            (context, argument) -> PlaceholderResult.value(Component.literal(String.valueOf(Hidden.visible(context.server()).size()))));
         // Played time without AFK, like %player:playtime% (days, hours, minutes): %holylois:playtime%
         Placeholders.registerServer(Identifier.fromNamespaceAndPath("holylois", "playtime"), (context, argument) -> {
             if (!context.hasServerPlayer()) return PlaceholderResult.invalid("No player");

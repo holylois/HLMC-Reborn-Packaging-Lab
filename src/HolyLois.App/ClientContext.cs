@@ -196,6 +196,7 @@ public sealed class ClientContext
     // Player names live in the data folder, which uninstalling keeps unless the player asks to forget them.
     public string PlayersPath => SafePaths.Resolve(Root, "players.json");
     public PlayerBook Players => PlayerNames.Load(PlayersPath);
+    public Task<NameStatus> CheckNameAsync(string name, CancellationToken token) => PlayerNames.CheckAsync(http, Players, name, token);
     public string? PlayerName => Players.Current;
     public void UsePlayerName(string name) => PlayerNames.Save(PlayersPath, PlayerNames.Use(Players, name, DateTimeOffset.UtcNow));
     public void ForgetPlayers() { if (File.Exists(PlayersPath)) File.Delete(PlayersPath); }

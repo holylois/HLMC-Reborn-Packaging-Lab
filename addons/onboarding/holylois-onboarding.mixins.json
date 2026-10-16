@@ -24,7 +24,12 @@
     "AuthFloatingMixin",
     "CelebrationFireworkMixin",
     "AdminCommandsMixin",
-    "AudioUrlMixin"
+    "AudioUrlMixin",
+    "PlayerInfoEntriesAccessor",
+    "HiddenHandshakeMixin",
+    "HiddenStatusMixin",
+    "HiddenTabMixin",
+    "HiddenListMixin"
   ],
   "injectors": {
     "defaultRequire": 1

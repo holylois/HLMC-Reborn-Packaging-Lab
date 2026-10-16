@@ -19,6 +19,7 @@ public partial class SetupWindow : ThemedWindow
     {
         this.context = context; this.root = root; launcher = context.Settings.Launcher;
         InitializeComponent(); Localize.Apply(this, context.Settings.Language);
+        NameHints.Attach(SetupNameBox, SetupNameHint, context);
         SetupNameBox.AddHandler(System.Windows.Input.Mouse.PreviewMouseWheelEvent, new System.Windows.Input.MouseWheelEventHandler(Name_MouseWheel), true);
         LanguageChoice.SelectedIndex = context.Settings.Language == "ru" ? 1 : context.Settings.Language == "lv" ? 2 : 0;
         var variants = !context.IsIsolated;

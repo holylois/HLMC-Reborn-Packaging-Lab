@@ -64,6 +64,7 @@ public final class HolyLois implements ModInitializer {
         PayloadTypeRegistry.clientboundPlay().register(AuthStatus.TYPE, AuthStatus.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(holylois.auth.RewardNotice.TYPE, holylois.auth.RewardNotice.CODEC);
         AccountRequests.register();
+        Hidden.register();
         if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("placeholder-api")) TabPlaceholders.register();
         net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback.EVENT.register((dispatcher, registries, environment) -> {
             BotWallCommand.register(dispatcher);
