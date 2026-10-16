@@ -86,7 +86,7 @@ static async Task PreparePack(string key, string baseManifest, string profile, s
     var defaultBytes = selection is null ? File.ReadAllBytes(defaultsZip) : CaptureDefaults(profile, defaultsZip, selection);
 
     _ = PackFeed.ReadDefaults(defaultBytes);
-    var bundle = new PackFile("defaults.zip", $"https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v{version}/defaults.zip", defaultBytes.Length,
+    var bundle = new PackFile("defaults.zip", $"{PackFeed.AssetBase}pack-v{version}/defaults.zip", defaultBytes.Length,
         Convert.ToHexStringLower(SHA256.HashData(defaultBytes)), "seed");
     var before = previous.Files.ToDictionary(f => f.Path, StringComparer.OrdinalIgnoreCase);
     var after = files.ToDictionary(f => f.Path, StringComparer.OrdinalIgnoreCase);

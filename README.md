@@ -2,7 +2,7 @@
 
 Launcher 1.4.4 installs and updates the signed Holy Lois pack for Minecraft 26.3. Pick how you play (I own Minecraft, or Play with a name), install, then Play. One button follows the state (Install, Update, Repair, Play), the account card shows your skin head, and the main screen keeps the most used keys and commands in view, with gold kept for the main action. Built-in pack: 2.0.1. Current online pack: 2.0.3.
 
-[Download the launcher](https://github.com/pjampjam/HLMC-Reborn-Packaging-Lab/releases/latest/download/HolyLoisReborn.exe). [Player guide](https://github.com/pjampjam/HLMC-Reborn/blob/main/PLAYER-GUIDE.md). [Admin guide](https://github.com/pjampjam/HLMC-Reborn/blob/main/ADMIN-GUIDE.md).
+[Download the launcher](https://github.com/holylois/HLMC-Reborn-Packaging-Lab/releases/latest/download/HolyLoisReborn.exe). [Player guide](https://github.com/holylois/HLMC-Reborn/blob/main/PLAYER-GUIDE.md). [Admin guide](https://github.com/holylois/HLMC-Reborn/blob/main/ADMIN-GUIDE.md).
 
 Quick start accepts valid names without a Mojang ownership lookup. Existing Holy Lois accounts require their server password. Admin-granted rename/recovery forms preserve the verified UUID; they do not grant access to someone else's account. Old names remain protected. /logout and account changes wait for combat to end.
 

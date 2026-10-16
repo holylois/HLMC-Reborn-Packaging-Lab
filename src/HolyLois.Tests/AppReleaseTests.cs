@@ -23,6 +23,11 @@ internal static class AppReleaseTests
         using (var other = RSA.Create(2048)) Reject(() => AppReleasePolicy.Parse(signed,other.ExportSubjectPublicKeyInfoPem()));
         foreach (var url in new[] { "http://github.com/" + AppReleasePolicy.Repository + "/releases/download/v1/HolyLoisReborn.exe", "https://github.com/pjampjam/HLMC-Reborn/releases/download/v1/HolyLoisReborn.exe", "https://github.com/" + AppReleasePolicy.Repository + "/releases/download/../HolyLoisReborn.exe", "https://github.com/" + AppReleasePolicy.Repository + "/releases/download/v1/HolyLoisReborn.exe?x=1" })
             Reject(() => AppReleasePolicy.Parse(Sign("0.5.1",next,url),pub));
+        // Organization move: the new and the legacy owner are both trusted, any other owner is not.
+        foreach (var repo in AppReleasePolicy.Repositories) AppReleasePolicy.ValidateReleaseUrl("https://github.com/" + repo + "/releases/download/v1/HolyLoisReborn.exe");
+        Reject(() => AppReleasePolicy.ValidateReleaseUrl("https://github.com/someone/HLMC-Reborn-Packaging-Lab/releases/download/v1/HolyLoisReborn.exe"));
+        foreach (var repo in ManifestSecurity.PackRepositories) ManifestSecurity.ValidateDownloadUri("https://github.com/" + repo + "/releases/download/pack-v1/test.jar");
+        Reject(() => ManifestSecurity.ValidateDownloadUri("https://github.com/someone/HLMC-Reborn/releases/download/pack-v1/test.jar"));
         Reject(() => AppReleasePolicy.Parse(new(new byte[65537],signed.Signature),pub));
         Reject(() => AppReleasePolicy.Accept(release,new Version(0,6,0),null));
         Reject(() => AppReleasePolicy.Accept(AppReleasePolicy.Parse(Sign("0.5.1",old),pub),new Version(0,5,0),release));

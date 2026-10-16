@@ -13,7 +13,11 @@ public sealed record AppRelease(string Version, string Url, string Sha256, long 
 
 public static class AppReleasePolicy
 {
-    public const string Repository = "pjampjam/HLMC-Reborn-Packaging-Lab";
+    public const string Repository = "holylois/HLMC-Reborn-Packaging-Lab";
+    // Repositories moved from pjampjam to the holylois organization (2026-10-16). GitHub redirects the old paths, and
+    // launchers up to 1.4.4 only accept them, so signed catalogs keep the legacy path until every client runs 1.4.5+.
+    public const string LegacyRepository = "pjampjam/HLMC-Reborn-Packaging-Lab";
+    public static readonly string[] Repositories = [Repository, LegacyRepository];
     public const string FeedUrl = "https://github.com/" + Repository + "/releases/download/app-stable/app-release.txt";
     public static Version Normalize(Version version) => new(version.Major,version.Minor,Math.Max(version.Build,0),Math.Max(version.Revision,0));
 
@@ -39,8 +43,9 @@ public static class AppReleasePolicy
 
     public static void ValidateReleaseUrl(string url)
     {
-        var prefix = "https://github.com/" + Repository + "/releases/download/";
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || !url.StartsWith(prefix, StringComparison.Ordinal)
+        var prefix = Repositories.Select(r => "https://github.com/" + r + "/releases/download/")
+            .FirstOrDefault(p => url.StartsWith(p, StringComparison.Ordinal)) ?? "";
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || prefix.Length == 0
             || uri.Query.Length != 0 || uri.Fragment.Length != 0 || uri.UserInfo.Length != 0
             || url.Contains('%') || url.Any(c => char.IsControl(c) || c is ' ' or '\\' or '"')
             || !url.EndsWith("/HolyLoisReborn.exe", StringComparison.Ordinal)) throw new InvalidDataException("App release URL is outside the approved repository.");

@@ -30,6 +30,8 @@ public static class JsonSettings
 
 public static class ManifestSecurity
 {
+    // Pack release repository, new organization first (see AppReleasePolicy.LegacyRepository).
+    public static readonly string[] PackRepositories = ["holylois/HLMC-Reborn", "pjampjam/HLMC-Reborn"];
     private static readonly HashSet<string> DownloadHosts = new(StringComparer.OrdinalIgnoreCase)
     {
         "cdn.modrinth.com", "edge.forgecdn.net", "mediafilez.forgecdn.net",
@@ -101,8 +103,8 @@ public static class ManifestSecurity
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != "https"
             || !string.IsNullOrEmpty(uri.UserInfo) || !uri.IsDefaultPort || !(DownloadHosts.Contains(uri.Host)
-                || uri.Host == "github.com" && uri.AbsolutePath.StartsWith("/pjampjam/HLMC-Reborn/releases/download/", StringComparison.Ordinal)
-                || uri.Host == "github.com" && uri.AbsolutePath.StartsWith("/" + AppReleasePolicy.Repository + "/releases/download/", StringComparison.Ordinal)
+                || uri.Host == "github.com" && PackRepositories.Concat(AppReleasePolicy.Repositories)
+                    .Any(r => uri.AbsolutePath.StartsWith("/" + r + "/releases/download/", StringComparison.Ordinal))
                 || uri.Host == "release-assets.githubusercontent.com"))
             throw new InvalidDataException("The release contains an unapproved download location.");
     }

@@ -7,7 +7,9 @@ public sealed record SignedPack(byte[] Json, byte[] Signature);
 
 public sealed class PackFeed(HttpClient client, string publicKey)
 {
-    public const string StableUrl = "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-stable/pack.json";
+    public const string StableUrl = "https://github.com/holylois/HLMC-Reborn/releases/download/pack-stable/pack.json";
+    // Asset URLs inside signed manifests stay on the redirected legacy path until every client runs launcher 1.4.5+.
+    public const string AssetBase = "https://github.com/pjampjam/HLMC-Reborn/releases/download/";
 
     public PackManifest Accept(SignedPack release, PackManifest current)
     {

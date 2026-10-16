@@ -9,8 +9,8 @@
   ],
   "contact": {
     "homepage": "https://holylois.com",
-    "sources": "https://github.com/pjampjam/HLMC-Reborn-Packaging-Lab",
-    "issues": "https://github.com/pjampjam/HLMC-Reborn-Packaging-Lab/issues"
+    "sources": "https://github.com/holylois/HLMC-Reborn-Packaging-Lab",
+    "issues": "https://github.com/holylois/HLMC-Reborn-Packaging-Lab/issues"
   },
   "icon": "icon.png",
   "environment": "client",
