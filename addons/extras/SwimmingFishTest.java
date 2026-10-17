@@ -5,7 +5,7 @@ public final class SwimmingFishTest {
     public static void main(String[] args){
         net.minecraft.SharedConstants.tryDetectVersion();net.minecraft.server.Bootstrap.bootStrap();
         check(SwimmingFish.scale(0.1)<SwimmingFish.scale(1)&&SwimmingFish.scale(1)<SwimmingFish.scale(40),"fish bodies grow with weight");
-        check(SwimmingFish.scale(0.01)>=0.65f&&SwimmingFish.scale(200)<=4,"fish body size is bounded");
+        check(SwimmingFish.scale(0.01)>=0.65f&&SwimmingFish.scale(1000)<=4.5f&&SwimmingFish.scale(80)-SwimmingFish.scale(20)>0.6,"fish body size is bounded and still grows");
         check(ShoalFishIdentity.radius(4,8)>ShoalFishIdentity.radius(1,3)&&ShoalFishIdentity.radius(4,32)<=3,"large/populated shoals have bounded wider circles");
         var legendary=FishData.shine(net.minecraft.network.chat.Style.EMPTY,"legendary");
         var mythic=FishData.shine(net.minecraft.network.chat.Style.EMPTY,"mythic");

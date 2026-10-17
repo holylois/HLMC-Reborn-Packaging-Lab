@@ -50,13 +50,25 @@ public final class FishData {
         return (float) Math.min(3.5, 1 + 0.7 * size * size);
     }
 
+    /** The heaviest a fish can weigh (owner 2026-10-16): a colossal Mythic at lottery odds. */
+    public static final double MAX_KG = 255;
+
     /**
-     * How big a weighed fish looks, from its kg (square root, so 2 kg, 10 kg and 20 kg read clearly apart):
-     * 1 kg 1.45x, 3 kg 1.85x, 10 kg 2.6x, 20 kg 3.4x, 40 kg 4.4x, capped at 5.5x for the heaviest Mythics.
+     * How big a weighed fish looks, from its kg. Up to 20 kg a square root, so 2 kg, 10 kg and 20 kg read clearly apart:
+     * 1 kg 1.45x, 3 kg 1.85x, 10 kg 2.6x, 20 kg 3.4x. Past that it keeps growing a little with every doubling (owner
+     * 2026-10-16, a 20 kg Legendary must look clearly smaller than an 80 kg Mythic): 40 kg 4.3x, 80 kg 5.2x, 255 kg 6.7x.
      */
     public static float scaleKg(double kg) {
         if (!(kg > 0)) return 1;
-        return (float) Math.max(1, Math.min(5.5, 0.9 + 0.55 * Math.sqrt(kg)));
+        kg = Math.min(kg, MAX_KG);
+        double s = 0.9 + 0.55 * Math.sqrt(Math.min(kg, 20));
+        if (kg > 20) s += 0.9 * Math.log(kg / 20) / Math.log(2);
+        return (float) Math.max(1, s);
+    }
+
+    /** In a frame or on the cutting board the block bounds the fish: as in the world up to 2x, then squeezed so the heaviest reaches 3x. */
+    public static float frameScale(float world) {
+        return world <= 2 ? world : 2 + (world - 2) / (scaleKg(MAX_KG) - 2);
     }
 
     /** From mid Epic (10 kg) a fish is carried in both arms in front of the body instead of one hand. */

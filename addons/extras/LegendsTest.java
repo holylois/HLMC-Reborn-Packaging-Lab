@@ -66,7 +66,11 @@ public final class LegendsTest {
         check(FishData.scale("rare", 0.75) < FishData.scale("legendary", 1.0) && FishData.scale("legendary", 1.0) < FishData.scale("mythic", 1.5), "bigger fish look bigger");
         check(FishData.scale("mythic", 2.5) == 3.5f && FishData.scale("legendary", -1) > 1.6f, "mythic cap and old trophies");
         check(FishData.scaleKg(10) - FishData.scaleKg(2) > 0.8 && FishData.scaleKg(20) - FishData.scaleKg(10) > 0.6, "2, 10 and 20 kg look clearly different");
-        check(FishData.scaleKg(0) == 1 && FishData.scaleKg(500) == 5.5f && FishData.scaleKg(1) > 1.3f, "kg scale floor and cap");
+        check(FishData.scaleKg(0) == 1 && FishData.scaleKg(500) == FishData.scaleKg(FishData.MAX_KG) && FishData.scaleKg(1) > 1.3f, "kg scale floor and cap");
+        check(FishData.scaleKg(80) - FishData.scaleKg(20) > 1.6 && FishData.scaleKg(255) - FishData.scaleKg(100) > 1 && FishData.scaleKg(255) < 7, "heavier Mythics keep growing, modestly");
+        check(FishData.frameScale(FishData.scaleKg(2)) == FishData.scaleKg(2) && FishData.frameScale(FishData.scaleKg(80)) - FishData.frameScale(FishData.scaleKg(20)) > 0.3
+            && Math.abs(FishData.frameScale(FishData.scaleKg(FishData.MAX_KG)) - 3) < 0.001, "frames keep weights apart inside the block");
+        check(LootRules.colossal(0) == 100 && LootRules.colossal(1) == FishData.MAX_KG && LootRules.colossal(0.5) < 120, "colossal Mythics, top end rare");
         check(LootRules.mythic(0) == 1.5 && LootRules.mythic(1) == 2.5 && LootRules.rarity(1.0) != LootRules.MYTHIC, "mythic only by the extra roll");
         System.out.println("LegendsTest passed");
     }

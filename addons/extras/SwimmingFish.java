@@ -28,7 +28,8 @@ public final class SwimmingFish {
         }
         return stack;
     }
-    public static float scale(double kg){return (float)Math.clamp(0.55+0.55*Math.sqrt(Math.max(0,kg)),0.65,4.0);}
+    /** Released fish body size: square root up to 20 kg (3x), then a little more per doubling so 80 kg and 255 kg still differ. */
+    public static float scale(double kg){kg=Math.clamp(kg,0,FishData.MAX_KG);double s=0.55+0.55*Math.sqrt(Math.min(kg,20));if(kg>20)s+=0.35*Math.log(kg/20)/Math.log(2);return (float)Math.clamp(s,0.65,4.5);}
     public static void applyScale(AbstractFish fish,ItemStack stack){
         double kg=mass(stack);var attribute=fish.getAttribute(Attributes.SCALE);
         if(kg>0&&attribute!=null)attribute.addOrUpdateTransientModifier(new AttributeModifier(SCALE,scale(kg)-1,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
@@ -36,7 +37,7 @@ public final class SwimmingFish {
     public static ItemStack valid(AbstractFish fish,ItemStack stack){
         var raw=SchoolCatch.rawItemFor(fish);
         double kg=mass(stack);
-        return !stack.isEmpty()&&stack.getCount()==1&&stack.is(raw.getItem())&&Double.isFinite(kg)&&kg>0&&kg<=200
+        return !stack.isEmpty()&&stack.getCount()==1&&stack.is(raw.getItem())&&Double.isFinite(kg)&&kg>0&&kg<=FishData.MAX_KG
             &&java.util.List.of("common","uncommon","rare","epic","legendary","mythic").contains(FishData.rarity(stack))?stack:ItemStack.EMPTY;
     }
     public static double mass(ItemStack stack){

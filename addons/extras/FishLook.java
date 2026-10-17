@@ -63,7 +63,7 @@ public final class FishLook {
         double kg = fish.getDoubleOr("kg", 0);
         float scale = kg > 0 ? FishData.scaleKg(kg) : FishData.scale(fish.getStringOr("rarity", ""), fish.getDoubleOr("size", -1));
         // Frames and the cutting board: big, but kept inside the block around them.
-        if (context == ItemDisplayContext.FIXED) scale = Math.min(scale, 3);
+        if (context == ItemDisplayContext.FIXED) scale = FishData.frameScale(scale);
         // In your own first-person view a huge fish would cover the screen: grow it less there.
         return context.firstPerson() ? 1 + (scale - 1) / OWN_VIEW : scale;
     }

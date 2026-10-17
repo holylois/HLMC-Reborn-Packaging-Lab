@@ -69,6 +69,8 @@ public final class LootRules {
             "legendary", new double[]{20, 40}, "mythic", new double[]{40, 100}));
         /** Share of trophy catches that come up Shiny (stronger effects, sparkles, always a glint). */
         public double shinyChance = 1 / 250.0;
+        /** Share of Mythic catches that are colossal (owner 2026-10-16): past the 100 kg band, up to 255 kg at lottery odds. */
+        public double colossalChance = 1 / 25.0;
     }
 
     /** Weight of a trophy: size inside its rarity (Rare 0.75-0.9 of the roll and so on) mapped onto that rarity's kg band. */
@@ -92,6 +94,9 @@ public final class LootRules {
 
     /** A Mythic fish weighs 1.5 to 2.5 times the species' heaviest normal weight; returns that factor. */
     public static double mythic(double roll) { return 1.5 + Math.clamp(roll, 0.0, 1.0); }
+
+    /** A colossal Mythic: 100 to 255 kg, cubed so the top is lottery-rare (250 kg and up is about 1 colossal in 90). */
+    public static double colossal(double roll) { return Math.round((100 + 155 * Math.pow(Math.clamp(roll, 0.0, 1.0), 3)) * 100) / 100.0; }
 
     /** Turns a uniform roll into how big the fish is between its lightest (0) and heaviest (1). */
     public static double size(double roll, double curve, float luck) {

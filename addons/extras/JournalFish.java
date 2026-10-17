@@ -10,7 +10,7 @@ public record JournalFish(String species,String variant,double kg,String rarity,
     public JournalFish {
         if(dimension==null)dimension="";
         if(!dimension.isEmpty()&&(dimension.length()>128||!dimension.matches("[a-z0-9_.-]+:[a-z0-9_./-]+")))throw new IllegalArgumentException("Invalid catch dimension");
-        if(species==null||!species.matches("[a-z0-9_.-]+:[a-z0-9_./-]{1,100}")||variant==null||variant.length()>128||!variant.isEmpty()&&!variant.matches("[a-z0-9_.-]+:[a-z0-9_./-]+")||!Double.isFinite(kg)||kg<0||kg>200||!java.util.List.of("common","uncommon","rare","epic","legendary","mythic").contains(rarity)||time<0)throw new IllegalArgumentException("Invalid caught fish appearance");
+        if(species==null||!species.matches("[a-z0-9_.-]+:[a-z0-9_./-]{1,100}")||variant==null||variant.length()>128||!variant.isEmpty()&&!variant.matches("[a-z0-9_.-]+:[a-z0-9_./-]+")||!Double.isFinite(kg)||kg<0||kg>FishData.MAX_KG||!java.util.List.of("common","uncommon","rare","epic","legendary","mythic").contains(rarity)||time<0)throw new IllegalArgumentException("Invalid caught fish appearance");
     }
     public static JournalFish capture(ItemStack stack,long time){
         String species=BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(),variant="";

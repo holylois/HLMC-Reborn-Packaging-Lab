@@ -278,6 +278,7 @@ public final class Legends {
         fishTag.putString("rarity", key);
         if (rarity.trophy()) {
             double kilograms = LootRules.bandKilograms(config, rarity, size);
+            if (mythic && random.nextDouble() < config.colossalChance) kilograms = LootRules.colossal(random.nextDouble());
             // Clients scale the fish in hand, on the ground and on the cutting board by this (0..1, Mythic 1.5..2.5).
             fishTag.putDouble("size", size);
             if (shiny) fishTag.putBoolean("shiny", true);
