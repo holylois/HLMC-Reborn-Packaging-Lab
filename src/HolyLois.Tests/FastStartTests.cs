@@ -128,9 +128,9 @@ internal static class FastStartTests
             PlayerNames.Save(path, book);
             Check(PlayerNames.Load(path).Current == "Mariks" && PlayerNames.Load(Path.Combine(testRoot, "players", "missing.json")).Current is null, "Names were not saved.");
             File.WriteAllText(path, "{broken"); Check(PlayerNames.Load(path).History.Length == 0, "A broken file was not ignored.");
-            Check(PlayerNames.Classify(true, true) == NameStatus.Taken && PlayerNames.Classify(false, true) == NameStatus.Premium && PlayerNames.Classify(null, true) == NameStatus.Premium
-                && PlayerNames.Classify(false, false) == NameStatus.Free && PlayerNames.Classify(null, false) == NameStatus.Unknown && PlayerNames.Classify(false, null) == NameStatus.Unknown,
-                "Name check colours changed: taken beats premium, free needs both answers.");
+            Check(PlayerNames.Classify(true, true) == NameStatus.Taken && PlayerNames.Classify(false, true) == NameStatus.Premium && PlayerNames.Classify(null, true) == NameStatus.Unknown
+                && PlayerNames.Classify(false, false) == NameStatus.Free && PlayerNames.Classify(null, false) == NameStatus.Unknown && PlayerNames.Classify(false, null) == NameStatus.Free,
+                "Name check colours changed: taken beats premium, the Holy Lois answer decides.");
             Check(PlayerNames.CheckAsync(new HttpClient(), book, "mariks", CancellationToken.None).Result == NameStatus.Yours
                 && PlayerNames.CheckAsync(new HttpClient(), book, "a b", CancellationToken.None).Result == NameStatus.Invalid, "Own or invalid names went online.");
             var game = Path.Combine(testRoot, "players", "game"); Directory.CreateDirectory(Path.Combine(game, "logs"));

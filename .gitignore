@@ -15,3 +15,5 @@ addons/run-gametest.log
 addons/gametest-threads.txt
 addons/.idea/
 addons/run-hotreload.log
+addons/run-gametest-*.log
+__pycache__/

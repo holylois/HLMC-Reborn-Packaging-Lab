@@ -16,7 +16,8 @@ public static class NameHints
     {
         CancellationTokenSource? running = null;
         var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(450) };
-        box.TextChanged += (_, _) => { running?.Cancel(); hint.Visibility = Visibility.Collapsed; timer.Stop(); timer.Start(); };
+        // Clear the text but keep the line, so the window does not jump on every key.
+        box.TextChanged += (_, _) => { running?.Cancel(); hint.Text = ""; timer.Stop(); timer.Start(); };
         timer.Tick += async (_, _) =>
         {
             timer.Stop();

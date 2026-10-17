@@ -125,12 +125,14 @@ public static partial class PlayerNames
         return Classify(await taken, await premium);
     }
 
+    // Holy Lois decides: an unanswered server check is Unknown even for a bought name, and a name free here stays free
+    // (first join locks it) even when the Minecraft account lookup did not answer.
     public static NameStatus Classify(bool? taken, bool? premium) => (taken, premium) switch
     {
         (true, _) => NameStatus.Taken,
-        (_, true) => NameStatus.Premium,
-        (false, false) => NameStatus.Free,
-        _ => NameStatus.Unknown,
+        (null, _) => NameStatus.Unknown,
+        (false, true) => NameStatus.Premium,
+        (false, _) => NameStatus.Free,
     };
 }
 

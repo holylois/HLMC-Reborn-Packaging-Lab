@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "2.0.2",
+  "version": "2.0.4",
   "minecraft": "26.3",
   "fabric": "0.19.5",
   "java": 25,
@@ -63,10 +63,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/chatanimation-fabric-1.3.4+mc26.3.jar",
-      "url": "https://cdn.modrinth.com/data/DnNYdJsx/versions/dXVWAQA6/chatanimation-fabric-1.3.4%2Bmc26.3.jar",
-      "size": 432262,
-      "sha256": "d70c9d2d4a51cf9dcc57daeb48059ace0aa527708b1bebd5cb828e732ac803d3",
+      "path": "mods/chatanimation-fabric-1.3.5+mc26.3.jar",
+      "url": "https://cdn.modrinth.com/data/DnNYdJsx/versions/QZcotIcS/chatanimation-fabric-1.3.5%2Bmc26.3.jar",
+      "size": 433526,
+      "sha256": "912ca51796cf72c12109c4fe851ea14a0781872bcaad8db34e75e823d407dcad",
       "policy": "managed"
     },
     {
@@ -161,17 +161,17 @@
       "policy": "managed"
     },
     {
-      "path": "mods/entity_model_features-3.3.11-26.3-fabric.jar",
-      "url": "https://cdn.modrinth.com/data/4I1XuqiY/versions/N7d5LddE/entity_model_features-3.3.11-26.3-fabric.jar",
-      "size": 664472,
-      "sha256": "a73ce8463f8ae342cd9428e0b9298bb2d265083d732703cfc12f8f2ef335e3c1",
+      "path": "mods/entity_model_features-3.3.12-26.3-fabric.jar",
+      "url": "https://cdn.modrinth.com/data/4I1XuqiY/versions/vF6qLXsA/entity_model_features-3.3.12-26.3-fabric.jar",
+      "size": 665386,
+      "sha256": "4a8b04d26c94909a3ba9f08972fb475e7d39f715f666f99a294017baaa37cb69",
       "policy": "managed"
     },
     {
-      "path": "mods/entity_texture_features-7.2.5-26.3-fabric.jar",
-      "url": "https://cdn.modrinth.com/data/BVzZfTc1/versions/O8J3sxxp/entity_texture_features-7.2.5-26.3-fabric.jar",
-      "size": 792734,
-      "sha256": "22c72cb53e97779b1fea82741fa7932e2b43e44dc3b7c21c772affe46568a56d",
+      "path": "mods/entity_texture_features-7.2.6-26.3-fabric.jar",
+      "url": "https://cdn.modrinth.com/data/BVzZfTc1/versions/OOEycXyN/entity_texture_features-7.2.6-26.3-fabric.jar",
+      "size": 793054,
+      "sha256": "9ae73892099aa759e0cfc0ccb1fcba3986e27a7c743ad5832310ba8ca58f644a",
       "policy": "managed"
     },
     {
@@ -189,10 +189,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/fabric-api-0.162.0+26.3.jar",
-      "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/v2j28coa/fabric-api-0.162.0%2B26.3.jar",
-      "size": 1772377,
-      "sha256": "8626c189b702f466800b1c8ddac6203cf8a1e0bdaee75a5f9a33b18c2baa81b1",
+      "path": "mods/fabric-api-0.163.0+26.3.jar",
+      "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/bq3SsNGk/fabric-api-0.163.0%2B26.3.jar",
+      "size": 1774707,
+      "sha256": "4969f5197ebedaf681cc913e4258c8bd17ccb98029db52a29e9b48e998267a2d",
       "policy": "managed"
     },
     {
@@ -469,10 +469,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/puzzleslib-v26.3.14-mc26.3.x+fabric.jar",
-      "url": "https://cdn.modrinth.com/data/QAGBst4M/versions/7SSd41Tf/puzzleslib-v26.3.14-mc26.3.x%2Bfabric.jar",
-      "size": 1092880,
-      "sha256": "d3d272c69f8227607acbb8c92ef4058419b56038f86a3f27651f47a815bd16ad",
+      "path": "mods/puzzleslib-v26.3.15-mc26.3.x+fabric.jar",
+      "url": "https://cdn.modrinth.com/data/QAGBst4M/versions/68hLXNWE/puzzleslib-v26.3.15-mc26.3.x%2Bfabric.jar",
+      "size": 1093312,
+      "sha256": "dc79d1970ebcf3ab017b4519656bf3200066b93e821ca4f591cff5e07c9202c1",
       "policy": "managed"
     },
     {
@@ -746,6 +746,19 @@
     "policy": "seed"
   },
   "history": [
+    {
+      "version": "2.0.4",
+      "date": "2026-10-17",
+      "summary": "Pick a name with confidence: the launcher now checks it while you type.",
+      "added": [
+        "Free play name check: green means the name is free and stays yours on Holy Lois once you join, orange means it is a bought Minecraft account's name, red means someone already plays with it."
+      ],
+      "updated": [
+        "Smoother chat animation update with new translations.",
+        "Crash and start help in the launcher now point to Pastor on Discord."
+      ],
+      "removed": []
+    },
     {
       "version": "2.0.0",
       "date": "2026-10-12",
@@ -1076,7 +1089,7 @@
         "Land claims on the world map (Open Parties and Claims): press M, right-click a chunk and claim it. 16 chunks free, more by playing or with coins (/claims)",
         "Teams: /oparties create and /oparties invite NAME, your team can build on your land",
         "Zone titles at the top of the screen: the biome and whose land you are on (or Wilderness)",
-        "Server: /support MESSAGE reaches pjampjam on Discord right away, /report for problems with players, /donate for the wallets"
+        "Server: /support MESSAGE reaches Pastor on Discord right away, /report for problems with players, /donate for the wallets"
       ],
       "removed": [],
       "updated": [
@@ -1097,25 +1110,6 @@
         "Achievement tabs switch with a left click again (1.7.2 broke them for everyone, sorry about that)",
         "A placed boombox shows its real texture instead of a pink and black cube",
         "Game and mod text uses plain hyphens everywhere"
-      ]
-    },
-    {
-      "version": "1.7.2",
-      "date": "2026-10-04",
-      "summary": "Set your boombox down, achievement tabs that work, daily coin button and smarter tool swapping.",
-      "added": [
-        "Boombox: set it down on any block and it keeps playing for everyone nearby (right-click to switch station, sneak with an empty hand to turn it off)",
-        "Server: a [Claim] button for your daily coins when you log in, /support, and seven new achievements"
-      ],
-      "removed": [
-        "The extra \"Hold Shift\" enchantment line (descriptions show directly)"
-      ],
-      "updated": [
-        "Achievement tabs switch again with Num Lock or Caps Lock on, and Holy Lois comes first, then the vanilla tabs in order",
-        "Game music pauses while a boombox plays nearby; a dropped boombox stops right away",
-        "Recipe viewer: the item list appears only while you search, and the developer Tags tab is hidden",
-        "Plain tools are used until they break and then swapped; enchanted gear is swapped just before it breaks, with an alert",
-        "First-person body sits a little further back, so looking down no longer shows the inside of your neck"
       ]
     }
   ],

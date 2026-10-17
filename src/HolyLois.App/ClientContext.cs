@@ -231,7 +231,7 @@ public sealed class ClientContext
     {
         if (!UsesFastStart) throw new IOException("Fast start is off. Play opens your launcher.");
         var name = PlayerName ?? throw new IOException("Choose your player name first.");
-        if (!CanPlay) throw new IOException("Finish Verify & update before playing.");
+        if (!CanPlay) throw new IOException("Click Check files before playing.");
         var downloads = new GameDownloads(http, GameRoot, ReuseRoots());
         LastDownloads = downloads;
         var version = new GameVersion(Asset("vanilla-profile.json"), Asset("fabric-profile.json"));
@@ -335,7 +335,7 @@ public sealed class ClientContext
     }
     public void OpenLauncher()
     {
-        if (!CanPlay) throw new IOException("Finish Verify & update before opening your launcher.");
+        if (!CanPlay) throw new IOException("Click Check files before opening your launcher.");
         if (IsIsolated) throw new IOException("Test setup is ready. Opening Minecraft is disabled in this development build.");
         var exe = DetectLauncher() ?? throw new IOException("Choose your installed launcher using 'Locate launcher'. Microsoft Store launcher users can open it from Start after setup.");
         HolyLois.Core.PlayMode.RemoveOldQuickPlayNote(Instance);

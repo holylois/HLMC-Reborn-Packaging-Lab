@@ -391,7 +391,7 @@ public final class Legends {
         CustomData.set(DataComponents.CUSTOM_DATA, slice, tag);
     }
 
-    /** A cooked trophy fish keeps its rarity, weight and catch line, with its effects half again as long. */
+    /** A cooked trophy fish keeps its rarity, weight and catch line; FishTraits doubles its effect time (Uncommon x1.5) and adds a level. */
     public static void cooked(ItemStack raw, ItemStack result) {
         var fish = FishData.tag(raw);
         if (fish != null && fish.getBooleanOr("fillet", false)) { filletData(fish, result, true); return; }
