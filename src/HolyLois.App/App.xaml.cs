@@ -12,6 +12,12 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        // Player builds never close silently on an unexpected error: it is logged and explained instead.
+        if (!e.Args.Any(a => a.StartsWith("--", StringComparison.Ordinal) && a != "--app-update-ready" && a != "--skip-app-update-once" && a != "--show-setup"))
+        {
+            DispatcherUnhandledException += (_, a) => { a.Handled = true; LauncherErrors.Report(a.Exception); };
+            TaskScheduler.UnobservedTaskException += (_, a) => { a.SetObserved(); LauncherErrors.Log(a.Exception); };
+        }
         try
         {
             var args = e.Args;
@@ -311,6 +317,7 @@ public partial class App : Application
                 }
                 if (readyNonce is null && !args.Contains("--skip-app-update-once"))
                 {
+                    Localize.Use(context.Settings.Language);
                     var update = new AppUpdateWindow(); MainWindow = update; update.Show();
                     var handedOff = await AppUpdates.CheckAsync(update); update.Close();
                     if (handedOff) { AppUpdates.ReleaseLock(); Shutdown(0); return; }
@@ -338,7 +345,9 @@ public partial class App : Application
             if (e.Args.Contains("--remove-app") || e.Args.Contains("--apply-app-update") || e.Args.Contains("--recover-app-update") || e.Args.Contains("--app-update-smoke") || e.Args.Contains("--app-update-smoke-fail")) {
                 AtomicFiles.Write(SafePaths.Resolve(LauncherStartup.InstallRoot,"app-update-error.txt"),System.Text.Encoding.UTF8.GetBytes(ex.ToString())); Shutdown(1); return;
             }
-            AppDialog.Show(null,"Holy Lois could not start",ex.Message);
+            LauncherErrors.Log(ex);
+            string title; try { title = Localize.Text("CouldNotStart"); } catch { title = "Holy Lois could not start"; }
+            AppDialog.Show(null,title,ex.Message);
             Shutdown(1);
         }
     }

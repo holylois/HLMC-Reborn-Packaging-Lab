@@ -38,7 +38,7 @@ public sealed class NameWindow : ThemedWindow
             {
                 var button = new Button { Content = entry.Name, Margin = new Thickness(0, 6, 8, 0), Padding = new Thickness(14, 7, 14, 7), FontSize = 13,
                     ToolTip = string.Format(Localize.Text("NameLastUsed"), entry.LastUsed.ToLocalTime().ToString("d")) };
-                button.Click += (_, _) => { try { context.UsePlayerName(entry.Name); DialogResult = true; } catch (Exception ex) { Fail(ex.Message); } };
+                button.Click += (_, _) => { try { context.UsePlayerName(entry.Name); DialogResult = true; } catch (Exception ex) { Fail(Localize.Message(ex)); } };
                 list.Children.Add(button);
             }
             panel.Children.Add(list);
@@ -55,16 +55,17 @@ public sealed class NameWindow : ThemedWindow
         var hint = new TextBlock { FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 0), Visibility = Visibility.Collapsed };
         NameHints.Attach(box, hint, context);
         panel.Children.Add(row); panel.Children.Add(hint); panel.Children.Add(error);
-        void Save()
+        async void Save()
         {
             var name = box.Text.Trim();
             if (!PlayerNames.IsValid(name)) { Fail(Localize.Text("NameInvalid")); return; }
             use.IsEnabled = false;
             try
             {
+                if (!await NameHints.ConfirmAsync(this, context, name)) return;
                 context.UsePlayerName(name); DialogResult = true;
             }
-            catch (Exception ex) { Fail(ex.Message); }
+            catch (Exception ex) { Fail(Localize.Message(ex)); }
             finally { if (!IsClosed) use.IsEnabled = true; }
         }
         use.Click += (_, _) => Save();

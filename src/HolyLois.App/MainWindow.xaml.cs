@@ -274,7 +274,9 @@ public partial class MainWindow : ThemedWindow
             await Task.Run(() => context.InstallAsync(installProgress, cancellation.Token), cancellation.Token);
             finished = true; StatusText.Text = T("Installed"); Progress.IsIndeterminate = false; Progress.Value = 100; WorkPanel.Visibility = Visibility.Collapsed;
         }
-        catch (OperationCanceledException) { StatusText.Text = T("Cancelled"); Progress.Foreground = (Brush)FindResource("Muted"); ProgressDetails.Text = T("Cancelled"); }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { StatusText.Text = T("Cancelled"); Progress.Foreground = (Brush)FindResource("Muted"); ProgressDetails.Text = T("Cancelled"); }
+        // A timeout is a cancellation the player did not ask for.
+        catch (OperationCanceledException) { StatusText.Text = T("TimedOut"); Progress.Foreground = (Brush)FindResource("Danger"); ProgressDetails.Text = T("Error"); }
         catch (Exception ex) { StatusText.Text = Localize.Error(ex); Progress.Foreground = (Brush)FindResource("Danger"); ProgressDetails.Text = T("Error"); }
         finally { cancellation.Dispose(); cancellation = null; SetBusy(false); Refresh(); }
     }
@@ -333,7 +335,8 @@ public partial class MainWindow : ThemedWindow
     private const string DiscordUrl = "https://holylois.com/discord", WebsiteUrl = "https://holylois.com";
     private void Discord_Click(object sender, RoutedEventArgs e) => Process.Start(new ProcessStartInfo(DiscordUrl) { UseShellExecute = true });
     private void Website_Click(object sender, RoutedEventArgs e) { if (WebsiteUrl.Length > 0) Process.Start(new ProcessStartInfo(WebsiteUrl) { UseShellExecute = true }); }
-    private void CopyAddress_Click(object sender, RoutedEventArgs e) { Clipboard.SetText(ServerAddress.Public); StatusText.Text = T("Copied"); }
+    // Another app can hold the clipboard for a moment; that is not worth an error box.
+    private void CopyAddress_Click(object sender, RoutedEventArgs e) { try { Clipboard.SetText(ServerAddress.Public); StatusText.Text = T("Copied"); } catch (System.Runtime.InteropServices.COMException) { StatusText.Text = ServerAddress.Public; } }
     private void DisableShaders_Click(object sender, RoutedEventArgs e) { if (cancellation is not null) return; try { context.DisableShaders(); StatusText.Text = T("Disabled"); } catch (Exception ex) { StatusText.Text = Localize.Error(ex); } }
     private GameSession? game;
     /// <summary>Fast start: check the pack, get Java and Minecraft ready, start the game, then step aside once its window is open.</summary>
@@ -378,7 +381,7 @@ public partial class MainWindow : ThemedWindow
             Hide();
             _ = WatchGameAsync(game);
         }
-        catch (OperationCanceledException) { if (!window.IsClosed) window.Finish(); StatusText.Text = T("Cancelled"); }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { if (!window.IsClosed) window.Finish(); StatusText.Text = T("Cancelled"); }
         catch (Exception ex)
         {
             var reason = ex is GameStartException ? ex.Message : Localize.Error(ex);
@@ -411,19 +414,19 @@ public partial class MainWindow : ThemedWindow
     }
     private async void SaveName_Click(object sender, RoutedEventArgs e) => await SaveNameAsync();
     private async void NameBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e) { if (e.Key == System.Windows.Input.Key.Enter) { e.Handled = true; await SaveNameAsync(); } }
-    private Task SaveNameAsync()
+    private async Task SaveNameAsync()
     {
         var name = NameBox.Text.Trim();
-        if (!PlayerNames.IsValid(name)) { ShowNameNote(T("NameInvalid"), true); return Task.CompletedTask; }
+        if (!PlayerNames.IsValid(name)) { ShowNameNote(T("NameInvalid"), true); return; }
         NameSaveButton.IsEnabled = false;
         try
         {
+            if (!await NameHints.ConfirmAsync(this, context, name)) return;
             context.UsePlayerName(name); nameNote = null;
             StatusText.Text = string.Format(T("NameSaved"), context.PlayerName);
         }
-        catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException) { ShowNameNote(ex.Message, true); }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException) { ShowNameNote(Localize.Message(ex), true); }
         finally { NameSaveButton.IsEnabled = cancellation is null; Refresh(); }
-        return Task.CompletedTask;
     }
     private void ShowNameNote(string text, bool error)
     {

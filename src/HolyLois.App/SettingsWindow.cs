@@ -21,6 +21,7 @@ public sealed class SettingsWindow : ThemedWindow
         var panel = new StackPanel { Margin = new Thickness(28,22,28,24) };
         var root = panel;
         StackPanel location = new();
+        StackPanel? memoryRow = null;
         Text(Localize.Text("Settings"),27,true);
         Text(Localize.Text("SettingsIntro"));
 
@@ -46,6 +47,21 @@ public sealed class SettingsWindow : ThemedWindow
         join.Checked += (_, _) => Save(() => context.SetJoinServer(true)); join.Unchecked += (_, _) => Save(() => context.SetJoinServer(false));
         panel.Children.Add(join);
         Text(Localize.Text("JoinOnStartInfo"),12);
+        // Memory only applies when the app starts the game itself; the official launcher and SKlauncher have their own setting.
+        var memoryPanel = new StackPanel { Visibility = context.UsesFastStart ? Visibility.Visible : Visibility.Collapsed }; memoryRow = memoryPanel;
+        panel.Children.Add(memoryPanel); var outer = panel; panel = memoryPanel;
+        Text(Localize.Text("MemoryTitle"),14,true);
+        var memory = new ComboBox { Margin = new Thickness(0,8,0,0), HorizontalAlignment = HorizontalAlignment.Left, MinWidth = 220 };
+        System.Windows.Automation.AutomationProperties.SetName(memory, Localize.Text("MemoryTitle"));
+        var total = ClientContext.ComputerMemoryBytes;
+        memory.Items.Add(new ComboBoxItem { Content = string.Format(Localize.Text("MemoryAuto"), FastStart.MemoryMb(total) / 1024), Tag = 0 });
+        foreach (var gb in new[] { 3, 4, 5, 6, 8, 10, 12, 16 }.Where(gb => gb * 1024 <= FastStart.MaxMemoryMb(total)))
+            memory.Items.Add(new ComboBoxItem { Content = string.Format(Localize.Text("MemoryGb"), gb), Tag = gb * 1024 });
+        memory.SelectedItem = memory.Items.Cast<ComboBoxItem>().FirstOrDefault(i => (int)i.Tag == (context.Settings.MemoryMb ?? 0)) ?? memory.Items[0];
+        memory.SelectionChanged += (_, _) => { if (memory.SelectedItem is ComboBoxItem { Tag: int mb }) Save(() => context.SetMemory(mb == 0 ? null : mb)); };
+        panel.Children.Add(memory);
+        Text(Localize.Text("MemoryInfo"),12);
+        panel = outer;
         location.Visibility = context.UsesFastStart ? Visibility.Collapsed : Visibility.Visible;
         panel.Children.Add(location);
         panel = location;
@@ -92,7 +108,7 @@ public sealed class SettingsWindow : ThemedWindow
         foreach (var (label, desktop) in new[] { (Localize.Text("CreateDesktop"), true), (Localize.Text("CreateStart"), false) })
         {
             var button = new Button { Content = label, Margin = new Thickness(0,8,8,0), FontSize = 13, Padding = new Thickness(14,8,14,8), IsEnabled = !context.IsIsolated };
-            button.Click += (_, _) => { try { LauncherStartup.CreateShortcut(LauncherStartup.InstallRoot, desktop); } catch (Exception ex) { AppDialog.Show(this,Localize.Text("Error"),ex.Message); } };
+            button.Click += (_, _) => { try { LauncherStartup.CreateShortcut(LauncherStartup.InstallRoot, desktop); } catch (Exception ex) { AppDialog.Show(this,Localize.Text("Error"),Localize.Message(ex)); } };
             shortcutRow.Children.Add(button);
         }
         panel.Children.Add(shortcutRow);
@@ -146,7 +162,7 @@ public sealed class SettingsWindow : ThemedWindow
             async Task Remove() {
                 using var shade = DimForModal(); IsEnabled = false;
                 try { await Task.Run(AppMaintenance.RequestRemoval); Application.Current.Shutdown(); }
-                catch (Exception ex) { busy.FinishAndClose(); IsEnabled = true; AppDialog.Show(this,Localize.Text("Error"),ex.Message); }
+                catch (Exception ex) { busy.FinishAndClose(); IsEnabled = true; AppDialog.Show(this,Localize.Text("Error"),Localize.Message(ex)); }
             }
         }, !context.IsIsolated && LauncherStartup.IsInstalled, danger: true);
         panel = root;
@@ -171,15 +187,15 @@ public sealed class SettingsWindow : ThemedWindow
             text.Children.Add(new TextBlock { Text = Localize.Text(title), FontWeight = FontWeights.SemiBold, Foreground = (Brush)Application.Current.Resources["Text"] });
             text.Children.Add(new TextBlock { Text = Localize.Text(info), FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = (Brush)Application.Current.Resources["Muted"], Margin = new Thickness(0,2,0,0) });
             var radio = new RadioButton { GroupName = "playmode", Content = text, IsChecked = selected, Margin = new Thickness(0,10,0,0) };
-            radio.Checked += (_, _) => { Save(() => context.SetFastStart(fast)); location.Visibility = fast ? Visibility.Collapsed : Visibility.Visible; };
+            radio.Checked += (_, _) => { Save(() => context.SetFastStart(fast)); location.Visibility = fast ? Visibility.Collapsed : Visibility.Visible; if (memoryRow is not null) memoryRow.Visibility = fast ? Visibility.Visible : Visibility.Collapsed; };
             panel.Children.Add(radio);
         }
-        void Save(System.Action change) { try { change(); } catch (Exception ex) { AppDialog.Show(this,Localize.Text("Error"),ex.Message); } }
+        void Save(System.Action change) { try { change(); } catch (Exception ex) { AppDialog.Show(this,Localize.Text("Error"),Localize.Message(ex)); } }
         void Action(string text, System.Action action, bool enabled = true, bool danger = false)
         {
             var button = new Button { Content = text, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0,8,0,0), IsEnabled = enabled, FontSize = 13, Padding = new Thickness(14,8,14,8) };
             if (danger) button.Style = (Style)Application.Current.Resources["CancelButton"];
-            button.Click += (_, _) => { try { action(); } catch (Exception ex) { AppDialog.Show(this,Localize.Text("Error"),ex.Message); } }; panel.Children.Add(button);
+            button.Click += (_, _) => { try { action(); } catch (Exception ex) { AppDialog.Show(this,Localize.Text("Error"),Localize.Message(ex)); } }; panel.Children.Add(button);
         }
     }
 }

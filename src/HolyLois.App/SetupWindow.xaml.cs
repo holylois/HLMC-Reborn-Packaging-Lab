@@ -96,6 +96,7 @@ public partial class SetupWindow : ThemedWindow
     {
         var name = SetupNameBox.Text.Trim();
         if (step == 1 && launcher != "official" && !PlayerNames.IsValid(name)) { ErrorText.Text = Localize.Text("NameInvalid"); SetupNameBox.Focus(); return; }
+        if (step == 1 && launcher != "official" && !await NameHints.ConfirmAsync(this, context, name)) { SetupNameBox.Focus(); return; }
         if (step < 2) { GoTo(step + 1); return; }
         try
         {

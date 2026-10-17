@@ -17,6 +17,7 @@ public static partial class GameReports
 
     [GeneratedRegex(@"\b(?:\d{1,3}\.){3}\d{1,3}\b")] private static partial Regex Ipv4();
     [GeneratedRegex(@"(--accessToken|accessToken[""=:]+|token:)\s*[^\s"",)]+", RegexOptions.IgnoreCase)] private static partial Regex Token();
+    [GeneratedRegex(@"\b(?:[0-9a-fA-F]{1,4}:){4,7}[0-9a-fA-F]{1,4}\b")] private static partial Regex Ipv6();
     [GeneratedRegex(@"(--xuid|--clientId|--uuid)\s+\S+", RegexOptions.IgnoreCase)] private static partial Regex Ids();
 
     /// <summary>Removes personal details. The Holy Lois server address stays, it is public anyway.</summary>
@@ -26,6 +27,7 @@ public static partial class GameReports
             text = Regex.Replace(text, @"(?<=[\\/]Users[\\/])" + Regex.Escape(windowsUser) + @"(?=[\\/]|$)", "<user>", RegexOptions.IgnoreCase);
         text = Token().Replace(text, m => m.Groups[1].Value + " HIDDEN");
         text = Ids().Replace(text, m => m.Groups[1].Value + " HIDDEN");
+        text = Ipv6().Replace(text, "IP-HIDDEN");
         return Ipv4().Replace(text, m => m.Value == ServerAddress.Ip.Split(':')[0] || m.Value.StartsWith("127.", StringComparison.Ordinal) || m.Value == "0.0.0.0" ? m.Value : "IP-HIDDEN");
     }
 
@@ -55,7 +57,7 @@ public static partial class GameReports
         return candidates.Where(f => f.LastWriteTimeUtc >= since.UtcDateTime.AddSeconds(-5)).OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault()?.FullName;
     }
 
-    public static string Build(StartRecord? record, string gameDirectory, string? outputLog, string windowsVersion, string? windowsUser)
+    public static string Build(StartRecord? record, string gameDirectory, string? outputLog, string windowsVersion, string? windowsUser, string? launcherLog = null)
     {
         var text = new StringBuilder();
         text.AppendLine("Holy Lois: Reborn report");
@@ -81,6 +83,7 @@ public static partial class GameReports
         Section("Crash", NewestCrash(gameDirectory, since));
         Section("Game output", outputLog);
         Section("Game log", Path.Combine(gameDirectory, "logs", "latest.log"));
+        Section("Launcher errors", launcherLog);
         return Redact(text.ToString(), windowsUser);
     }
 

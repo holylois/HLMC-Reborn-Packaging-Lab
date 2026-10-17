@@ -18,12 +18,24 @@ public class ThemedWindow : Window
         UseLayoutRounding = true; SnapsToDevicePixels = true;
         WindowStyle = WindowStyle.None;
         WindowChrome.SetWindowChrome(this, new WindowChrome { CaptionHeight = 32, ResizeBorderThickness = new Thickness(6), GlassFrameThickness = new Thickness(0), CornerRadius = new CornerRadius(0), UseAeroCaptionButtons = false });
-        SourceInitialized += (_, _) => WindowCaption.Apply(this);
+        SourceInitialized += (_, _) => { WindowCaption.Apply(this); FitWorkArea(); };
         Loaded += (_, _) => EnsureChrome();
         Closed += (_, _) => IsClosed = true;
         PreviewMouseDown += (_,_) => InputModality.SetKeyboardFocusVisible(this,false);
         PreviewKeyDown += (_,e) => { if (e.Key is Key.Tab or Key.Up or Key.Down or Key.Left or Key.Right or Key.Space or Key.Enter or Key.Escape) InputModality.SetKeyboardFocusVisible(this,true); };
         PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape && Owner is not null) { Close(); e.Handled = true; } };
+    }
+    // Small laptop screens (1366x768 at 125%) have about 570 px of height: windows shrink to fit and scroll instead of
+    // hanging off the bottom of the screen.
+    private void FitWorkArea()
+    {
+        var area = SystemParameters.WorkArea;
+        if (area.Height <= 0) return;
+        if (MinHeight > area.Height) MinHeight = Math.Max(400, area.Height);
+        if (SizeToContent == SizeToContent.Manual && !double.IsNaN(Height) && Height > area.Height) Height = area.Height;
+        if (MaxHeight > area.Height) MaxHeight = area.Height;
+        if (MinWidth > area.Width) MinWidth = Math.Max(400, area.Width);
+        if (!double.IsNaN(Width) && Width > area.Width) Width = area.Width;
     }
     public void EnsureChrome()
     {

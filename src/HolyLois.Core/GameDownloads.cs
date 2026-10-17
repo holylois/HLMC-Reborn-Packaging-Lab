@@ -154,17 +154,21 @@ public sealed class GameDownloads
         {
             var partial = target + "." + Guid.NewGuid().ToString("N") + ".part";
             long received = 0;
+            using var stall = CancellationTokenSource.CreateLinkedTokenSource(token);
             try
             {
-                using var response = await http.GetAsync(file.Url, HttpCompletionOption.ResponseHeadersRead, token);
+                stall.CancelAfter(DownloadCache.StallTimeout);
+                using var response = await http.GetAsync(file.Url, HttpCompletionOption.ResponseHeadersRead, stall.Token);
                 response.EnsureSuccessStatusCode();
                 ValidateUri(response.RequestMessage?.RequestUri?.AbsoluteUri ?? file.Url);
-                await using (var input = await response.Content.ReadAsStreamAsync(token))
+                await using (var input = await response.Content.ReadAsStreamAsync(stall.Token))
                 await using (var output = new FileStream(partial, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
                 {
                     var buffer = new byte[81920]; int read;
-                    while ((read = await input.ReadAsync(buffer, token)) > 0)
+                    stall.CancelAfter(DownloadCache.StallTimeout);
+                    while ((read = await input.ReadAsync(buffer, stall.Token)) > 0)
                     {
+                        stall.CancelAfter(DownloadCache.StallTimeout);
                         received += read;
                         if (received > file.Size) throw new InvalidDataException("A game file is larger than expected.");
                         await output.WriteAsync(buffer.AsMemory(0, read), token);
@@ -178,14 +182,14 @@ public sealed class GameDownloads
                 Interlocked.Increment(ref downloaded);
                 return;
             }
-            catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException && !token.IsCancellationRequested)
+            catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or OperationCanceledException && !token.IsCancellationRequested)
             {
                 last = ex; counted(-received);
                 if (attempt < 2) await Task.Delay(TimeSpan.FromSeconds(attempt + 1), token);
             }
             finally { if (File.Exists(partial)) File.Delete(partial); }
         }
-        throw new IOException("Minecraft files could not be downloaded. Check your internet connection and try again.", last);
+        throw new DownloadFailedException("Minecraft files could not be downloaded. Check your internet connection and try again.", last);
     }
 
     /// <summary>Downloads a small metadata file (asset index, Java list) that has no published checksum, with a size cap.</summary>

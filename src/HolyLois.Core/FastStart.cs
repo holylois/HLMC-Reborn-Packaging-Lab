@@ -34,6 +34,9 @@ public static class FastStart
         return gb >= 30 ? 8192 : gb >= 15 ? 6144 : gb >= 11 ? 5120 : gb >= 7 ? 4096 : 3072;
     }
 
+    /// <summary>The largest heap a player may choose: Windows keeps at least 2 GB, never above 16 GB.</summary>
+    public static int MaxMemoryMb(long totalBytes) => (int)Math.Clamp(totalBytes / (1024 * 1024) - 2048, 2048, 16384);
+
     public static IReadOnlyList<GameFile> AssetObjects(byte[] indexJson)
     {
         var root = JsonNode.Parse(indexJson) as JsonObject ?? throw new InvalidDataException("Asset index is invalid.");

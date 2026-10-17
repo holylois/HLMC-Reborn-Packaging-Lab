@@ -9,6 +9,7 @@ public sealed class PackInstaller(string instanceRoot, string stateRoot, IFileDo
     private string ReceiptPath => SafePaths.Resolve(stateRoot, "installed-pack.json");
     private string JournalPath => SafePaths.Resolve(stateRoot, "update-journal.json");
     public Action<int>? CommitObserver { get; init; } // Injected crash/failure boundary for recovery tests.
+    public int ParallelDownloads { get; init; } = 6;
 
     public InstalledReceipt? ReadReceipt()
     {
@@ -31,8 +32,9 @@ public sealed class PackInstaller(string instanceRoot, string stateRoot, IFileDo
             FileAccess.ReadWrite, FileShare.None);
         Recover();
         var old = ReadReceipt();
-        var ready = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var ready = new System.Collections.Concurrent.ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var all = manifest.Files; var totalBytes = all.Sum(x => x.Size); long doneBytes = 0; int doneFiles = 0;
+        var missing = new List<PackFile>();
         foreach (var file in all)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -41,15 +43,22 @@ public sealed class PackInstaller(string instanceRoot, string stateRoot, IFileDo
             { doneBytes += file.Size; doneFiles++; progress?.Report(new("Verified " + Path.GetFileName(file.Path), doneBytes, totalBytes, doneFiles, all.Length)); continue; }
             if (File.Exists(installed) && file.Policy == "managed" && (old is null || !old.ManagedFiles.ContainsKey(file.Path)))
                 throw new IOException("An unowned file conflicts with the pack: " + file.Path + ". Move it aside before installing.");
-            progress?.Report(new("Downloading " + Path.GetFileName(file.Path), doneBytes, totalBytes, doneFiles, all.Length));
-            // Keep the active installation unchanged until every required download verifies.
-            var fileStart = doneBytes; var fileIndex = doneFiles;
-            var cached = await downloader.GetAsync(file, new InlineProgress<long>(n => progress?.Report(
-                new("Downloading " + Path.GetFileName(file.Path), fileStart + Math.Clamp(n,0,file.Size), totalBytes, fileIndex, all.Length))), cancellationToken);
+            missing.Add(file);
+        }
+        // Keep the active installation unchanged until every required download verifies. Several files download at once;
+        // progress counts finished files plus the bytes of the ones still arriving.
+        var arriving = new System.Collections.Concurrent.ConcurrentDictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        var gate = new object();
+        void Report(string name) { lock (gate) progress?.Report(new("Downloading " + name, doneBytes + arriving.Values.Sum(), totalBytes, doneFiles, all.Length)); }
+        await Parallel.ForEachAsync(missing, new ParallelOptions { MaxDegreeOfParallelism = ParallelDownloads, CancellationToken = cancellationToken }, async (file, token) =>
+        {
+            var name = Path.GetFileName(file.Path);
+            var cached = await downloader.GetAsync(file, new InlineProgress<long>(n => { arriving[file.Path] = Math.Clamp(n, 0, file.Size); Report(name); }), token);
             if (!AtomicFiles.Matches(cached, file)) throw new InvalidDataException("A staged download did not pass verification.");
             ready[file.Path] = cached;
-            doneBytes += file.Size; doneFiles++;
-        }
+            lock (gate) { arriving.TryRemove(file.Path, out _); doneBytes += file.Size; doneFiles++; }
+            Report(name);
+        }).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         var transaction = Guid.NewGuid().ToString("N");
         var txRoot = SafePaths.Resolve(stateRoot, "transactions/" + transaction);

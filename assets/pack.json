@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "2.0.4",
+  "version": "2.1.0",
   "minecraft": "26.3",
   "fabric": "0.19.5",
   "java": 25,
@@ -21,10 +21,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/amber-fabric-11.4.0+26.3.jar",
-      "url": "https://cdn.modrinth.com/data/vjGZJDu5/versions/yc9jt1MD/amber-fabric-11.4.0%2B26.3.jar",
-      "size": 397951,
-      "sha256": "00333249e8d8c51d111245ccae72c8b8285624bdae6a03a0a4f8709d13662cb8",
+      "path": "mods/amber-fabric-11.7.0+26.3.jar",
+      "url": "https://cdn.modrinth.com/data/vjGZJDu5/versions/ucZoxrgT/amber-fabric-11.7.0%2B26.3.jar",
+      "size": 419359,
+      "sha256": "04868ddaffd0007bda4e6ab5b8369a23aab509639bf399ff67518646e8692bef",
       "policy": "managed"
     },
     {
@@ -260,21 +260,21 @@
     },
     {
       "path": "mods/holylois-auth-ui-1.1.2+26.3.jar",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.0/holylois-auth-ui-1.1.2+26.3.jar",
+      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.0.0/holylois-auth-ui-1.1.2+26.3.jar",
       "size": 6540375,
       "sha256": "e331c28b490356017448b820445cd0ae541031809e120c002ed3efcfcbfe7279",
       "policy": "managed"
     },
     {
-      "path": "mods/holylois-extras-1.8.2+26.3.jar",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.2/holylois-extras-1.8.2+26.3.jar",
-      "size": 1228630,
-      "sha256": "68515dbe9475edbb16b40bd94c062b5b778000e35f8753c7810fa9cf58a1db2e",
+      "path": "mods/holylois-extras-1.8.3+26.3.jar",
+      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.1.0/holylois-extras-1.8.3+26.3.jar",
+      "size": 1229562,
+      "sha256": "81c52d1a4333f8aba86e72bd23285bf4808ff5e7a2d396edba89b2f7b800f4fe",
       "policy": "managed"
     },
     {
       "path": "mods/holylois-glint-preload-1.0.1+26.3.jar",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v1.7.6/holylois-glint-preload-1.0.1+26.3.jar",
+      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v1.7.6/holylois-glint-preload-1.0.1+26.3.jar",
       "size": 7676,
       "sha256": "e6904fe952b4ae95203e78fe0069fc4c87bf142d75f62c6b155ea369330653f9",
       "policy": "managed"
@@ -371,10 +371,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/liteminer-fabric-4.5.0+26.3.jar",
-      "url": "https://cdn.modrinth.com/data/VTnHoofC/versions/QsUrEyVQ/liteminer-fabric-4.5.0%2B26.3.jar",
-      "size": 184249,
-      "sha256": "b3c4c1e3a8bbc9e07adc27b17e4e0496399b5b57e919b5183c46d4394aa0d4e1",
+      "path": "mods/liteminer-fabric-4.5.2+26.3.jar",
+      "url": "https://cdn.modrinth.com/data/VTnHoofC/versions/Ew2JEUj5/liteminer-fabric-4.5.2%2B26.3.jar",
+      "size": 185575,
+      "sha256": "266108509d517f1b19507a96240d99c40e58557a61f63f8ea8b7b85e8265815b",
       "policy": "managed"
     },
     {
@@ -441,10 +441,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/open-parties-and-claims-fabric-26.3-0.32.8.jar",
-      "url": "https://cdn.modrinth.com/data/gF3BGWvG/versions/r4qdHbjN/open-parties-and-claims-fabric-26.3-0.32.8.jar",
-      "size": 1937364,
-      "sha256": "513dc4b77bd6499d97c9ac6b3e7d77e2fe03e794c90ba4e5dbff98cc36069edd",
+      "path": "mods/open-parties-and-claims-fabric-26.3-0.33.0.jar",
+      "url": "https://cdn.modrinth.com/data/gF3BGWvG/versions/KBCCg0os/open-parties-and-claims-fabric-26.3-0.33.0.jar",
+      "size": 1968929,
+      "sha256": "809a1f378397d7a6986597f1fb278b8b069bb7588722ea5204b0a222076ad6a8",
       "policy": "managed"
     },
     {
@@ -624,7 +624,7 @@
     },
     {
       "path": "resourcepacks/HolyLois-FishEating.zip",
-      "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.0/HolyLois-FishEating.zip",
+      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.0.0/HolyLois-FishEating.zip",
       "size": 200986,
       "sha256": "a79d9e47abbae91a759fbafed3189bf9694482279a04a19456785ee61a6d11fb",
       "policy": "managed",
@@ -740,12 +740,36 @@
   ],
   "defaults": {
     "path": "defaults.zip",
-    "url": "https://github.com/pjampjam/HLMC-Reborn/releases/download/pack-v2.0.0/defaults.zip",
+    "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.1.0/defaults.zip",
     "size": 54091,
-    "sha256": "888def39bf1115b204ec6589aacc50e3efca8ae57ed8554a7f2ecb7009359ec7",
+    "sha256": "c4662a966d6b53a31dd280ec7c94b388e2e4c73856b6add4e4b968fd1380d6da",
     "policy": "seed"
   },
   "history": [
+    {
+      "version": "2.1.0",
+      "date": "2026-10-18",
+      "summary": "The loud patch: colossal fish, a friendlier claims menu, fair prices and a faster launcher.",
+      "added": [
+        "Land claims menu overhaul: a search bar, option categories, tooltips that explain every setting and a quick sub-claim menu.",
+        "Colossal Mythic fish: a tiny share of Mythics weigh 100 to 255 kg. Good luck landing one.",
+        "Launcher: choose how much memory Minecraft gets in Settings, and a free disk space check before every download."
+      ],
+      "updated": [
+        "Heavier trophy fish now look bigger all the way up, in your hands, on the ground and in item frames.",
+        "New installs: K opens the Journal and F7 turns shaders on or off. Your existing keys stay as you set them.",
+        "Selling: enchanted books and gear now count every enchantment they carry, at new lower enchantment prices. Tools, weapons and armor sell for half as much.",
+        "Land of a player who has not played for 30 days goes back to wilderness.",
+        "Free-play names: a bought Minecraft account's name can still be used, but that free-play account is moved to backup when the real owner joins. The launcher asks first.",
+        "Launcher: pack files download several at a time, so installs and updates finish faster.",
+        "Vein mining no longer breaks blocks in spawn protection or past the world border, and the block that breaks your tool now drops its items."
+      ],
+      "fixed": [
+        "Right-clicking with the vein mining key no longer strips or tills blocks your tool cannot change.",
+        "Launcher: a slow connection no longer shows Cancelled, and an unexpected error shows a message instead of closing the app."
+      ],
+      "removed": []
+    },
     {
       "version": "2.0.4",
       "date": "2026-10-17",
@@ -1096,20 +1120,6 @@
         "/rtp never drops you into or next to someone's land",
         "PvP: logging out during a fight kills you, PvP deaths leave the loot for the winner and add no minimap death marker",
         "Normal deaths: your drops stay 30 minutes and only you can pick them up for the first 5"
-      ]
-    },
-    {
-      "version": "1.7.3",
-      "date": "2026-10-04",
-      "summary": "Achievement tabs really switch now, and a placed boombox looks like a boombox.",
-      "added": [
-        "Server: /support also lists TRON, labels Bitcoin as SegWit and explains each network when you hover it"
-      ],
-      "removed": [],
-      "updated": [
-        "Achievement tabs switch with a left click again (1.7.2 broke them for everyone, sorry about that)",
-        "A placed boombox shows its real texture instead of a pink and black cube",
-        "Game and mod text uses plain hyphens everywhere"
       ]
     }
   ],

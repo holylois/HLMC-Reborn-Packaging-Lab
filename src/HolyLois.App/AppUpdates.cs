@@ -39,10 +39,10 @@ public static class AppUpdates
                 if (AtomicFiles.Matches(deployment.Target,interruptedRelease.File)) {
                     StartWorker(deployment.Stage(interruptedRelease),interrupted.Nonce,true); return true;
                 }
-                deployment.Rollback(interrupted.Nonce); Notice = "An interrupted launcher update was rolled back.";
+                deployment.Rollback(interrupted.Nonce); Notice = Localize.Text("UpdRolledBack");
             }
         }
-        window.SetStatus("Checking the launcher and clearing completed update files...");
+        window.SetStatus(Localize.Text("UpdChecking"));
         await Task.Run(WorkerCleanup.CompletedLauncherFiles);
         using var http = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true }) { Timeout = TimeSpan.FromSeconds(20) };
         http.DefaultRequestHeaders.UserAgent.ParseAdd("HolyLoisReborn/" + RunningVersion.ToString(3));
@@ -55,27 +55,25 @@ public static class AppUpdates
             var failed = SafePaths.Resolve(LauncherStartup.InstallRoot,"failed-app-update.txt");
             if (File.Exists(failed) && new FileInfo(failed).Length <= 128 && File.ReadAllText(failed) == next.Sha256
                 && DateTime.UtcNow - File.GetLastWriteTimeUtc(failed) < TimeSpan.FromHours(24))
-            { Notice = "The last launcher update failed to start. Your working version was kept; another attempt will be made later."; return false; }
-            window.SetStatus("Downloading launcher " + next.Version + "...");
-            var progress = new Progress<long>(done => window.SetTransfer("Downloading launcher " + next.Version + "...",done,next.Size));
+            { Notice = Localize.Text("UpdFailedStart"); return false; }
+            window.SetStatus(string.Format(Localize.Text("UpdDownloading"), next.Version));
+            var progress = new Progress<long>(done => window.SetTransfer(string.Format(Localize.Text("UpdDownloading"), next.Version),done,next.Size));
             using var downloadTimeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
             using var combined = CancellationTokenSource.CreateLinkedTokenSource(window.Cancellation.Token,downloadTimeout.Token);
             // Use a separate client because HttpClient's timeout cannot change after a request.
             using var downloadHttp = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true }) { Timeout = TimeSpan.FromMinutes(5) };
             var downloaded = await new DownloadCache(SafePaths.Resolve(LauncherStartup.InstallRoot,"app-downloads"),downloadHttp).GetAsync(next.File,progress,combined.Token);
-            window.SetStatus("Verifying and preparing the launcher update...");
+            window.SetStatus(Localize.Text("UpdVerifying"));
             var nonce = await Task.Run(() => deployment.Prepare(signed,downloaded,RunningVersion));
             new DownloadCache(SafePaths.Resolve(LauncherStartup.InstallRoot,"app-downloads"),downloadHttp).Prune([next.File]);
-            window.SetStatus("Installing the verified update...");
+            window.SetStatus(Localize.Text("UpdInstalling"));
             try { StartWorker(deployment.Stage(next),nonce); }
             catch { deployment.Rollback(nonce); throw; }
             return true;
         }
         catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or IOException or InvalidDataException or System.Security.Cryptography.CryptographicException)
         {
-            Notice = ex is HttpRequestException { StatusCode: System.Net.HttpStatusCode.NotFound }
-                ? "Launcher updates are not published yet. Your installed app remains available."
-                : "Launcher updates are unavailable right now. Your installed app remains available.";
+            Notice = Localize.Text("UpdUnavailable");
             return false;
         }
     }

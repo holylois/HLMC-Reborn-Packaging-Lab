@@ -11,7 +11,12 @@ namespace HolyLois.App;
 
 /// <summary>Launcher is "official" (bought account, opens Minecraft Launcher), "sk" (SKlauncher game folder) or "name" (player name, fast start only).</summary>
 public sealed record UserSettings(string Launcher = "official", string? LauncherExe = null, string? SkInstance = null, string Language = "en", string PlayMode = HolyLois.Core.PlayMode.Standard,
-    bool JoinServer = true, bool? FastStart = null);
+    bool JoinServer = true, bool? FastStart = null, int? MemoryMb = null);
+/// <summary>The drive is too full for the next download.</summary>
+public sealed class NotEnoughSpaceException(string drive, long needed, long free) : IOException("Not enough free disk space on " + drive)
+{
+    public string Drive { get; } = drive; public long Needed { get; } = needed; public long Free { get; } = free;
+}
 public sealed class ClientContext
 {
     private readonly HttpClient http;
@@ -34,6 +39,7 @@ public sealed class ClientContext
     private string StatePath => SafePaths.Resolve(Root, Settings.Launcher == "sk" ? "state/sk-instance" : "state/prepared-instance");
     public bool IsIsolated { get; }
     public bool RecoveredDeletedInstance { get; private set; }
+    public bool RecoveredSettings { get; private set; }
 
     public ClientContext(string? isolatedRoot, string? launcherTestRoot = null)
     {
@@ -45,8 +51,16 @@ public sealed class ClientContext
         SkLauncherRoot = isolatedRoot is not null ? SafePaths.Resolve(Root, "sklauncher")
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".sklauncher");
         Directory.CreateDirectory(Root);
-        Settings = File.Exists(SettingsPath) ? JsonSerializer.Deserialize<UserSettings>(File.ReadAllBytes(SettingsPath), JsonSettings.Options) ?? new() : new();
-        if (Settings.Launcher is not ("official" or "sk" or "name")) throw new InvalidDataException("Saved launcher selection is invalid.");
+        // A damaged settings file is kept aside and the app starts with defaults instead of refusing to open.
+        try
+        {
+            Settings = File.Exists(SettingsPath) ? JsonSerializer.Deserialize<UserSettings>(File.ReadAllBytes(SettingsPath), JsonSettings.Options) ?? new() : new();
+            if (Settings.Launcher is not ("official" or "sk" or "name")) throw new InvalidDataException("Saved launcher selection is invalid.");
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidDataException or NotSupportedException)
+        {
+            File.Move(SettingsPath, SettingsPath + ".broken", true); Settings = new(); RecoveredSettings = true;
+        }
         Settings = Settings with { PlayMode = HolyLois.Core.PlayMode.Normalize(Settings.PlayMode) };
         if (Settings.SkInstance is not null)
         {
@@ -54,17 +68,23 @@ public sealed class ClientContext
             catch (IOException) { Settings = Settings with { SkInstance = null }; RecoveredDeletedInstance = true; AtomicFiles.WriteJson(SettingsPath, Settings); }
         }
         http = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true }) { Timeout = TimeSpan.FromMinutes(4) };
-        http.DefaultRequestHeaders.UserAgent.ParseAdd("HolyLoisReborn/0.3");
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("HolyLoisReborn/" + Assembly.GetExecutingAssembly().GetName().Version!.ToString(3));
         downloader = new DownloadCache(SafePaths.Resolve(Root, "cache"), http);
         Manifest = ManifestSecurity.Parse(Asset("pack.json"), Asset("pack.json.sig"), Encoding.ASCII.GetString(Asset("release-public.pem")));
         feed = new PackFeed(http, Encoding.ASCII.GetString(Asset("release-public.pem")));
         var cached = SafePaths.Resolve(Root, "last-pack-release.json");
         if (File.Exists(cached))
         {
-            if (new FileInfo(cached).Length > 3 * 1024 * 1024) throw new InvalidDataException("Cached release is too large.");
-            var release = JsonSerializer.Deserialize<SignedPack>(File.ReadAllBytes(cached), JsonSettings.Options)!;
-            var cachedManifest = ManifestSecurity.Parse(release.Json, release.Signature, Encoding.ASCII.GetString(Asset("release-public.pem")));
-            if (new Version(cachedManifest.Version) >= new Version(Manifest.Version)) Manifest = feed.Accept(release, Manifest);
+            // The cached release is only a shortcut; a damaged copy falls back to the embedded pack until the next online check.
+            try
+            {
+                if (new FileInfo(cached).Length > 3 * 1024 * 1024) throw new InvalidDataException("Cached release is too large.");
+                var release = JsonSerializer.Deserialize<SignedPack>(File.ReadAllBytes(cached), JsonSettings.Options) ?? throw new InvalidDataException("Cached release is empty.");
+                var cachedManifest = ManifestSecurity.Parse(release.Json, release.Signature, Encoding.ASCII.GetString(Asset("release-public.pem")));
+                if (new Version(cachedManifest.Version) >= new Version(Manifest.Version)) Manifest = feed.Accept(release, Manifest);
+            }
+            catch (Exception ex) when (ex is JsonException or InvalidDataException or FormatException or ArgumentException or System.Security.Cryptography.CryptographicException)
+            { File.Move(cached, cached + ".broken", true); }
         }
         DiscoverSkInstance();
     }
@@ -135,6 +155,7 @@ public sealed class ClientContext
     public async Task InstallAsync(IProgress<InstallProgress>? progress, CancellationToken token)
     {
         if (!IsIsolated && IsGameOrLauncherRunning()) throw new IOException("Close Minecraft and your Minecraft launcher before updating, then try again.");
+        EnsureSpace(Instance, MissingPackBytes() * 2 + 300L * 1024 * 1024);
         if (Settings.Launcher == "sk")
         {
             // A library move or a pre-hotfix saved link must be recovered before downloading into it.
@@ -191,6 +212,31 @@ public sealed class ClientContext
     }
     public void SetJoinServer(bool join) { Settings = Settings with { JoinServer = join }; AtomicFiles.WriteJson(SettingsPath, Settings); ApplyJoinToLauncherProfile(); }
     public void SetFastStart(bool fast) { Settings = Settings with { FastStart = fast }; AtomicFiles.WriteJson(SettingsPath, Settings); }
+    /// <summary>Fast start memory: null is automatic (from the computer's memory), otherwise the player's choice in MB.</summary>
+    public void SetMemory(int? megabytes) { Settings = Settings with { MemoryMb = megabytes }; AtomicFiles.WriteJson(SettingsPath, Settings); }
+    public static long ComputerMemoryBytes => GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+    public int GameMemoryMb => Settings.MemoryMb is int chosen ? Math.Clamp(chosen, 2048, FastStart.MaxMemoryMb(ComputerMemoryBytes)) : FastStart.MemoryMb(ComputerMemoryBytes);
+    /// <summary>Bytes of pack files that are not in place yet (by size; the installer checks hashes). Downloads are cached, then copied.</summary>
+    private long MissingPackBytes()
+    {
+        long missing = 0;
+        foreach (var file in Manifest.Files)
+        {
+            var path = SafePaths.Resolve(Instance, file.Path);
+            if (!File.Exists(path) || new FileInfo(path).Length != file.Size) missing += file.Size;
+        }
+        return missing;
+    }
+    /// <summary>Stops before a download when the drive cannot hold it, instead of failing halfway.</summary>
+    public static void EnsureSpace(string folder, long bytes)
+    {
+        try
+        {
+            var drive = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(folder))!);
+            if (drive.IsReady && drive.AvailableFreeSpace < bytes) throw new NotEnoughSpaceException(drive.Name, bytes, drive.AvailableFreeSpace);
+        }
+        catch (Exception ex) when (ex is ArgumentException or IOException and not NotEnoughSpaceException or UnauthorizedAccessException) { }
+    }
     public bool UsesFastStart => HolyLois.Core.PlayMode.UsesFastStart(Settings.Launcher, Settings.FastStart);
 
     // Player names live in the data folder, which uninstalling keeps unless the player asks to forget them.
@@ -235,7 +281,8 @@ public sealed class ClientContext
         var downloads = new GameDownloads(http, GameRoot, ReuseRoots());
         LastDownloads = downloads;
         var version = new GameVersion(Asset("vanilla-profile.json"), Asset("fabric-profile.json"));
-        var memory = FastStart.MemoryMb(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes);
+        EnsureSpace(GameRoot, 700L * 1024 * 1024);
+        var memory = GameMemoryMb;
         var options = new FastStartOptions(name, Settings.JoinServer ? ServerAddress.Public : null, AppUpdates.RunningVersion.ToString(3), memory);
         HolyLois.Core.PlayMode.RemoveOldQuickPlayNote(Instance);
         return await FastStart.PrepareAsync(downloads, version, Manifest.LoaderFiles, Instance, options, GamePlatform.Current, progress, token);
@@ -252,7 +299,8 @@ public sealed class ClientContext
         get { try { return File.Exists(StartRecordPath) ? JsonSerializer.Deserialize<StartRecord>(File.ReadAllBytes(StartRecordPath), JsonSettings.Options) : null; } catch (Exception ex) when (ex is IOException or JsonException) { return null; } }
     }
     public void SaveStart(StartRecord record) { try { AtomicFiles.WriteJson(StartRecordPath, record); } catch (IOException) { } }
-    public string BuildReport() => GameReports.Build(LastStart, Instance, File.Exists(OutputLog) ? OutputLog : null, Environment.OSVersion.VersionString, Environment.UserName);
+    public string BuildReport() => GameReports.Build(LastStart, Instance, File.Exists(OutputLog) ? OutputLog : null, Environment.OSVersion.VersionString, Environment.UserName,
+        File.Exists(LauncherErrors.LogPath) ? LauncherErrors.LogPath : null);
     public StorageCleanupResult CleanInstalledDownloads()
     {
         try

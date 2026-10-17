@@ -5,8 +5,13 @@ public interface IFileDownloader
     Task<string> GetAsync(PackFile file, IProgress<long>? progress, CancellationToken cancellationToken);
 }
 
+/// <summary>A download that kept failing after its retries (offline, timed out or damaged in transit).</summary>
+public sealed class DownloadFailedException(string message, Exception? inner = null) : IOException(message, inner);
+
 public sealed class DownloadCache(string root, HttpClient client) : IFileDownloader
 {
+    public static TimeSpan StallTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
     public StorageCleanupResult RemoveInstalledCopies(IEnumerable<PackFile> approved, string instanceRoot)
     {
         var result = StorageCleanupResult.Empty;
@@ -47,19 +52,24 @@ public sealed class DownloadCache(string root, HttpClient client) : IFileDownloa
         for (var attempt = 0; attempt < 3; attempt++)
         {
             var partial = target + "." + Guid.NewGuid().ToString("N") + ".part";
+            // A stalled connection (open, but no bytes) is retried instead of waiting until the player cancels.
+            using var stall = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             try
             {
-                using var response = await client.GetAsync(file.Url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                stall.CancelAfter(StallTimeout);
+                using var response = await client.GetAsync(file.Url, HttpCompletionOption.ResponseHeadersRead, stall.Token);
                 response.EnsureSuccessStatusCode();
                 ManifestSecurity.ValidateDownloadUri(response.RequestMessage?.RequestUri?.AbsoluteUri ?? file.Url);
                 if (response.Content.Headers.ContentLength is long size && size != file.Size)
                     throw new InvalidDataException("Download size differs from the approved release.");
-                await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
+                await using var input = await response.Content.ReadAsStreamAsync(stall.Token);
                 await using (var output = new FileStream(partial, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
                 {
                     var buffer = new byte[81920]; long total = 0; int count;
-                    while ((count = await input.ReadAsync(buffer, cancellationToken)) > 0)
+                    stall.CancelAfter(StallTimeout);
+                    while ((count = await input.ReadAsync(buffer, stall.Token)) > 0)
                     {
+                        stall.CancelAfter(StallTimeout);
                         total += count;
                         if (total > file.Size) throw new InvalidDataException("Download exceeded the approved size.");
                         await output.WriteAsync(buffer.AsMemory(0, count), cancellationToken);
@@ -71,13 +81,14 @@ public sealed class DownloadCache(string root, HttpClient client) : IFileDownloa
                 File.Move(partial, target, true);
                 return target;
             }
-            catch (Exception ex) when (ex is HttpRequestException or IOException && !cancellationToken.IsCancellationRequested)
+            // Timeouts surface as cancellations; only the player's own cancel stops the retries.
+            catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or OperationCanceledException && !cancellationToken.IsCancellationRequested)
             {
                 last = ex;
                 if (attempt < 2) await Task.Delay(TimeSpan.FromSeconds(attempt + 1), cancellationToken);
             }
             finally { if (File.Exists(partial)) File.Delete(partial); }
         }
-        throw new IOException("A pack file could not be downloaded safely. Retry when your connection is available.", last);
+        throw new DownloadFailedException("A pack file could not be downloaded safely. Retry when your connection is available.", last);
     }
 }

@@ -366,8 +366,11 @@ tests.Add(("Download progress stays within the pack total with delayed dispatch"
     var events = new List<InstallProgress>(); var previousContext = SynchronizationContext.Current;
     var queued = new QueuedContext(); SynchronizationContext.SetSynchronizationContext(queued);
     try {
-        await new PackInstaller(Path.Combine(d,"game"),Path.Combine(d,"state"),down).InstallAsync(
+        // Downloads run in parallel on the thread pool, so wait without posting to the queued context, then drain it.
+        var install = new PackInstaller(Path.Combine(d,"game"),Path.Combine(d,"state"),down).InstallAsync(
             Manifest(FileSpec("mods/a.jar",down.Data["mods/a.jar"]),FileSpec("mods/b.jar",down.Data["mods/b.jar"])),new Dictionary<string,byte[]>(),new InlineProgress<InstallProgress>(events.Add));
+        while (!install.IsCompleted) Thread.Sleep(5);
+        install.GetAwaiter().GetResult();
         queued.Drain();
         Check(events.All(x => x.CompletedBytes >= 0 && x.CompletedBytes <= x.TotalBytes),"Progress exceeded the approved total.");
         Check(events.Zip(events.Skip(1)).All(x => x.First.CompletedBytes <= x.Second.CompletedBytes),"Delayed callbacks made progress go backward.");

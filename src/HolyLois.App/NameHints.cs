@@ -42,6 +42,18 @@ public static class NameHints
         };
     }
 
+    /// <summary>
+    /// Before a new name is saved: a bought account's name needs the player's explicit OK, because its owner can claim it
+    /// later (owner decision 2026-10-18: the free-play account is then moved to backup). Unknown or offline counts as OK.
+    /// </summary>
+    public static async Task<bool> ConfirmAsync(Window owner, ClientContext context, string name)
+    {
+        NameStatus status;
+        try { using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8)); status = await context.CheckNameAsync(name, timeout.Token); }
+        catch (OperationCanceledException) { return true; }
+        return status != NameStatus.Premium || AppDialog.Show(owner, Localize.Text("PremiumConfirmTitle"), string.Format(Localize.Text("PremiumConfirmInfo"), name), Localize.Text("PremiumConfirmAgree"));
+    }
+
     private static void Show(TextBlock hint, string key, string brush, string mark = "")
     {
         hint.Text = mark + Localize.Text(key);
