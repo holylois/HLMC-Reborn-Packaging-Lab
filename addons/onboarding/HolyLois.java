@@ -76,6 +76,7 @@ public final class HolyLois implements ModInitializer {
             redeem.register(dispatcher);
             rtp.register(dispatcher);
             Seen.register(dispatcher);
+            Played.register(dispatcher);
             DailyRewards.registerTest(dispatcher);
             dispatcher.register(net.minecraft.commands.Commands.literal("structures").executes(context -> Discoveries.here(context.getSource().getPlayerOrException())));
             var page = com.mojang.brigadier.arguments.IntegerArgumentType.integer(1);
@@ -91,7 +92,7 @@ public final class HolyLois implements ModInitializer {
                         .executes(context -> discoveries.list(context.getSource().getPlayerOrException(), true, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(context, "page"))))));
         });
         ServerLifecycleEvents.SERVER_STARTED.register(this::load);
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> { Afk.save(); DeathLoot.save(); });
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> { Afk.save(); Played.save(); DeathLoot.save(); });
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> safely("death loot", () -> DeathLoot.unloaded(entity)));
         net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.register((player, level, hand) ->
             player instanceof net.minecraft.server.level.ServerPlayer sp && openLootbox(sp, sp.getItemInHand(hand))
@@ -154,6 +155,7 @@ public final class HolyLois implements ModInitializer {
         events.load(server.getWorldPath(LevelResource.ROOT));
         claims.load(server);
         Afk.load(server.getWorldPath(LevelResource.ROOT));
+        Played.load(server.getWorldPath(LevelResource.ROOT));
         redeem.load(server);
         DeathLoot.load(server);
         AudioUrlGuard.load(server.getWorldPath(LevelResource.ROOT));
@@ -211,6 +213,7 @@ public final class HolyLois implements ModInitializer {
         if (server.getTickCount()%2400 == 0) Leaderboards.refreshAsync();
         safely("events", () -> events.tick(server));
         safely("afk", () -> Afk.tick(server));
+        safely("played", () -> Played.tick(server));
         safely("redeem", () -> redeem.tick(server));
         safely("death loot", () -> DeathLoot.tick(server));
         safely("rtp", () -> rtp.tick(server, rtpRadius));

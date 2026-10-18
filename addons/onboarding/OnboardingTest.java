@@ -124,6 +124,11 @@ public final class OnboardingTest {
          var row=(java.util.function.Function<net.minecraft.server.players.NameAndId,net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.Entry>)p->new net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.Entry(p.id(),new com.mojang.authlib.GameProfile(p.id(),p.name()),true,0,net.minecraft.world.level.GameType.SURVIVAL,null,true,0,null);
          var rows=Hidden.unlisted(java.util.List.of(row.apply(staff),row.apply(friend)),friend.id(),isStaff);
          check(rows!=null&&!rows.get(0).listed()&&rows.get(1).listed()&&Hidden.unlisted(java.util.List.of(row.apply(staff)),staff.id(),isStaff)==null&&Hidden.unlisted(java.util.List.of(row.apply(friend)),staff.id(),isStaff)==null,"Tab list unlists staff for others, never for themselves");}
+        var played=Played.lines("Your",72_000*20L+30*60*20L,30*60,95*60,7200,214,12_812_345,250_000,40,1);
+        check(played.get(0).equals("Your time on Holy Lois: 20h 30m played")&&played.get(1).equals("  Active 20h 0m, AFK 30 min")
+            &&played.get(2).equals("  Fishing 1h 35m (214 fish caught), boombox music 2h 0m")&&played.get(3).equals("  Walked 128 km, by boat 2.5 km, 40 mobs defeated, 1 death"),
+            "/played shows total, active/AFK and fun totals "+played);
+        check(Played.time(20).equals("0 min")&&Played.km(99_000).equals("1.0 km"),"/played rounds short times and distances");
         check(Seen.lastSeen("Bob",0,3*86_400_000L+5000).startsWith("Bob was last on 3 days ago")&&Seen.lastSeen("Bob",0,90*60_000L).contains("1h 30m ago"),"/seen says how long ago a player was on");
         System.out.println("Passed " + checked + " onboarding, AFK ledger, secret code and quiet name, greeting, name day, bot wall, leaderboard, discovery, death, daily reward, chair, holiday, donate, land, rtp, support and combat checks");
     }

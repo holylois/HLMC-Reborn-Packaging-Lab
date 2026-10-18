@@ -98,6 +98,9 @@ public final class Boombox implements ModInitializer {
     /** Every placed boombox switched on (persisted), streaming or waiting for a listener. */
     static final Set<Spot> placed = new LinkedHashSet<>();
     private static final Map<UUID, Boolean> sentNear = new HashMap<>();
+
+    /** Can this player hear a playing boombox right now? (Server side, updated every boombox tick; used by /played.) */
+    public static boolean hearing(UUID player) { return sentNear.getOrDefault(player, false); }
     private static Path placedFile;
 
     @Override public void onInitialize() {
