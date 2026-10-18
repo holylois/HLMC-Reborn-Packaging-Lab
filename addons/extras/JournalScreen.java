@@ -188,9 +188,11 @@ public final class JournalScreen extends TravelScreen {
             var fish=selectedFish(entry);
             var presentation=entry.kind()==JournalState.FISH&&fishRarest&&fish==null?null:JournalPreview.presentation(entry.kind()==JournalState.FISH?entry.withFish(fish):entry);
             if(presentation!=null){
-                int previewHeight=Math.min(80,Math.max(36,(max-boxY)/3));
+                // A showcase stage: the model gets close to half the pane; the details below keep scrolling.
+                int previewHeight=Math.min(140,Math.max(36,(max-boxY)*9/20));
                 float angle=previewRotation+(entry.kind()==JournalState.FISH?(float)Math.PI/2:0);
-                if(preview.draw(g,presentation,fish,dx+6,dy,dw-12,previewHeight,false,angle))dy+=previewHeight+6;
+                if(preview.entity(presentation)!=null){Ui.box(g,dx+6,dy,dw-12,previewHeight,Ui.SURFACE,Ui.LINE);g.nextStratum();}
+                if(preview.draw(g,presentation,fish,dx+8,dy+2,dw-16,previewHeight-4,false,angle))dy+=previewHeight+6;
             }
             var lines=new ArrayList<Component>();
             lines.add(title(entry));

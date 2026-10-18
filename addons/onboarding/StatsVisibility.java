@@ -10,9 +10,9 @@ import java.util.regex.Pattern;
 final class StatsVisibility {
     private static final Path FILE = Path.of("config", "holylois-stats-hidden.json");
     private static final Pattern UNSAFE = Pattern.compile("n[i1!]gg|f[a@]gg?[o0]t|f[a@]g$|r[e3]t[a@]rd|p[i1]d[o0a]r|п[иі]д[оа]р|k[i1]ke|ch[i1]nk|tr[a@]nny", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-    private static final class Config { List<String> names = List.of("pjampjam", "pjamtest"); }
+    private static final class Config { List<String> names = List.of("pjampjam", "pjamtest", "pjanpjan"); }
     static boolean visible(String name) {
-        if (name.equalsIgnoreCase("pjampjam") || name.equalsIgnoreCase("pjamtest")) return false;
+        if (name.equalsIgnoreCase("pjampjam") || name.equalsIgnoreCase("pjamtest") || name.equalsIgnoreCase("pjanpjan")) return false;
         try {
             if (Files.exists(FILE)) {
                 var config = new Gson().fromJson(Files.readString(FILE), Config.class);

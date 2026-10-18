@@ -48,7 +48,7 @@ public final class OnboardingTest {
         String textureValue=java.util.Base64.getEncoder().encodeToString(("{\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/"+"a".repeat(64)+"\"}}}").getBytes(java.nio.charset.StandardCharsets.UTF_8));
         check(SkinStats.texture(textureValue).equals("https://textures.minecraft.net/texture/"+"a".repeat(64)), "Skin texture export normalizes Mojang URL and drops other profile fields");
         check(SkinStats.texture("bad base64")==null, "Malformed skin texture stays private");
-        check(!StatsVisibility.visible("PJAMPJAM")&&!StatsVisibility.visible("PJAMTEST")&&StatsVisibility.visible("Elza"),"Stats exclusion ignores capitals");
+        check(!StatsVisibility.visible("PJAMPJAM")&&!StatsVisibility.visible("PJAMTEST")&&!StatsVisibility.visible("PjanPjan")&&StatsVisibility.visible("Elza"),"Stats exclusion ignores capitals");
         check(boards.get(Leaderboards.CATEGORIES.get(0)).get(0).value()==2,"Playtime is shown in hours");
         var viewer=java.util.UUID.randomUUID(); var first=Leaderboards.view(viewer,100);
         check(Leaderboards.view(viewer,120)==first&&Leaderboards.view(viewer,400)!=first,"Board changes only when the page comes back");

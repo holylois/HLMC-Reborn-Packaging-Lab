@@ -79,6 +79,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "item cards", context, world, HolyLoisClientTests::itemCards);
             run(failed, "holy lois journal", context, world, HolyLoisClientTests::journal);
             run(failed, "strongest journal record and zombie preview", context, world, holylois.StrongestJournalChecks::run);
+            run(failed, "journal fresh animations", context, world, holylois.FreshAnimationJournalChecks::run);
             run(failed, "fish records and catch milestones", context, world, holylois.CollectionChecks::run);
             run(failed, "smelting enchantment compatibility", context, world, holylois.SmeltingChecks::run);
             run(failed, "cards over the cinematic camera", context, world, HolyLoisClientTests::cinematicCards);

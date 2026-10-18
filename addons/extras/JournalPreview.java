@@ -23,8 +23,6 @@ public final class JournalPreview {
     private Object level;
     private final long clockStarted=net.minecraft.util.Util.getMillis();
     private static int nextPreviewId=-1_000_000;
-    private static final java.util.Set<net.minecraft.world.entity.Entity> GUI_ENTITIES=java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
-    private static boolean animationGuard;
     public LivingEntity entity(DefeatRecord record){
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||record==null||record.type().equals("minecraft:player"))return null;
         if(level!=mc.level){cache.clear();level=mc.level;}
@@ -35,7 +33,6 @@ public final class JournalPreview {
         zombie.setId(nextPreviewId--);if(!record.appearanceId().isEmpty())zombie.setUUID(java.util.UUID.fromString(record.appearanceId()));
         if(zombie instanceof Mob mob)mob.setNoAi(true);
         zombie.setNoGravity(true);zombie.setOnGround(true);zombie.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
-        GUI_ENTITIES.add(zombie);guardAnimations();
         zombie.setSilent(true);zombie.setPermanentlyInvulnerable(true);
         if(zombie instanceof Zombie z)z.setBaby(record.baby());else if(zombie instanceof AgeableMob a)a.setBaby(record.baby());
         var scale=zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.SCALE);if(scale!=null)scale.setBaseValue(record.scale());
@@ -70,9 +67,11 @@ public final class JournalPreview {
             }
         }
         var renderer=Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entity);
-        float age=(net.minecraft.util.Util.getMillis()-clockStarted)/50f;
-        var state=renderer.createRenderState(entity,1);
-        idleState(state,JournalHints.motionEnabled()?age:0,entity instanceof net.minecraft.world.entity.animal.fish.AbstractFish);
+        float age=JournalHints.motionEnabled()?(net.minecraft.util.Util.getMillis()-clockStarted)/50f:0;
+        // Fresh Animations (EMF) drives idle motion from the entity's own tick clock, so it advances with the GUI clock.
+        entity.tickCount=(int)age;
+        var state=renderer.createRenderState(entity,age-(int)age);
+        idleState(state,age,entity instanceof net.minecraft.world.entity.animal.fish.AbstractFish);
         state.shadowPieces.clear();state.outlineColor=0;
         state.lightCoords=net.minecraft.util.LightCoordsUtil.pack(15,15);
         float span=record.type().equals("minecraft:cave_spider")?4.5f:record.type().equals("minecraft:spider")?2.7f:2.0f;
@@ -92,10 +91,6 @@ public final class JournalPreview {
         if(state instanceof net.minecraft.client.renderer.entity.state.SlimeRenderState slime)slime.squish=0;
         if(state instanceof net.minecraft.client.renderer.entity.state.ChickenRenderState chicken){chicken.flap=0;chicken.flapSpeed=0;}
         if(state instanceof net.minecraft.client.renderer.entity.state.WitchRenderState witch){witch.isHoldingPotion=false;witch.isHoldingItem=false;}
-    }
-    private static void guardAnimations(){
-        if(animationGuard)return;animationGuard=true;
-        try{traben.entity_model_features.EMFAnimationApi.registerVanillaModelCondition(entity->entity instanceof net.minecraft.world.entity.Entity actual&&GUI_ENTITIES.contains(actual));}catch(Exception|LinkageError error){Boombox.LOG.warn("Journal preview animation guard unavailable",error);}
     }
     /** Bounded GUI-only motes in the recorded elite palette; never spawn world particles. */
     private static void aura(GuiGraphicsExtractor g,DefeatRecord record,int x,int y,int width,int height,float age){
