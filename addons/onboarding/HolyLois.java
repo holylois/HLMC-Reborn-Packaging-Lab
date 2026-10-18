@@ -69,6 +69,7 @@ public final class HolyLois implements ModInitializer {
         net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback.EVENT.register((dispatcher, registries, environment) -> {
             BotWallCommand.register(dispatcher);
             DonateCommand.register(dispatcher);
+            Hidden.command(dispatcher);
             support.register(dispatcher);
             claims.register(dispatcher);
             redeem.register(dispatcher);
@@ -138,7 +139,7 @@ public final class HolyLois implements ModInitializer {
         });
         ServerMessageEvents.ALLOW_GAME_MESSAGE.register((server,message,overlay) ->
             !(message.getContents() instanceof TranslatableContents t && t.getKey().startsWith("multiplayer.player.joined"))
-                && Quiet.allow(message));
+                && Quiet.allow(message) && Hidden.toolBroadcast(server, message));
         ServerTickEvents.END_SERVER_TICK.register(this::tick);
         ServerTickEvents.END_SERVER_TICK.register(this::interfaceTick);
     }

@@ -21,6 +21,9 @@ final class Quiet {
 
     private static long stamp = Long.MIN_VALUE;
     private static List<Pattern> hidden = List.of();
+    private static List<String> plain = List.of();
+    /** Lowercase quiet names that chose to be seen with /hidden off; cleared by a restart (hidden is the default). */
+    static final Set<String> SHOWN = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private Quiet() {}
 
@@ -33,7 +36,8 @@ final class Quiet {
             long modified = Files.getLastModifiedTime(FILE).toMillis();
             if (modified != stamp) {
                 var config = new Gson().fromJson(Files.readString(FILE), Config.class);
-                hidden = config == null || config.names == null ? List.of() : config.names.stream().filter(n -> !n.isBlank()).map(Quiet::pattern).toList();
+                plain = config == null || config.names == null ? List.of() : config.names.stream().filter(n -> !n.isBlank()).map(String::strip).toList();
+                hidden = plain.stream().map(Quiet::pattern).toList();
                 stamp = modified;
                 LOG.info("Holy Lois quiet names: {}", hidden.size());
             }
@@ -41,10 +45,17 @@ final class Quiet {
         return hidden;
     }
 
+    private static synchronized String plainName(int index) { return index < plain.size() ? plain.get(index).toLowerCase(Locale.ROOT) : ""; }
+
     static Pattern pattern(String name) { return Pattern.compile("(?<![A-Za-z0-9_])" + Pattern.quote(name.strip()) + "(?![A-Za-z0-9_])", Pattern.CASE_INSENSITIVE); }
 
-    /** True when NAME is one of the quiet names (whole name, any case). */
+    /** True when NAME is one of the quiet names (whole name, any case) and has not chosen /hidden off. */
     static boolean quiet(String name) {
+        return listed(name) && !SHOWN.contains(name.toLowerCase(Locale.ROOT));
+    }
+
+    /** True when NAME is in the quiet file, whatever its current /hidden choice. */
+    static boolean listed(String name) {
         if (name == null) return false;
         for (var pattern : names()) if (pattern.matcher(name).matches()) return true;
         return false;
@@ -55,7 +66,9 @@ final class Quiet {
 
     static boolean allow(String text, String translationKey) {
         if (translationKey.startsWith("death.")) return true;
-        for (var name : names()) if (name.matcher(text).find()) return false;
+        var patterns = names();
+        for (int i = 0; i < patterns.size(); i++)
+            if (!SHOWN.contains(plainName(i)) && patterns.get(i).matcher(text).find()) return false;
         return true;
     }
 }

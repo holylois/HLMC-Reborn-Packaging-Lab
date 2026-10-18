@@ -109,6 +109,12 @@ public final class OnboardingTest {
         check(rejects("http://example.com/a.mp3")&&rejects("file:///etc/passwd")&&rejects("https://user:pw@example.com/a.mp3")&&!rejects("https://example.com/a.mp3"),"Only plain https links are accepted");
         check(AudioUrlGuard.waitMs(null,5000)==0&&AudioUrlGuard.waitMs(1000L,6000)==15000&&AudioUrlGuard.waitMs(1000L,30000)==0,"One audio link per player every 20 seconds");
         check(Quiet.quiet("PJAMPJAM")&&!Quiet.quiet("pjampjam2")&&!Quiet.quiet("Elza")&&!Quiet.quiet(null),"Quiet names match whole names in any case");
+        Quiet.SHOWN.add("pjampjam");
+        check(!Quiet.quiet("pjampjam")&&Quiet.listed("pjampjam")&&Quiet.allow("pjampjam joined the game","multiplayer.player.joined")&&!Quiet.quiet("Elza"),"/hidden off shows that quiet name and lets its join through");
+        Quiet.SHOWN.remove("pjampjam");
+        check(Hidden.toolText("[\u26A1] Profiler is now running! (async)")&&Hidden.toolText("https://spark.lucko.me/Tf2OZ4ThVZ")&&Hidden.toolText("[Polymer] Starting resource pack generation...")
+            &&!Hidden.toolText("TipaoAlina has made the advancement [Pocket Money]")&&!Hidden.toolText("Elza: look at spark"),"Spark, Polymer and LuckPerms broadcasts go to operators only");
+        check(Quiet.quiet("pjampjam")&&!Quiet.allow("pjampjam left the game","multiplayer.player.left"),"/hidden on hides the name again");
         {var staff=new net.minecraft.server.players.NameAndId(new java.util.UUID(0,1),"pjanpjan");var friend=new net.minecraft.server.players.NameAndId(new java.util.UUID(0,2),"Elza");
          java.util.function.Predicate<net.minecraft.server.players.NameAndId> isStaff=p->p.name().equals("pjanpjan");
          var status=new net.minecraft.network.protocol.status.ServerStatus(net.minecraft.network.chat.Component.literal("Holy Lois"),java.util.Optional.of(new net.minecraft.network.protocol.status.ServerStatus.Players(3,2,java.util.List.of(staff,friend))),java.util.Optional.empty(),java.util.Optional.empty(),false);

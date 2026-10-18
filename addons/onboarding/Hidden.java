@@ -31,8 +31,63 @@ public final class Hidden {
 
     public static void rememberHost(Connection connection, String host) { HOSTS.put(connection, host == null ? "" : host); }
 
+    /** Staff who chose /hidden off this session. A restart forgets it, so hidden stays the default. */
+    static final Set<UUID> SHOWN = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     static boolean hidden(MinecraftServer server, NameAndId player) {
-        return Quiet.quiet(player.name()) || server.getPlayerList().isOp(player);
+        return !SHOWN.contains(player.id()) && (Quiet.quiet(player.name()) || server.getPlayerList().isOp(player));
+    }
+
+    /** Players who are hidden unless they choose otherwise: operators and the quiet names. */
+    static boolean staff(MinecraftServer server, ServerPlayer player) {
+        return Quiet.listed(player.getGameProfile().name()) || server.getPlayerList().isOp(player.nameAndId());
+    }
+
+    /**
+     * /hidden [on|off]: staff switch their own visibility. Off shows them in Tab, /list and the server list and tells
+     * everyone they joined; on says they left and hides them again. Without an argument it toggles.
+     */
+    static void command(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher) {
+        dispatcher.register(net.minecraft.commands.Commands.literal("hidden")
+            .requires(source -> source.getPlayer() != null && staff(source.getServer(), source.getPlayer()))
+            .executes(c -> set(c.getSource().getPlayerOrException(), !SHOWN.contains(c.getSource().getPlayerOrException().getUUID())))
+            .then(net.minecraft.commands.Commands.literal("on").executes(c -> set(c.getSource().getPlayerOrException(), false)))
+            .then(net.minecraft.commands.Commands.literal("off").executes(c -> set(c.getSource().getPlayerOrException(), true))));
+    }
+
+    static int set(ServerPlayer player, boolean show) {
+        var server = player.level().getServer();
+        var name = player.getGameProfile().name().toLowerCase(Locale.ROOT);
+        boolean shown = SHOWN.contains(player.getUUID());
+        if (show != shown) {
+            var list = server.getPlayerList();
+            if (!show) list.broadcastSystemMessage(net.minecraft.network.chat.Component.translatable("multiplayer.player.left", player.getDisplayName()).withStyle(net.minecraft.ChatFormatting.YELLOW), false);
+            if (show) { SHOWN.add(player.getUUID()); Quiet.SHOWN.add(name); } else { SHOWN.remove(player.getUUID()); Quiet.SHOWN.remove(name); }
+            // Re-send this player's Tab row; each viewer's copy is listed or unlisted by forViewer.
+            list.broadcastAll(new ClientboundPlayerInfoUpdatePacket(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED), List.of(player)));
+            // Vanilla join lines are filtered (the welcome is private), so this one is plain text in the same look.
+            if (show) list.broadcastSystemMessage(net.minecraft.network.chat.Component.literal(player.getGameProfile().name() + " joined the game").withStyle(net.minecraft.ChatFormatting.YELLOW), false);
+        }
+        player.sendSystemMessage(net.minecraft.network.chat.Component.literal(show
+            ? "You are visible: Tab, /list and the server list show you. /hidden on hides you again."
+            : "You are hidden from Tab, /list and the server list. /hidden off shows you.").withStyle(net.minecraft.ChatFormatting.GRAY));
+        return 1;
+    }
+
+    /**
+     * Server tool broadcasts (spark profiles started by the lag watch, Polymer and LuckPerms start-up lines) reach operators
+     * only. Returns false when the message was handled here and must not go to everyone.
+     */
+    static boolean toolBroadcast(MinecraftServer server, net.minecraft.network.chat.Component message) {
+        if (!toolText(message.getString())) return true;
+        for (var player : server.getPlayerList().getPlayers()) if (seesAll(player)) player.sendSystemMessage(message);
+        return false;
+    }
+
+    static boolean toolText(String text) {
+        var line = text.strip();
+        return line.startsWith("[\u26A1]") || line.contains("spark.lucko.me") || line.startsWith("[Polymer]") || line.contains("LuckPerms v")
+            || line.contains("Running on Fabric - fabric@");
     }
 
     static boolean seesAll(ServerPlayer viewer) { return viewer.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER); }
