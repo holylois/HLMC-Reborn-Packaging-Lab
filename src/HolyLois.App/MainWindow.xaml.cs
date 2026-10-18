@@ -37,6 +37,10 @@ public partial class MainWindow : ThemedWindow
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException) { }
         NewsPicture.Background = new ImageBrush(LauncherArt.Pick("cow", !context.IsIsolated)) { Stretch = Stretch.UniformToFill, AlignmentX = AlignmentX.Center };
+        // Roomier on bigger screens (up to 1200 x 860), never larger than the work area; small laptops keep the minimum size.
+        var area = SystemParameters.WorkArea;
+        Width = Math.Clamp(Math.Min(1200, area.Width - 80), MinWidth, Math.Max(MinWidth, area.Width));
+        Height = Math.Clamp(Math.Min(860, area.Height - 60), MinHeight, Math.Max(MinHeight, area.Height));
         // Short windows get a smaller logo so the server block never crowds the action feedback.
         SizeChanged += (_, _) => Logo.Width = Logo.Height = ActualHeight < 740 ? 112 : 140;
         Refresh();

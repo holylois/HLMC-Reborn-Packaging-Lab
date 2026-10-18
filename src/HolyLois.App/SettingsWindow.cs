@@ -9,23 +9,27 @@ using System.Windows.Media;
 namespace HolyLois.App;
 
 /// <summary>
-/// One dialog in four groups, most used first: player and launch, help and diagnostics, shortcuts, rules and privacy. Rare
-/// maintenance sits folded under Advanced, with Remove launcher last.
+/// One dialog with a section list on the left and one section at a time on the right, most used first: Play, Graphics and
+/// memory, Help, Shortcuts and links, Advanced (rare maintenance, Remove launcher last).
 /// </summary>
 public sealed class SettingsWindow : ThemedWindow
 {
+    private readonly List<(string Key, StackPanel Page, Button Tab)> sections = [];
+    private readonly ScrollViewer pageHost = new() { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
+    private readonly StackPanel tabs = new() { Margin = new Thickness(14,0,14,18) };
+
+    /// <summary>Section keys in display order, for renders and tests.</summary>
+    public IReadOnlyList<string> SectionKeys => sections.Select(s => s.Key).ToList();
+
     public SettingsWindow(ClientContext context)
     {
-        Title = "Holy Lois: Reborn - Settings"; Width = 610; Height = 720; ResizeMode = ResizeMode.NoResize;
+        Title = "Holy Lois: Reborn - Settings"; Width = 880; Height = 600; ResizeMode = ResizeMode.NoResize;
         WindowStartupLocation = WindowStartupLocation.CenterOwner; Background = (Brush)Application.Current.Resources["SurfaceRaised"]; FontFamily = new FontFamily("Segoe UI");
-        var panel = new StackPanel { Margin = new Thickness(28,22,28,24) };
-        var root = panel;
+        StackPanel panel = new(), root = panel;
         StackPanel location = new();
-        StackPanel? memoryRow = null;
-        Text(Localize.Text("Settings"),27,true);
-        Text(Localize.Text("SettingsIntro"));
+        StackPanel? memoryRow = null; TextBlock? memoryElsewhere = null;
 
-        Group("GroupPlay");
+        Section("GroupPlay");
         var named = context.Settings.Launcher != "official";
         if (named)
         {
@@ -47,21 +51,6 @@ public sealed class SettingsWindow : ThemedWindow
         join.Checked += (_, _) => Save(() => context.SetJoinServer(true)); join.Unchecked += (_, _) => Save(() => context.SetJoinServer(false));
         panel.Children.Add(join);
         Text(Localize.Text("JoinOnStartInfo"),12);
-        // Memory only applies when the app starts the game itself; the official launcher and SKlauncher have their own setting.
-        var memoryPanel = new StackPanel { Visibility = context.UsesFastStart ? Visibility.Visible : Visibility.Collapsed }; memoryRow = memoryPanel;
-        panel.Children.Add(memoryPanel); var outer = panel; panel = memoryPanel;
-        Text(Localize.Text("MemoryTitle"),14,true);
-        var memory = new ComboBox { Margin = new Thickness(0,8,0,0), HorizontalAlignment = HorizontalAlignment.Left, MinWidth = 220 };
-        System.Windows.Automation.AutomationProperties.SetName(memory, Localize.Text("MemoryTitle"));
-        var total = ClientContext.ComputerMemoryBytes;
-        memory.Items.Add(new ComboBoxItem { Content = string.Format(Localize.Text("MemoryAuto"), FastStart.MemoryMb(total) / 1024), Tag = 0 });
-        foreach (var gb in new[] { 3, 4, 5, 6, 8, 10, 12, 16 }.Where(gb => gb * 1024 <= FastStart.MaxMemoryMb(total)))
-            memory.Items.Add(new ComboBoxItem { Content = string.Format(Localize.Text("MemoryGb"), gb), Tag = gb * 1024 });
-        memory.SelectedItem = memory.Items.Cast<ComboBoxItem>().FirstOrDefault(i => (int)i.Tag == (context.Settings.MemoryMb ?? 0)) ?? memory.Items[0];
-        memory.SelectionChanged += (_, _) => { if (memory.SelectedItem is ComboBoxItem { Tag: int mb }) Save(() => context.SetMemory(mb == 0 ? null : mb)); };
-        panel.Children.Add(memory);
-        Text(Localize.Text("MemoryInfo"),12);
-        panel = outer;
         location.Visibility = context.UsesFastStart ? Visibility.Collapsed : Visibility.Visible;
         panel.Children.Add(location);
         panel = location;
@@ -73,7 +62,40 @@ public sealed class SettingsWindow : ThemedWindow
         });
         panel = root;
 
-        Group("GroupHelp");
+        Section("GroupGraphics");
+        // Memory only applies when the app starts the game itself; the official launcher and SKlauncher have their own setting.
+        var memoryPanel = new StackPanel { Visibility = context.UsesFastStart ? Visibility.Visible : Visibility.Collapsed }; memoryRow = memoryPanel;
+        panel.Children.Add(memoryPanel); panel = memoryPanel;
+        Text(Localize.Text("MemoryTitle"),14,true);
+        var memory = new ComboBox { Margin = new Thickness(0,8,0,0), HorizontalAlignment = HorizontalAlignment.Left, MinWidth = 220 };
+        System.Windows.Automation.AutomationProperties.SetName(memory, Localize.Text("MemoryTitle"));
+        var total = ClientContext.ComputerMemoryBytes;
+        memory.Items.Add(new ComboBoxItem { Content = string.Format(Localize.Text("MemoryAuto"), FastStart.MemoryMb(total) / 1024), Tag = 0 });
+        foreach (var gb in new[] { 3, 4, 5, 6, 8, 10, 12, 16 }.Where(gb => gb * 1024 <= FastStart.MaxMemoryMb(total)))
+            memory.Items.Add(new ComboBoxItem { Content = string.Format(Localize.Text("MemoryGb"), gb), Tag = gb * 1024 });
+        memory.SelectedItem = memory.Items.Cast<ComboBoxItem>().FirstOrDefault(i => (int)i.Tag == (context.Settings.MemoryMb ?? 0)) ?? memory.Items[0];
+        memory.SelectionChanged += (_, _) => { if (memory.SelectedItem is ComboBoxItem { Tag: int mb }) Save(() => context.SetMemory(mb == 0 ? null : mb)); };
+        panel.Children.Add(memory);
+        Text(Localize.Text("MemoryInfo"),12);
+        panel = root;
+        memoryElsewhere = new TextBlock { Text = Localize.Text("MemoryElsewhere"), TextWrapping = TextWrapping.Wrap, FontSize = 12, Foreground = (Brush)Application.Current.Resources["Muted"], Margin = new Thickness(0,12,0,0),
+            Visibility = context.UsesFastStart ? Visibility.Collapsed : Visibility.Visible };
+        panel.Children.Add(memoryElsewhere);
+        Text(Localize.Text("ShadersTitle"),14,true);
+        Text(Localize.Text("ShaderHint"),12);
+        var graphicsRow = new WrapPanel();
+        var graphicsStatus = Status();
+        void GraphicsButton(string label, Func<string?> run)
+        {
+            var button = new Button { Content = label, Margin = new Thickness(0,8,8,0), FontSize = 13, Padding = new Thickness(14,8,14,8) };
+            button.Click += (_, _) => { try { graphicsStatus.Text = run() ?? graphicsStatus.Text; } catch (Exception ex) { graphicsStatus.Text = Localize.Error(ex); } };
+            graphicsRow.Children.Add(button);
+        }
+        GraphicsButton(Localize.Text("ShaderOff"), () => { context.DisableShaders(); return Localize.Text("Disabled"); });
+        GraphicsButton(Localize.Text("Folder"), () => { Directory.CreateDirectory(context.Instance); Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true, ArgumentList = { context.Instance } }); return null; });
+        panel.Children.Add(graphicsRow); panel.Children.Add(graphicsStatus);
+
+        Section("GroupHelp");
         Text(Localize.Text("ReportsInfo"),12);
         var reportStatus = Status();
         if (context.LastStart is { } last)
@@ -90,20 +112,9 @@ public sealed class SettingsWindow : ThemedWindow
         ReportButton(Localize.Text("ReportSave"), () => ReportActions.Save(context));
         ReportButton("Discord", () => { ReportActions.OpenDiscord(); return null; });
         panel.Children.Add(reportRow); panel.Children.Add(reportStatus);
-        Text(Localize.Text("ShaderHint"),12);
-        var graphicsRow = new WrapPanel();
-        var graphicsStatus = Status();
-        void GraphicsButton(string label, Func<string?> run)
-        {
-            var button = new Button { Content = label, Margin = new Thickness(0,8,8,0), FontSize = 13, Padding = new Thickness(14,8,14,8) };
-            button.Click += (_, _) => { try { graphicsStatus.Text = run() ?? graphicsStatus.Text; } catch (Exception ex) { graphicsStatus.Text = Localize.Error(ex); } };
-            graphicsRow.Children.Add(button);
-        }
-        GraphicsButton(Localize.Text("ShaderOff"), () => { context.DisableShaders(); return Localize.Text("Disabled"); });
-        GraphicsButton(Localize.Text("Folder"), () => { Directory.CreateDirectory(context.Instance); Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true, ArgumentList = { context.Instance } }); return null; });
-        panel.Children.Add(graphicsRow); panel.Children.Add(graphicsStatus);
 
-        Group("GroupShortcuts");
+        Section("GroupLinks");
+        Text(Localize.Text("GroupShortcuts"),14,true);
         var shortcutRow = new WrapPanel();
         foreach (var (label, desktop) in new[] { (Localize.Text("CreateDesktop"), true), (Localize.Text("CreateStart"), false) })
         {
@@ -113,8 +124,7 @@ public sealed class SettingsWindow : ThemedWindow
         }
         panel.Children.Add(shortcutRow);
         Text(Localize.Text("SetupShortcutHint"),12);
-
-        Group("GroupRules");
+        Text(Localize.Text("GroupRules"),14,true);
         var linkRow = new WrapPanel();
         foreach (var (label, url) in new[] { (Localize.Text("RulesLink"), "https://holylois.com/rules"), (Localize.Text("PrivacyLink"), "https://holylois.com/privacy"), (Localize.Text("Website"), "https://holylois.com") })
         {
@@ -124,10 +134,8 @@ public sealed class SettingsWindow : ThemedWindow
         }
         panel.Children.Add(linkRow);
 
-        // Rare maintenance, folded so it never competes with the everyday choices.
-        var advanced = new StackPanel();
-        panel.Children.Add(new Expander { Header = Localize.Text("GroupAdvanced"), Content = advanced, Margin = new Thickness(0,18,0,0), FontSize = 14 });
-        panel = advanced;
+        // Rare maintenance on its own page, so it never competes with the everyday choices.
+        Section("GroupAdvanced");
         Action(Localize.Text("OpenAppFolder"), () => Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true, ArgumentList = { LauncherStartup.InstallRoot } }));
         var cleanupStatus = Status();
         Action(Localize.Text("CleanDownloads"), () => { _ = CleanDownloads(); }, !context.IsIsolated);
@@ -165,13 +173,33 @@ public sealed class SettingsWindow : ThemedWindow
                 catch (Exception ex) { busy.FinishAndClose(); IsEnabled = true; AppDialog.Show(this,Localize.Text("Error"),Localize.Message(ex)); }
             }
         }, !context.IsIsolated && LauncherStartup.IsInstalled, danger: true);
-        panel = root;
-        Content = new ScrollViewer { Content = root, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
 
-        void Group(string key)
+        // Left: title, intro and the section list. Right: the open section.
+        var side = new DockPanel { Background = (Brush)Application.Current.Resources["Surface"], LastChildFill = false };
+        var head = new StackPanel { Margin = new Thickness(22,22,18,16) };
+        head.Children.Add(new TextBlock { Text = Localize.Text("Settings"), FontSize = 24, FontWeight = FontWeights.SemiBold, Foreground = (Brush)Application.Current.Resources["Text"] });
+        head.Children.Add(new TextBlock { Text = Localize.Text("SettingsIntro"), FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = (Brush)Application.Current.Resources["Muted"], Margin = new Thickness(0,6,0,0) });
+        DockPanel.SetDock(head, Dock.Top); side.Children.Add(head);
+        DockPanel.SetDock(tabs, Dock.Top); side.Children.Add(tabs);
+        var layout = new Grid();
+        layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(230) });
+        layout.ColumnDefinitions.Add(new ColumnDefinition());
+        var divider = new Border { BorderBrush = (Brush)Application.Current.Resources["Line"], BorderThickness = new Thickness(0,0,1,0) };
+        layout.Children.Add(side); layout.Children.Add(divider);
+        Grid.SetColumn(pageHost, 1); layout.Children.Add(pageHost);
+        Content = layout;
+        Show(sections[0].Key);
+
+        void Section(string key)
         {
-            panel.Children.Add(new Border { BorderBrush = (Brush)Application.Current.Resources["Line"], BorderThickness = new Thickness(0,1,0,0), Margin = new Thickness(0,18,0,0) });
-            panel.Children.Add(new TextBlock { Text = Localize.Text(key).ToUpperInvariant(), FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = (Brush)Application.Current.Resources["Muted"], Margin = new Thickness(0,12,0,0) });
+            var page = new StackPanel { Margin = new Thickness(30,24,30,28) };
+            page.Children.Add(new TextBlock { Text = Localize.Text(key), FontSize = 20, FontWeight = FontWeights.SemiBold, Foreground = (Brush)Application.Current.Resources["Text"], Margin = new Thickness(0,0,0,4) });
+            var tab = new Button { Content = Localize.Text(key), HorizontalContentAlignment = HorizontalAlignment.Left, FontSize = 14, Padding = new Thickness(12,9,12,9), Margin = new Thickness(0,2,0,0),
+                BorderThickness = new Thickness(3,0,0,0) };
+            tab.Click += (_, _) => Show(key);
+            System.Windows.Automation.AutomationProperties.SetName(tab, Localize.Text(key));
+            sections.Add((key, page, tab)); tabs.Children.Add(tab);
+            panel = page; root = page;
         }
         // Result lines stay collapsed until an action writes to them, so empty ones leave no gaps.
         static TextBlock Status()
@@ -180,22 +208,40 @@ public sealed class SettingsWindow : ThemedWindow
             System.ComponentModel.DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock)).AddValueChanged(status, (_, _) => status.Visibility = string.IsNullOrEmpty(status.Text) ? Visibility.Collapsed : Visibility.Visible);
             return status;
         }
-        void Text(string text, int size = 13, bool strong = false) => panel.Children.Add(new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, FontSize = size, FontWeight = strong ? FontWeights.SemiBold : FontWeights.Normal, Foreground = (Brush)Application.Current.Resources[strong ? "Text" : "Muted"], Margin = new Thickness(0,strong ? 12 : 6,0,0) });
+        void Text(string text, int size = 13, bool strong = false) => panel.Children.Add(new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, FontSize = size, FontWeight = strong ? FontWeights.SemiBold : FontWeights.Normal, Foreground = (Brush)Application.Current.Resources[strong ? "Text" : "Muted"], Margin = new Thickness(0,strong ? 16 : 6,0,0) });
         void Choice(string title, string info, bool fast, bool selected)
         {
             var text = new StackPanel();
             text.Children.Add(new TextBlock { Text = Localize.Text(title), FontWeight = FontWeights.SemiBold, Foreground = (Brush)Application.Current.Resources["Text"] });
             text.Children.Add(new TextBlock { Text = Localize.Text(info), FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = (Brush)Application.Current.Resources["Muted"], Margin = new Thickness(0,2,0,0) });
             var radio = new RadioButton { GroupName = "playmode", Content = text, IsChecked = selected, Margin = new Thickness(0,10,0,0) };
-            radio.Checked += (_, _) => { Save(() => context.SetFastStart(fast)); location.Visibility = fast ? Visibility.Collapsed : Visibility.Visible; if (memoryRow is not null) memoryRow.Visibility = fast ? Visibility.Visible : Visibility.Collapsed; };
+            radio.Checked += (_, _) => {
+                Save(() => context.SetFastStart(fast)); location.Visibility = fast ? Visibility.Collapsed : Visibility.Visible;
+                if (memoryRow is not null) memoryRow.Visibility = fast ? Visibility.Visible : Visibility.Collapsed;
+                if (memoryElsewhere is not null) memoryElsewhere.Visibility = fast ? Visibility.Collapsed : Visibility.Visible;
+            };
             panel.Children.Add(radio);
         }
         void Save(System.Action change) { try { change(); } catch (Exception ex) { AppDialog.Show(this,Localize.Text("Error"),Localize.Message(ex)); } }
         void Action(string text, System.Action action, bool enabled = true, bool danger = false)
         {
-            var button = new Button { Content = text, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0,8,0,0), IsEnabled = enabled, FontSize = 13, Padding = new Thickness(14,8,14,8) };
+            var button = new Button { Content = text, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0,10,0,0), IsEnabled = enabled, FontSize = 13, Padding = new Thickness(14,8,14,8) };
             if (danger) button.Style = (Style)Application.Current.Resources["CancelButton"];
             button.Click += (_, _) => { try { action(); } catch (Exception ex) { AppDialog.Show(this,Localize.Text("Error"),Localize.Message(ex)); } }; panel.Children.Add(button);
+        }
+    }
+
+    /// <summary>Opens one section: its page on the right, its tab marked with the gold edge.</summary>
+    public void Show(string key)
+    {
+        foreach (var (k, page, tab) in sections)
+        {
+            var open = k == key;
+            tab.Background = (Brush)Application.Current.Resources[open ? "GoldSoft" : "Surface"];
+            tab.BorderBrush = (Brush)Application.Current.Resources[open ? "Gold" : "Surface"];
+            tab.Foreground = (Brush)Application.Current.Resources[open ? "Text" : "Muted"];
+            tab.FontWeight = open ? FontWeights.SemiBold : FontWeights.Normal;
+            if (open) { pageHost.Content = page; pageHost.ScrollToTop(); }
         }
     }
 }

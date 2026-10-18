@@ -151,7 +151,7 @@ public partial class App : Application
                 var dialog = AppDialog.Create(Localize.Text("UninstallApp"),Localize.Text("UninstallInfo"),Localize.Text("UninstallApp"),true,_=>{}); dialog.EnsureChrome();
                 var layers = new System.Windows.Controls.Canvas { Width = 1060, Height = 780, Background = (Brush)Resources["Surface"] };
                 void Layer(Window window,int x,int y,int w,int h) { var body=(FrameworkElement)window.Content; window.Content=null; var border=new System.Windows.Controls.Border { Width=w, Height=h, Background=window.Background, Child=body }; System.Windows.Controls.Canvas.SetLeft(border,x); System.Windows.Controls.Canvas.SetTop(border,y); layers.Children.Add(border); }
-                Layer(main,0,0,1060,780); Layer(settings,230,65,610,650); Layer(dialog,275,285,520,265);
+                Layer(main,0,0,1060,780); Layer(settings,90,90,880,600); Layer(dialog,275,285,520,265);
                 Render(new ThemedWindow { Content=layers,Background=(Brush)Resources["Surface"] },data,"modal-layering.png",1060,812); Shutdown(0); return;
             }
             if (args.Contains("--verify-first-run")) {
@@ -212,10 +212,16 @@ public partial class App : Application
                 await LauncherDiscovery.WarmAsync();
                 Render(new MainWindow(context),data,"main-fast-start.png",1060,748);
                 context.SelectLauncher("official"); Render(new MainWindow(context),data,"main-account.png",1060,748);
-                context.SelectLauncher("name"); Render(new SettingsWindow(context),data,"settings-fast-start.png",610,1100);
+                context.SelectLauncher("name"); Render(new SettingsWindow(context),data,"settings-fast-start.png",880,600);
                 Shutdown(0); return;
             }
-            if (args.Contains("--render-settings-preview")) { Render(new SettingsWindow(context),data!,"settings-preview.png",610,900); Shutdown(0); return; }
+            if (args.Contains("--render-settings-preview")) {
+                // One image per section, so every page can be reviewed.
+                foreach (var key in new SettingsWindow(context).SectionKeys) { var page = new SettingsWindow(context); page.Show(key); Render(page,data!,"settings-" + key + ".png",880,600); }
+                foreach (var lang in new[] { "ru", "lv" }) { Localize.Use(lang); var page = new SettingsWindow(context); page.Show("GroupGraphics"); Render(page,data!,"settings-" + lang + ".png",880,600); }
+                Localize.Use("en");
+                Shutdown(0); return;
+            }
             if (args.Contains("--render-update-preview")) {
                 if (data is null) throw new ArgumentException("Rendering requires an isolated folder.");
                 var update = new AppUpdateWindow(); update.SetTransfer("Downloading launcher " + AppUpdates.RunningVersion.ToString(3) + "...",37000000,67000000);
