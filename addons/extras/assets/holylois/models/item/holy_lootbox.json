@@ -7,6 +7,6 @@
   "east": "holylois:block/holy_lootbox_side",
   "west": "holylois:block/holy_lootbox_side",
   "up": "holylois:block/holy_lootbox_top",
-  "down": "holylois:block/holy_lootbox_top"
+  "down": "holylois:block/holy_lootbox_bottom"
  }
 }
