@@ -6,69 +6,60 @@
       "date": "2026-10-18",
       "locales": {
         "en": {
-          "summary": "The loud patch: colossal fish, a friendlier claims menu, fair prices and a faster launcher.",
-          "teaser": "Colossal fish and a faster launcher",
+          "summary": "Bigger trophy fish, a new claims menu and fairer selling prices.",
+          "teaser": "Colossal fish and a new claims menu",
           "added": [
-            "Land claims menu overhaul: a search bar, option categories, tooltips that explain every setting and a quick sub-claim menu.",
-            "Colossal Mythic fish: a tiny share of Mythics weigh 100 to 255 kg. Good luck landing one.",
-            "Launcher: choose how much memory Minecraft gets in Settings, and a free disk space check before every download."
+            "Land claims menu: a search bar, option categories, a tooltip for every setting and a quick sub-claim menu.",
+            "Colossal Mythic fish: a tiny share of Mythics weigh 100 to 255 kg."
           ],
           "changed": [
-            "Heavier trophy fish now look bigger all the way up, in your hands, on the ground and in item frames.",
-            "New installs: K opens the Journal and F7 turns shaders on or off. Your existing keys stay as you set them.",
-            "Selling: enchanted books and gear now count every enchantment they carry, at new lower enchantment prices. Tools, weapons and armor sell for half as much.",
+            "Heavier trophy fish look bigger all the way up, in your hands, on the ground and in item frames.",
+            "New installs: K opens the Journal and F7 turns shaders on or off. Your own keys stay as you set them.",
+            "Selling: enchanted books and gear count every enchantment they carry, at new lower enchantment prices. Tools, weapons and armor sell for half as much.",
             "Land of a player who has not played for 30 days goes back to wilderness.",
-            "Free-play names: a bought Minecraft account's name can still be used, but that free-play account is moved to backup when the real owner joins. The launcher asks first.",
-            "Launcher: pack files download several at a time, so installs and updates finish faster.",
-            "Vein mining no longer breaks blocks in spawn protection or past the world border, and the block that breaks your tool now drops its items."
+            "Free-play names: you can still use a bought Minecraft account's name, but that free-play account is moved to backup when the real owner joins.",
+            "Vein mining no longer breaks blocks in spawn protection or past the world border, and the block that breaks your tool drops its items."
           ],
           "fixed": [
-            "Right-clicking with the vein mining key no longer strips or tills blocks your tool cannot change.",
-            "Launcher: a slow connection no longer shows Cancelled, and an unexpected error shows a message instead of closing the app."
+            "Right-clicking with the vein mining key no longer strips or tills blocks your tool cannot change."
           ]
         },
         "ru": {
-          "summary": "Громкий патч: колоссальные рыбы, удобное меню приватов, честные цены и быстрый лаунчер.",
-          "teaser": "Колоссальные рыбы и быстрый лаунчер",
+          "summary": "Более крупные трофейные рыбы, новое меню приватов и честные цены продажи.",
+          "teaser": "Колоссальные рыбы и новое меню приватов",
           "added": [
-            "Новое меню приватов: поиск, категории настроек, подсказки к каждой настройке и быстрое меню подзон.",
-            "Колоссальные мифические рыбы: крошечная доля мифических весит от 100 до 255 кг. Удачи в поимке.",
-            "Лаунчер: в настройках можно выбрать, сколько памяти получает Minecraft, а перед каждой загрузкой проверяется свободное место на диске."
+            "Меню приватов: поиск, категории настроек, подсказка к каждой настройке и быстрое меню подзон.",
+            "Колоссальные мифические рыбы: крошечная доля мифических весит от 100 до 255 кг."
           ],
           "changed": [
-            "Тяжёлые трофейные рыбы теперь выглядят крупнее до самого верха: в руках, на земле и в рамках.",
+            "Тяжёлые трофейные рыбы выглядят крупнее до самого верха: в руках, на земле и в рамках.",
             "Новые установки: K открывает журнал, F7 включает и выключает шейдеры. Твои клавиши остаются как есть.",
-            "Продажа: зачарованные книги и снаряжение теперь учитывают все свои чары по новым, более низким ценам. Инструменты, оружие и броня продаются вдвое дешевле.",
+            "Продажа: зачарованные книги и снаряжение учитывают все свои чары по новым, более низким ценам. Инструменты, оружие и броня продаются вдвое дешевле.",
             "Земля игрока, который не заходил 30 дней, снова становится дикой.",
-            "Бесплатные имена: имя купленного аккаунта Minecraft можно взять, но этот бесплатный аккаунт переносится в резервную копию, когда зайдёт настоящий владелец. Лаунчер сначала спрашивает.",
-            "Лаунчер: файлы сборки скачиваются по несколько сразу, поэтому установка и обновления проходят быстрее.",
-            "Жилковая добыча больше не ломает блоки в защите спавна и за границей мира, а блок, на котором ломается инструмент, теперь выпадает."
+            "Бесплатные имена: имя купленного аккаунта Minecraft всё ещё можно взять, но этот бесплатный аккаунт переносится в резервную копию, когда зайдёт настоящий владелец.",
+            "Жилковая добыча больше не ломает блоки в защите спавна и за границей мира, а блок, на котором ломается инструмент, выпадает."
           ],
           "fixed": [
-            "Правый клик с клавишей жилковой добычи больше не обтёсывает и не вспахивает блоки, которые инструмент не может изменить.",
-            "Лаунчер: медленное соединение больше не показывает «Отменено», а неожиданная ошибка показывает сообщение вместо закрытия приложения."
+            "Правый клик с клавишей жилковой добычи больше не обтёсывает и не вспахивает блоки, которые инструмент не может изменить."
           ]
         },
         "lv": {
-          "summary": "Skaļais ielāps: milzu zivis, ērtāka zemes izvēlne, godīgas cenas un ātrāks palaidējs.",
-          "teaser": "Milzu zivis un ātrāks palaidējs",
+          "summary": "Lielākas trofeju zivis, jauna zemes izvēlne un godīgākas pārdošanas cenas.",
+          "teaser": "Milzu zivis un jauna zemes izvēlne",
           "added": [
-            "Jauna zemes izvēlne: meklēšana, iestatījumu kategorijas, paskaidrojumi katram iestatījumam un ātrā apakšzemju izvēlne.",
-            "Milzu mītiskās zivis: niecīga daļa mītisko sver no 100 līdz 255 kg. Veiksmi tās noķert.",
-            "Palaidējs: iestatījumos var izvēlēties, cik atmiņas saņem Minecraft, un pirms katras lejupielādes tiek pārbaudīta brīvā vieta diskā."
+            "Zemes izvēlne: meklēšana, iestatījumu kategorijas, paskaidrojums katram iestatījumam un ātrā apakšzemju izvēlne.",
+            "Milzu mītiskās zivis: niecīga daļa mītisko sver no 100 līdz 255 kg."
           ],
           "changed": [
-            "Smagākās trofeju zivis tagad izskatās lielākas līdz pašai augšai: rokās, uz zemes un rāmjos.",
+            "Smagākās trofeju zivis izskatās lielākas līdz pašai augšai: rokās, uz zemes un rāmjos.",
             "Jaunās instalācijas: K atver žurnālu, F7 ieslēdz vai izslēdz ēnotājus. Tavi taustiņi paliek, kā tos iestatīji.",
-            "Pārdošana: apburtās grāmatas un ekipējums tagad ieskaita visas savas burvestības pēc jaunām, zemākām cenām. Rīki, ieroči un bruņas pārdodas par pusi lētāk.",
+            "Pārdošana: apburtās grāmatas un ekipējums ieskaita visas savas burvestības pēc jaunām, zemākām cenām. Rīki, ieroči un bruņas pārdodas par pusi lētāk.",
             "Spēlētāja zeme, kurš nav spēlējis 30 dienas, atkal kļūst par savvaļu.",
-            "Bezmaksas vārdi: nopirkta Minecraft konta vārdu var izmantot, bet šis bezmaksas konts tiek pārvietots rezerves kopijā, kad pievienojas īstais īpašnieks. Palaidējs vispirms pajautā.",
-            "Palaidējs: pakas faili lejupielādējas pa vairākiem uzreiz, tāpēc instalēšana un atjauninājumi notiek ātrāk.",
-            "Dzīslu rakšana vairs nelauž blokus spawn aizsardzībā vai aiz pasaules robežas, un bloks, uz kura salūzt rīks, tagad izmet savus priekšmetus."
+            "Bezmaksas vārdi: nopirkta Minecraft konta vārdu joprojām var izmantot, bet šis bezmaksas konts tiek pārvietots rezerves kopijā, kad pievienojas īstais īpašnieks.",
+            "Dzīslu rakšana vairs nelauž blokus spawn aizsardzībā vai aiz pasaules robežas, un bloks, uz kura salūzt rīks, izmet savus priekšmetus."
           ],
           "fixed": [
-            "Labais klikšķis ar dzīslu rakšanas taustiņu vairs nenomizo un neuzar blokus, kurus rīks nevar mainīt.",
-            "Palaidējs: lēns savienojums vairs nerāda Atcelts, un negaidīta kļūda parāda ziņu, nevis aizver lietotni."
+            "Labais klikšķis ar dzīslu rakšanas taustiņu vairs nenomizo un neuzar blokus, kurus rīks nevar mainīt."
           ]
         }
       }
@@ -711,6 +702,302 @@
           "changed": [
             "Vienmērīgas čata animācijas atjauninājums ar jauniem tulkojumiem.",
             "Palīdzība avārijas un palaišanas gadījumā palaidējā tagad norāda uz Pastor Discord."
+          ]
+        }
+      }
+    }
+  },
+  "launcher": {
+    "1.5.0": {
+      "version": "1.5.0",
+      "date": "2026-10-18",
+      "locales": {
+        "en": {
+          "summary": "Faster installs, a memory setting and clearer errors.",
+          "added": [
+            "Settings: choose how much memory Minecraft gets.",
+            "A free disk space check before every download.",
+            "Before you take a bought Minecraft account's name, the launcher explains what happens and asks you to confirm."
+          ],
+          "changed": [
+            "Pack files download several at a time, so installs and updates finish faster.",
+            "Error and update messages are in Russian and Latvian too.",
+            "The help and quick keys show K for the Journal and F7 for shaders on new installs."
+          ],
+          "fixed": [
+            "A slow connection no longer shows Cancelled: the launcher retries and says when the connection timed out.",
+            "An unexpected error shows a message instead of closing the launcher.",
+            "A damaged settings file no longer stops the launcher from starting."
+          ]
+        },
+        "ru": {
+          "summary": "Быстрее установка, настройка памяти и понятные ошибки.",
+          "added": [
+            "Настройки: выбери, сколько памяти получает Minecraft.",
+            "Перед каждой загрузкой проверяется свободное место на диске.",
+            "Перед тем как взять имя купленного аккаунта Minecraft, лаунчер объясняет, что будет, и просит подтвердить."
+          ],
+          "changed": [
+            "Файлы сборки скачиваются по несколько сразу, поэтому установка и обновления проходят быстрее.",
+            "Сообщения об ошибках и обновлениях теперь и на русском и латышском.",
+            "Подсказки и быстрые клавиши показывают K для журнала и F7 для шейдеров на новых установках."
+          ],
+          "fixed": [
+            "Медленное соединение больше не показывает «Отменено»: лаунчер повторяет попытку и сообщает, если соединение не отвечает.",
+            "Неожиданная ошибка показывает сообщение вместо закрытия лаунчера.",
+            "Повреждённый файл настроек больше не мешает запуску лаунчера."
+          ]
+        },
+        "lv": {
+          "summary": "Ātrāka instalēšana, atmiņas iestatījums un skaidrākas kļūdas.",
+          "added": [
+            "Iestatījumi: izvēlies, cik atmiņas saņem Minecraft.",
+            "Pirms katras lejupielādes tiek pārbaudīta brīvā vieta diskā.",
+            "Pirms ņem nopirkta Minecraft konta vārdu, palaidējs paskaidro, kas notiks, un lūdz apstiprināt."
+          ],
+          "changed": [
+            "Pakas faili lejupielādējas pa vairākiem uzreiz, tāpēc instalēšana un atjauninājumi notiek ātrāk.",
+            "Kļūdu un atjauninājumu ziņas tagad ir arī krieviski un latviski.",
+            "Palīdzība un ātrie taustiņi jaunās instalācijās rāda K žurnālam un F7 ēnotājiem."
+          ],
+          "fixed": [
+            "Lēns savienojums vairs nerāda Atcelts: palaidējs mēģina vēlreiz un pasaka, ja savienojums neatbild.",
+            "Negaidīta kļūda parāda ziņu, nevis aizver palaidēju.",
+            "Bojāts iestatījumu fails vairs neliedz palaidēju palaist."
+          ]
+        }
+      }
+    },
+    "1.4.6": {
+      "version": "1.4.6",
+      "date": "2026-10-17",
+      "locales": {
+        "en": {
+          "summary": "Your name, checked while you type.",
+          "added": [
+            "When you type a player name: green means it is free and stays yours on Holy Lois once you join, orange means it belongs to a bought Minecraft account, red means someone already plays with it."
+          ],
+          "changed": [
+            "Crash and start help point to Pastor on Discord."
+          ]
+        },
+        "ru": {
+          "summary": "Имя проверяется, пока ты печатаешь.",
+          "added": [
+            "Когда вводишь имя игрока: зелёный значит оно свободно и останется твоим на Holy Lois, как только ты зайдёшь; оранжевый значит это имя купленного аккаунта Minecraft; красный значит с ним уже кто-то играет."
+          ],
+          "changed": [
+            "Помощь при вылете и запуске направляет к Pastor в Discord."
+          ]
+        },
+        "lv": {
+          "summary": "Vārds tiek pārbaudīts, kamēr raksti.",
+          "added": [
+            "Kad ieraksti spēlētāja vārdu: zaļš nozīmē, ka tas ir brīvs un paliks tavs Holy Lois, tiklīdz pievienosies; oranžs nozīmē, ka tas pieder nopirktam Minecraft kontam; sarkans nozīmē, ka ar to jau kāds spēlē."
+          ],
+          "changed": [
+            "Palīdzība avārijas un palaišanas gadījumā norāda uz Pastor Discord."
+          ]
+        }
+      }
+    },
+    "1.4.2": {
+      "version": "1.4.2",
+      "date": "2026-10-10",
+      "locales": {
+        "en": {
+          "summary": "Updating no longer gets stuck on Close Minecraft.",
+          "changed": [
+            "What changed now sorts every release into Added, Changed, Fixed and Removed."
+          ],
+          "fixed": [
+            "Updating no longer asks you to close Minecraft when only another Java program is open, and no longer gets stuck waiting for it."
+          ]
+        },
+        "ru": {
+          "summary": "Обновление больше не зависает на «Закрой Minecraft».",
+          "changed": [
+            "«Что нового» теперь делит каждый выпуск на Добавлено, Изменено, Исправлено и Убрано."
+          ],
+          "fixed": [
+            "Обновление больше не просит закрыть Minecraft, когда открыта только другая Java-программа, и не зависает в ожидании."
+          ]
+        },
+        "lv": {
+          "summary": "Atjaunināšana vairs neiestrēgst pie Aizver Minecraft.",
+          "changed": [
+            "Kas jauns tagad sadala katru laidienu: Pievienots, Mainīts, Labots un Noņemts."
+          ],
+          "fixed": [
+            "Atjaunināšana vairs neprasa aizvērt Minecraft, ja atvērta ir tikai cita Java programma, un vairs neiestrēgst gaidot."
+          ]
+        }
+      }
+    },
+    "1.4.1": {
+      "version": "1.4.1",
+      "date": "2026-10-10",
+      "locales": {
+        "en": {
+          "summary": "A calmer look: gold marks only the main button, your state and the newest update, while keys, commands and tips use quiet text colors. Built-in help no longer lists /spawn.",
+          "changed": [
+            "A calmer look: gold marks only the main button, your state and the newest update, while keys, commands and tips use quiet text colors. Built-in help no longer lists /spawn."
+          ]
+        },
+        "ru": {
+          "summary": "Спокойнее на вид: золотом выделены только главная кнопка, твоё состояние и свежее обновление, а клавиши, команды и подсказки стали нейтральными. Встроенная справка больше не упоминает /spawn.",
+          "changed": [
+            "Спокойнее на вид: золотом выделены только главная кнопка, твоё состояние и свежее обновление, а клавиши, команды и подсказки стали нейтральными. Встроенная справка больше не упоминает /spawn."
+          ]
+        },
+        "lv": {
+          "summary": "Mierīgāks izskats: zelta krāsā tikai galvenā poga, tavs stāvoklis un jaunākais atjauninājums, bet taustiņi, komandas un padomi ir neitrālās krāsās. Iebūvētā palīdzība vairs nemin /spawn.",
+          "changed": [
+            "Mierīgāks izskats: zelta krāsā tikai galvenā poga, tavs stāvoklis un jaunākais atjauninājums, bet taustiņi, komandas un padomi ir neitrālās krāsās. Iebūvētā palīdzība vairs nemin /spawn."
+          ]
+        }
+      }
+    },
+    "1.4.0": {
+      "version": "1.4.0",
+      "date": "2026-10-10",
+      "locales": {
+        "en": {
+          "summary": "A cleaner launcher: one big button that says Install, Update or Play, your skin head next to your name, quick keys and commands on the main screen and a short three-step setup with real server screenshots. The two ways to play are now called I own Minecraft and Play with a name.",
+          "changed": [
+            "A cleaner launcher: one big button that says Install, Update or Play, your skin head next to your name, quick keys and commands on the main screen and a short three-step setup with real server screenshots. The two ways to play are now called I own Minecraft and Play with a name."
+          ]
+        },
+        "ru": {
+          "summary": "Лаунчер стал чище: одна большая кнопка Установить, Обновить или Играть, голова твоего скина рядом с именем, быстрые клавиши и команды на главном экране и короткая настройка в три шага со скриншотами сервера. Способы игры теперь называются У меня есть Minecraft и Играть с именем.",
+          "changed": [
+            "Лаунчер стал чище: одна большая кнопка Установить, Обновить или Играть, голова твоего скина рядом с именем, быстрые клавиши и команды на главном экране и короткая настройка в три шага со скриншотами сервера. Способы игры теперь называются У меня есть Minecraft и Играть с именем."
+          ]
+        },
+        "lv": {
+          "summary": "Tīrāks palaidējs: viena liela poga Instalēt, Atjaunināt vai Spēlēt, tava skina galva blakus vārdam, ātrie taustiņi un komandas galvenajā ekrānā un īsa iestatīšana trīs soļos ar servera ekrānuzņēmumiem. Spēles veidi tagad saucas Man ir Minecraft un Spēlēt ar vārdu.",
+          "changed": [
+            "Tīrāks palaidējs: viena liela poga Instalēt, Atjaunināt vai Spēlēt, tava skina galva blakus vārdam, ātrie taustiņi un komandas galvenajā ekrānā un īsa iestatīšana trīs soļos ar servera ekrānuzņēmumiem. Spēles veidi tagad saucas Man ir Minecraft un Spēlēt ar vārdu."
+          ]
+        }
+      }
+    },
+    "1.3.1": {
+      "version": "1.3.1",
+      "date": "2026-10-06",
+      "locales": {
+        "en": {
+          "summary": "Handmade branding: the website, live map and server-list icons now use the original Holy Lois artwork. Gameplay and pack 1.8.0 stay unchanged.",
+          "changed": [
+            "Handmade branding: the website, live map and server-list icons now use the original Holy Lois artwork. Gameplay and pack 1.8.0 stay unchanged."
+          ]
+        },
+        "ru": {
+          "summary": "Наши иконки: сайт, живая карта и список серверов теперь используют оригинальные рисунки Holy Lois. Игровой процесс и сборка 1.8.0 не изменились.",
+          "changed": [
+            "Наши иконки: сайт, живая карта и список серверов теперь используют оригинальные рисунки Holy Lois. Игровой процесс и сборка 1.8.0 не изменились."
+          ]
+        },
+        "lv": {
+          "summary": "Pašu veidotās ikonas: vietne, dzīvā karte un serveru saraksts tagad izmanto oriģinālos Holy Lois zīmējumus. Spēles process un paka 1.8.0 nav mainīti.",
+          "changed": [
+            "Pašu veidotās ikonas: vietne, dzīvā karte un serveru saraksts tagad izmanto oriģinālos Holy Lois zīmējumus. Spēles process un paka 1.8.0 nav mainīti."
+          ]
+        }
+      }
+    },
+    "1.3.0": {
+      "version": "1.3.0",
+      "date": "2026-10-05",
+      "locales": {
+        "en": {
+          "summary": "Fast start: press Play and Minecraft opens straight from the Holy Lois launcher and joins the server by itself. No SKlauncher needed, just a player name. Java and Minecraft are downloaded once (or reused from another launcher on your PC), a start window shows every step, and Settings has your name history, a Join Holy Lois on start switch for singleplayer, and a crash report you can send on Discord. Bought accounts still open Minecraft Launcher, which now joins Holy Lois by itself too.",
+          "changed": [
+            "Fast start: press Play and Minecraft opens straight from the Holy Lois launcher and joins the server by itself. No SKlauncher needed, just a player name. Java and Minecraft are downloaded once (or reused from another launcher on your PC), a start window shows every step, and Settings has your name history, a Join Holy Lois on start switch for singleplayer, and a crash report you can send on Discord. Bought accounts still open Minecraft Launcher, which now joins Holy Lois by itself too."
+          ]
+        },
+        "ru": {
+          "summary": "Быстрый старт: нажми Играть, и Minecraft запустится прямо из лаунчера Holy Lois и сам зайдёт на сервер. SKlauncher не нужен, хватит имени игрока. Java и Minecraft скачиваются один раз (или берутся из другого лаунчера на компьютере), окно запуска показывает каждый шаг, а в Настройках есть история имён, переключатель входа на Holy Lois при запуске для одиночной игры и отчёт о вылете для Discord. Купленные аккаунты по-прежнему открывают Minecraft Launcher, который теперь тоже сам заходит на Holy Lois.",
+          "changed": [
+            "Быстрый старт: нажми Играть, и Minecraft запустится прямо из лаунчера Holy Lois и сам зайдёт на сервер. SKlauncher не нужен, хватит имени игрока. Java и Minecraft скачиваются один раз (или берутся из другого лаунчера на компьютере), окно запуска показывает каждый шаг, а в Настройках есть история имён, переключатель входа на Holy Lois при запуске для одиночной игры и отчёт о вылете для Discord. Купленные аккаунты по-прежнему открывают Minecraft Launcher, который теперь тоже сам заходит на Holy Lois."
+          ]
+        },
+        "lv": {
+          "summary": "Ātrais starts: spied Spēlēt, un Minecraft atveras uzreiz no Holy Lois palaidēja un pats pievienojas serverim. SKlauncher nav vajadzīgs, pietiek ar spēlētāja vārdu. Java un Minecraft tiek lejupielādēti vienreiz (vai paņemti no cita palaidēja datorā), palaišanas logs rāda katru soli, un Iestatījumos ir vārdu vēsture, slēdzis pievienoties Holy Lois palaižot (viena spēlētāja režīmam) un avārijas atskaite nosūtīšanai Discord. Nopirktie konti joprojām atver Minecraft Launcher, kas tagad arī pats pievienojas Holy Lois.",
+          "changed": [
+            "Ātrais starts: spied Spēlēt, un Minecraft atveras uzreiz no Holy Lois palaidēja un pats pievienojas serverim. SKlauncher nav vajadzīgs, pietiek ar spēlētāja vārdu. Java un Minecraft tiek lejupielādēti vienreiz (vai paņemti no cita palaidēja datorā), palaišanas logs rāda katru soli, un Iestatījumos ir vārdu vēsture, slēdzis pievienoties Holy Lois palaižot (viena spēlētāja režīmam) un avārijas atskaite nosūtīšanai Discord. Nopirktie konti joprojām atver Minecraft Launcher, kas tagad arī pats pievienojas Holy Lois."
+          ]
+        }
+      }
+    },
+    "1.2.3": {
+      "version": "1.2.3",
+      "date": "2026-10-04",
+      "locales": {
+        "en": {
+          "summary": "New updates show in a gold card with an Update now button, and the changelog is easier to read.",
+          "changed": [
+            "New updates show in a gold card with an Update now button, and the changelog is easier to read."
+          ]
+        },
+        "ru": {
+          "summary": "Новые обновления показываются в золотой карточке с кнопкой \"Обновить сейчас\", а список изменений легче читать.",
+          "changed": [
+            "Новые обновления показываются в золотой карточке с кнопкой \"Обновить сейчас\", а список изменений легче читать."
+          ]
+        },
+        "lv": {
+          "summary": "Jauni atjauninājumi parādās zelta kartītē ar pogu \"Atjaunināt tagad\", un izmaiņu sarakstu ir vieglāk lasīt.",
+          "changed": [
+            "Jauni atjauninājumi parādās zelta kartītē ar pogu \"Atjaunināt tagad\", un izmaiņu sarakstu ir vieglāk lasīt."
+          ]
+        }
+      }
+    },
+    "1.2.2": {
+      "version": "1.2.2",
+      "date": "2026-10-03",
+      "locales": {
+        "en": {
+          "summary": "A freshly downloaded copy hands over to your installed Holy Lois or repairs it automatically.",
+          "changed": [
+            "A freshly downloaded copy hands over to your installed Holy Lois or repairs it automatically."
+          ]
+        },
+        "ru": {
+          "summary": "Свежескачанная копия передаёт управление установленному Holy Lois или сама его чинит.",
+          "changed": [
+            "Свежескачанная копия передаёт управление установленному Holy Lois или сама его чинит."
+          ]
+        },
+        "lv": {
+          "summary": "Tikko lejupielādēta kopija nodod darbu tavam instalētajam Holy Lois vai to automātiski salabo.",
+          "changed": [
+            "Tikko lejupielādēta kopija nodod darbu tavam instalētajam Holy Lois vai to automātiski salabo."
+          ]
+        }
+      }
+    },
+    "1.2.1": {
+      "version": "1.2.1",
+      "date": "2026-10-04",
+      "locales": {
+        "en": {
+          "summary": "Live server status next to the address, Discord button, key clash fixes, updated How to play.",
+          "changed": [
+            "Live server status next to the address, Discord button, key clash fixes, updated How to play."
+          ]
+        },
+        "ru": {
+          "summary": "Статус сервера рядом с адресом, кнопка Discord, исправлены конфликты клавиш, обновлён раздел \"Как играть\".",
+          "changed": [
+            "Статус сервера рядом с адресом, кнопка Discord, исправлены конфликты клавиш, обновлён раздел \"Как играть\"."
+          ]
+        },
+        "lv": {
+          "summary": "Servera statuss blakus adresei, Discord poga, taustiņu konfliktu labojumi, atjaunināta sadaļa \"Kā spēlēt\".",
+          "changed": [
+            "Servera statuss blakus adresei, Discord poga, taustiņu konfliktu labojumi, atjaunināta sadaļa \"Kā spēlēt\"."
           ]
         }
       }

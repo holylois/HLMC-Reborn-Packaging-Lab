@@ -8,6 +8,7 @@ public static class Localize
     private static readonly Dictionary<string, Dictionary<string, string>> all = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(ClientContext.Asset("strings.json"))!;
     private static readonly HolyLois.Core.PlayerNotes playerNotes = new(ClientContext.Asset("player-notes.json"));
     public static HolyLois.Core.ReleaseNote Note(HolyLois.Core.ReleaseNote signed) => playerNotes.For(signed, Language);
+    public static IReadOnlyList<HolyLois.Core.ReleaseNote> LauncherNotes() => playerNotes.Launcher(Language);
     public static string Language { get; private set; } = "en";
     public static string Text(string key) => all[Language].GetValueOrDefault(key) ?? all["en"].GetValueOrDefault(key) ?? key;
     /// <summary>Picks the language before any window exists (the update check runs first).</summary>

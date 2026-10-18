@@ -6,6 +6,7 @@ namespace HolyLois.Core;
 public sealed class PlayerNotes
 {
     private readonly Dictionary<string, JsonElement> releases = new(StringComparer.Ordinal);
+    private readonly List<JsonElement> launcher = [];
     public PlayerNotes(byte[] bytes)
     {
         try
@@ -13,16 +14,49 @@ public sealed class PlayerNotes
             if (bytes.Length > 512 * 1024) return;
             using var doc = JsonDocument.Parse(bytes);
             foreach (var entry in doc.RootElement.GetProperty("releases").EnumerateObject()) releases[entry.Name] = entry.Value.Clone();
+            if (doc.RootElement.TryGetProperty("launcher", out var apps))
+                foreach (var entry in apps.EnumerateObject()) if (entry.Value.TryGetProperty("version", out var v) && v.GetString() == entry.Name) launcher.Add(entry.Value.Clone());
         }
         catch (JsonException) { }
         catch (InvalidOperationException) { }
         catch (KeyNotFoundException) { }
+    }
+    /// <summary>The launcher's own release notes (newest first), shipped inside the EXE, so "What changed" can show each launcher
+    /// release as its own entry next to the pack's. Entries with a bad shape are skipped.</summary>
+    public IReadOnlyList<ReleaseNote> Launcher(string language)
+    {
+        var list = new List<ReleaseNote>();
+        foreach (var entry in launcher)
+        {
+            try
+            {
+                var version = entry.GetProperty("version").GetString() ?? "";
+                var date = entry.GetProperty("date").GetString() ?? "";
+                if (version.Length is < 1 or > 20 || date.Length != 10) continue;
+                var shell = new ReleaseNote(version, date, "", [], [], []);
+                var note = Localized(entry, shell, language);
+                if (!ReferenceEquals(note, shell)) list.Add(note);
+            }
+            catch (InvalidOperationException) { }
+            catch (KeyNotFoundException) { }
+        }
+        return list;
     }
     public ReleaseNote For(ReleaseNote signed, string language)
     {
         try
         {
             if (!releases.TryGetValue(signed.Version, out var entry) || entry.GetProperty("version").GetString() != signed.Version) return signed;
+            return Localized(entry, signed, language);
+        }
+        catch (JsonException) { return signed; }
+        catch (InvalidOperationException) { return signed; }
+        catch (KeyNotFoundException) { return signed; }
+    }
+    private static ReleaseNote Localized(JsonElement entry, ReleaseNote signed, string language)
+    {
+        try
+        {
             var locales = entry.GetProperty("locales");
             if (!locales.TryGetProperty(language, out var text) && !locales.TryGetProperty("en", out text)) return signed;
             var summary = text.GetProperty("summary").GetString();

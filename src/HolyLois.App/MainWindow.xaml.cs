@@ -135,14 +135,17 @@ public partial class MainWindow : ThemedWindow
         RefreshHead(named ? player : null);
         QuickKeys.Child = Quick("QuickKeysTitle", "QuickKeysBody"); QuickCommands.Child = Quick("QuickCommandsTitle", "QuickCommandsBody"); QuickLand.Child = Quick("QuickLandTitle", "QuickLandBody");
         RefreshNews(step == Step.Update);
-        // One card per release: gold version, summary, then one bullet per change so long notes stay readable.
+        // One card per release, pack and launcher kept apart (newest first; on the same day the pack comes first): label and
+        // version, summary, then one bullet per change so long notes stay readable.
         HistoryPanel.Children.Clear();
-        foreach (var signed in context.Manifest.History ?? [])
+        var releases = (context.Manifest.History ?? []).Select(signed => (Label: T("HistoryPack"), Item: Localize.Note(signed), Order: 0))
+            .Concat(Localize.LauncherNotes().Select(note => (Label: T("HistoryLauncher"), Item: note, Order: 1)))
+            .OrderByDescending(r => r.Item.Date, StringComparer.Ordinal).ThenBy(r => r.Order);
+        foreach (var (label, item, _) in releases)
         {
-            var item = Localize.Note(signed);
             var card = new StackPanel();
             var head = new TextBlock { FontSize = 14, FontWeight = FontWeights.SemiBold };
-            head.Inlines.Add(new System.Windows.Documents.Run(item.Version) { Foreground = (Brush)FindResource("Text") });
+            head.Inlines.Add(new System.Windows.Documents.Run(label + " " + item.Version) { Foreground = (Brush)FindResource("Text") });
             head.Inlines.Add(new System.Windows.Documents.Run("   " + item.Date) { Foreground = (Brush)FindResource("Muted"), FontWeight = FontWeights.Normal, FontSize = 12 });
             card.Children.Add(head);
             card.Children.Add(new TextBlock { Text = item.Summary, FontSize = 13, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) });

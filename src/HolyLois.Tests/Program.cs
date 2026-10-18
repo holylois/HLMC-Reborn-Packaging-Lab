@@ -23,6 +23,22 @@ tests.Add(("Player notes translate presentation while retaining signed identity 
     var future = note with { Version = "future" }; Check(ReferenceEquals(notes.For(future,"ru"),future), "Unknown versions should keep signed text.");
     return Task.CompletedTask;
 }));
+tests.Add(("Launcher notes list each launcher release on its own, localized, and skip broken entries", () => {
+    var bytes = Encoding.UTF8.GetBytes("""
+        {"releases":{},"launcher":{"1.6.0":{"version":"1.6.0","date":"2026-10-20","locales":{"en":{"summary":"New Settings","added":["Tabs"]},"ru":{"summary":"Новые настройки","added":["Вкладки"]}}},
+        "1.5.0":{"version":"1.5.0","date":"2026-10-18","locales":{"en":{"summary":"Faster","fixed":["Retries"]}}},"9.9.9":{"version":"wrong","date":"2026-10-01","locales":{"en":{"summary":"x","added":["x"]}}},
+        "1.4.0":{"version":"1.4.0","date":"bad","locales":{"en":{"summary":"x","added":["x"]}}}}}
+        """);
+    var ru = new PlayerNotes(bytes).Launcher("ru");
+    Check(ru.Count == 2 && ru[0].Version == "1.6.0" && ru[0].Summary == "Новые настройки" && ru[0].Added.SequenceEqual(["Вкладки"]), "Launcher notes were not localized in order.");
+    Check(ru[1].Summary == "Faster" && ru[1].Fixed!.SequenceEqual(["Retries"]), "A missing locale should fall back to English.");
+    Check(new PlayerNotes(Encoding.UTF8.GetBytes("{\"releases\":{}}")).Launcher("en").Count == 0, "Notes without a launcher section should give no launcher entries.");
+    var dir = new DirectoryInfo(AppContext.BaseDirectory); while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "assets", "player-notes.json"))) dir = dir.Parent;
+    Check(dir is not null, "assets/player-notes.json not found above the test folder.");
+    var shipped = new PlayerNotes(File.ReadAllBytes(Path.Combine(dir!.FullName, "assets", "player-notes.json")));
+    foreach (var lang in new[] { "en", "ru", "lv" }) Check(shipped.Launcher(lang).Count >= 10, "The shipped notes lost launcher releases for " + lang + ".");
+    return Task.CompletedTask;
+}));
 tests.Add(("Release history reads an optional fixed list and omits it when empty, so older launchers keep parsing", () => {
     var with = JsonSerializer.Deserialize<ReleaseNote>("{\"version\":\"1.9.3\",\"date\":\"2026-10-11\",\"summary\":\"s\",\"added\":[],\"removed\":[],\"updated\":[\"c\"],\"fixed\":[\"f\"]}", JsonSettings.Options)!;
     Check(with.Fixed is ["f"] && with.Updated is ["c"], "The fixed list was not read.");
