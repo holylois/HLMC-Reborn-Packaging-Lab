@@ -20,7 +20,7 @@ import net.minecraft.world.item.ItemStack;
  * the same atlas picture is copied four times first, shifted one pixel left/right/up/down, as a flat silhouette in the rarity
  * colour (shaders/core/rarity_outline.fsh), and the item lands on top. 26.3 sorts a layer's draws by pipeline with a random
  * key, so the item copy uses the same pipeline: equal keys keep their order. Legendary and Mythic get a moving gradient.
- * Today trophy fish and fillets; any item can join through {@link #of}.
+ * Every item with a Holy Lois tier (HolyRarity): fish, fillets, crates, gear and loot.
  */
 public final class RarityOutline {
     private RarityOutline() {}
@@ -39,7 +39,7 @@ public final class RarityOutline {
 
     /** ARGB of the stroke, 0 for none. Alpha 254 = flat colour, 253/252 = the Legendary/Mythic gradient (see the shader). */
     public static int of(ItemStack stack) {
-        String rarity = FishData.rarity(stack);
+        String rarity = HolyRarity.of(stack);
         int rgb = FishData.color(rarity) & 0xFFFFFF;
         return switch (rarity) {
             case "uncommon", "rare", "epic" -> 0xFE000000 | rgb;

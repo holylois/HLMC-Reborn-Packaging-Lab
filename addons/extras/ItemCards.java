@@ -5,7 +5,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
@@ -89,9 +88,10 @@ final class ItemCards {
             String more = kinds > 1 ? " +" + (kinds - 1) : "";
             return new Card(stack, kinds >= 4 || levels >= 12 ? "epic" : "rare", label("enchanted"), best + more);
         }
-        Rarity rarity = stack.getRarity();
-        if (rarity == Rarity.EPIC) return new Card(stack, "epic", label("epic"), amount + name);
-        if (rarity == Rarity.RARE) return new Card(stack, "rare", label("rare"), amount + name);
+        String tier = HolyRarity.of(stack);
+        if (HolyRarity.rank(tier) >= HolyRarity.rank("legendary")) return new Card(stack, "legendary", label("legendary"), amount + name);
+        if (tier.equals("epic")) return new Card(stack, "epic", label("epic"), amount + name);
+        if (tier.equals("rare")) return new Card(stack, "rare", label("rare"), amount + name);
         return null;
     }
 

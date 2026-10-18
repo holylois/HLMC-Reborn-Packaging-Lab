@@ -6,6 +6,8 @@ Prints the mod count, Holy Lois lines and every ERROR / mixin failure from the l
 import os, re, subprocess, sys, time
 from pathlib import Path
 
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')  # log lines carry LV/RU text
+
 HERE = Path(__file__).resolve().parent
 LOG = HERE / 'run/server/logs/latest.log'
 limit = int(sys.argv[1]) if len(sys.argv) > 1 else 600

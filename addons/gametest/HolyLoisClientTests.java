@@ -87,6 +87,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "hooked school fish arrives as an item", context, world, HolyLoisClientTests::schoolCatch);
             run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);
             run(failed, "a bite catches the fish swimming at the bobber", context, world, HolyLoisClientTests::seenCatch);
+            run(failed, "one rarity system names every item in our tiers", context, world, HolyLoisClientTests::holyRarity);
             run(failed, "persistent shoal fish and swimming sizes", context, world, HolyLoisClientTests::shoalIdentity);
             run(failed, "fish variant models", context, world, HolyLoisClientTests::fishVariantModels);
             run(failed, "quiet favorites and first descriptions", context, world, HolyLoisClientTests::uiRefinements);
@@ -835,6 +836,37 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         server.runCommand("clear @a");
     }
 
+    /** One rarity system, ours: vanilla, enchanted, crate and Runeforged items get the Holy Lois tier colour and shine. */
+    private static void holyRarity(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        world.getServer().runOnServer(s->{
+            var registries=s.registryAccess();
+            java.util.function.Function<String,ItemStack> item=id->new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(id)));
+            java.util.function.Function<ItemStack,Integer> nameColor=stack->{var c=stack.getStyledHoverName().getStyle().getColor();return c==null?-1:c.getValue();};
+            int green=holylois.boombox.FishData.color("uncommon")&0xFFFFFF,
+                purple=holylois.boombox.FishData.color("epic")&0xFFFFFF,gold=holylois.boombox.FishData.color("legendary")&0xFFFFFF;
+            var plain=item.apply("minecraft:diamond_sword");
+            check(holylois.boombox.HolyRarity.of(plain).isEmpty()&&(nameColor.apply(plain)==-1||nameColor.apply(plain)==0xFFFFFF),"a plain diamond sword keeps a plain name ("+holylois.boombox.HolyRarity.of(plain)+" "+Integer.toHexString(nameColor.apply(plain))+")");
+            var enchanted=item.apply("minecraft:diamond_sword");
+            enchanted.enchant(registries.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS),3);
+            check(nameColor.apply(enchanted)==green,"an enchanted sword is Uncommon green, not vanilla aqua ("+holylois.boombox.HolyRarity.of(enchanted)+" "+enchanted.getStyledHoverName()+")");
+            check(nameColor.apply(item.apply("minecraft:enchanted_golden_apple"))==(holylois.boombox.FishData.color("rare")&0xFFFFFF),"an enchanted golden apple (vanilla aqua) is our Rare blue");
+            var epic=item.apply("minecraft:stick");epic.set(net.minecraft.core.component.DataComponents.RARITY,net.minecraft.world.item.Rarity.EPIC);
+            check(nameColor.apply(epic)==purple,"a vanilla Epic item is our Epic purple");
+            var link=epic.getDisplayName().getStyle().getColor();
+            check(link!=null&&link.getValue()==purple,"chat item links use the tier colour too");
+            check(nameColor.apply(item.apply("fishing_crates:wooden_crate"))==green,"a wooden crate is Uncommon");
+            var rune=item.apply("minecraft:iron_sword");
+            com.ultimatearpg.item.ArpgWeaponHelper.setQuality(rune,com.ultimatearpg.item.ArpgItemQuality.LEGENDARY);
+            var runeName=rune.getStyledHoverName();
+            check(holylois.boombox.HolyRarity.of(rune).equals("legendary")&&runeName.getStyle().getColor()!=null&&runeName.getStyle().getColor().getValue()==gold,
+                "a Runeforged legendary is our Legendary gold ("+runeName.getStyle()+")");
+            check(holylois.boombox.FishData.SHINE_LEGENDARY.equals(((net.minecraft.network.chat.FontDescription.Resource)runeName.getStyle().getFont()).id()),"Legendary names shine");
+            var magic=item.apply("minecraft:iron_sword");
+            com.ultimatearpg.item.ArpgWeaponHelper.setQuality(magic,com.ultimatearpg.item.ArpgItemQuality.MAGIC);
+            check(nameColor.apply(magic)==green,"a Runeforged magic item is Uncommon green");
+        });
+    }
+
     /** Catch the fish you see: the closest wild fish within reach of the bobber; bucket fish and far fish never count. */
     private static void seenCatch(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
         world.getServer().runCommand("clear @a");
@@ -842,7 +874,8 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var player=s.getPlayerList().getPlayers().getFirst();
             var level=(ServerLevel)player.level();
             var origin=player.blockPosition().offset(12,0,0);
-            for(var pos:net.minecraft.core.BlockPos.betweenClosed(origin.offset(-5,-1,-2),origin.offset(5,1,2)))level.setBlockAndUpdate(pos,net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
+            var before=new java.util.LinkedHashMap<net.minecraft.core.BlockPos,net.minecraft.world.level.block.state.BlockState>();
+            for(var pos:net.minecraft.core.BlockPos.betweenClosed(origin.offset(-5,-1,-2),origin.offset(5,1,2))){before.put(pos.immutable(),level.getBlockState(pos));level.setBlockAndUpdate(pos,net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());}
             var bobber=net.minecraft.world.phys.Vec3.atCenterOf(origin);
             java.util.function.BiFunction<Double,Boolean,net.minecraft.world.entity.animal.fish.AbstractFish> cod=(dx,bucket)->{
                 var fish=(net.minecraft.world.entity.animal.fish.AbstractFish)BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("minecraft:cod")).create(level,net.minecraft.world.entity.EntitySpawnReason.NATURAL);
@@ -855,7 +888,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             released.discard();wild.discard();
             check(holylois.boombox.SchoolCatch.seen(hook)==null,"a fish 4.5 blocks away is out of reach, so the normal loot roll stays");
             far.discard();hook.discard();
-            for(var pos:net.minecraft.core.BlockPos.betweenClosed(origin.offset(-5,-1,-2),origin.offset(5,1,2)))level.setBlockAndUpdate(pos,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            before.forEach(level::setBlockAndUpdate);
         });
         world.getServer().runCommand("clear @a");
     }

@@ -18,8 +18,7 @@ public abstract class TooltipPaletteMixin {
     @Inject(method="getDefinitionColors",at=@At("RETURN"),cancellable=true,require=1)
     private static void holyLoisTierBorder(ItemStack stack,int bgStart,int bgEnd,int borderStart,int borderEnd,
                                          HolderLookup.Provider registries,CallbackInfoReturnable<FrameDefinition> info){
-        String tier=CrateStyle.rarity(stack);
-        if(tier.isEmpty())tier=FishData.rarity(stack);
+        String tier=holylois.boombox.HolyRarity.of(stack);
         if(tier.isEmpty()||info.getReturnValue()==null)return;
         int color=FishData.color(tier);
         if(color==0)return;
