@@ -290,10 +290,10 @@
       "size": 16209,
       "side": "server"
     },
-    "economycraft-fabric-1.10.0_26.3.jar": {
-      "url": "https://cdn.modrinth.com/data/H4o5bO7g/versions/Zj5Utqg0/economycraft-fabric-1.10.0_26.3.jar",
-      "sha256": "e2d0250dd3f0be7a4f35ad62e32fe1be8d000e52c5c378fb2e08efaaf01d378f",
-      "size": 549323,
+    "economycraft-fabric-1.11.0_26.3.jar": {
+      "url": "https://cdn.modrinth.com/data/H4o5bO7g/versions/xEFUTMcx/economycraft-fabric-1.11.0_26.3.jar",
+      "sha256": "042e922dc37353c1b25fb05dfab702935ef629f939e161fdc38304da5e8da69f",
+      "size": 577803,
       "side": "server"
     },
     "elytra_physics-fabric-2.6.3_mc26.3.jar": {

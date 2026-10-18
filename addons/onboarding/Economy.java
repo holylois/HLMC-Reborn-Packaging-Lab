@@ -11,7 +11,7 @@ final class Economy {
         long amount = unclaimedDaily(server, player.getUUID());
         if (amount <= 0) return 0;
         try { return Bridge.manager(server).claimDaily(player.getUUID()) ? amount : 0; }
-        catch (RuntimeException error) { org.slf4j.LoggerFactory.getLogger("HolyLois").warn("Daily coin claim failed; manual /daily remains available", error); return 0; }
+        catch (RuntimeException | LinkageError error) { org.slf4j.LoggerFactory.getLogger("HolyLois").warn("Daily coin claim failed; manual /daily remains available", error); return 0; }
     }
     private Economy() {}
 
@@ -19,17 +19,36 @@ final class Economy {
 
     /** Coins /daily would pay now, or -1 when they were already claimed today or EconomyCraft is missing. */
     static long unclaimedDaily(MinecraftServer server, UUID id) {
-        return present() ? Bridge.unclaimedDaily(server, id) : -1;
+        if (!present()) return -1;
+        try { return Bridge.unclaimedDaily(server, id); } catch (LinkageError error) { broken(error); return -1; }
     }
 
     static boolean available() { return present(); }
 
-    static long balance(MinecraftServer server, UUID id) { return present() ? Bridge.balance(server, id) : 0; }
+    static long balance(MinecraftServer server, UUID id) {
+        if (!present()) return 0;
+        try { return Bridge.balance(server, id); } catch (LinkageError error) { broken(error); return 0; }
+    }
 
     /** Takes coins only if the player has enough; false means nothing changed. */
-    static boolean withdraw(MinecraftServer server, UUID id, long amount) { return present() && amount >= 0 && Bridge.withdraw(server, id, amount); }
+    static boolean withdraw(MinecraftServer server, UUID id, long amount) {
+        if (!present() || amount < 0) return false;
+        try { return Bridge.withdraw(server, id, amount); } catch (LinkageError error) { broken(error); return false; }
+    }
 
-    static void deposit(MinecraftServer server, UUID id, long amount) { if (present() && amount > 0) Bridge.deposit(server, id, amount); }
+    static void deposit(MinecraftServer server, UUID id, long amount) {
+        if (!present() || amount <= 0) return;
+        try { Bridge.deposit(server, id, amount); } catch (LinkageError error) { broken(error); }
+    }
+
+    // An EconomyCraft update that changes its API (1.11 did, and crashed the server on join) must cost the coin features,
+    // never the server tick.
+    private static boolean warned;
+    private static void broken(LinkageError error) {
+        if (warned) return;
+        warned = true;
+        org.slf4j.LoggerFactory.getLogger("HolyLois").error("EconomyCraft API changed; Holy Lois coin features are off until the bridge is updated", error);
+    }
 
     // Separate class so EconomyCraft types load only when the mod is present.
     private static final class Bridge {
@@ -37,8 +56,10 @@ final class Economy {
         static long unclaimedDaily(MinecraftServer server, UUID id) {
             var manager = manager(server);
             if (manager == null || manager.hasClaimedDailyToday(id)) return -1;
-            return com.reazip.economycraft.EconomyConfig.get().dailyAmount;
+            var config = com.reazip.economycraft.EconomyConfig.get();
+            return config == null || config.economy == null ? -1 : config.economy.dailyReward;
         }
+        private static final com.reazip.economycraft.api.v1.MutationSource SOURCE = com.reazip.economycraft.api.v1.MutationSource.of("holylois:server");
         static long balance(MinecraftServer server, UUID id) {
             var manager = manager(server);
             Long value = manager == null ? null : manager.getBalance(id, false);
@@ -46,11 +67,11 @@ final class Economy {
         }
         static boolean withdraw(MinecraftServer server, UUID id, long amount) {
             var manager = manager(server);
-            return manager != null && balance(server, id) >= amount && manager.removeMoney(id, amount);
+            return manager != null && balance(server, id) >= amount && manager.removeMoney(id, amount, SOURCE).successful();
         }
         static void deposit(MinecraftServer server, UUID id, long amount) {
             var manager = manager(server);
-            if (manager != null) manager.addMoney(id, amount);
+            if (manager != null) manager.addMoney(id, amount, SOURCE);
         }
     }
 }
