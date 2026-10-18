@@ -49,6 +49,7 @@ public final class OnboardingTest {
         check(SkinStats.texture(textureValue).equals("https://textures.minecraft.net/texture/"+"a".repeat(64)), "Skin texture export normalizes Mojang URL and drops other profile fields");
         check(SkinStats.texture("bad base64")==null, "Malformed skin texture stays private");
         check(!StatsVisibility.visible("PJAMPJAM")&&!StatsVisibility.visible("PJAMTEST")&&!StatsVisibility.visible("PjanPjan")&&StatsVisibility.visible("Elza"),"Stats exclusion ignores capitals");
+        freePlayNames();
         check(boards.get(Leaderboards.CATEGORIES.get(0)).get(0).value()==2,"Playtime is shown in hours");
         var viewer=java.util.UUID.randomUUID(); var first=Leaderboards.view(viewer,100);
         check(Leaderboards.view(viewer,120)==first&&Leaderboards.view(viewer,400)!=first,"Board changes only when the page comes back");
@@ -128,5 +129,20 @@ public final class OnboardingTest {
     }
     private static java.net.InetAddress ip(String text) {try{return java.net.InetAddress.getByName(text);}catch(Exception e){throw new AssertionError(e);}}
     private static boolean rejects(String url) {try{AudioUrlGuard.parse(url);return false;}catch(IllegalArgumentException e){return true;}}
+    /** The bought-name owner's first verified join moves only the free-play character's per-player files, and only once. */
+    private static void freePlayNames(){
+        try{
+            var world=java.nio.file.Files.createTempDirectory("freeplay-world");var old=FreePlayNames.offline("Notch");var owner=java.util.UUID.randomUUID();var other=java.util.UUID.randomUUID();
+            for(var f:new String[]{"playerdata/"+old+".dat","playerdata/"+old+".dat_old","stats/"+old+".json","advancements/"+old+".json","playerdata/"+other+".dat","region/"+old+".dat","holylois/"+old+".json"}){
+                var path=world.resolve(f);java.nio.file.Files.createDirectories(path.getParent());java.nio.file.Files.writeString(path,f);
+            }
+            check(FreePlayNames.moveToBackup(world,"Notch",old,java.time.Instant.EPOCH)==null,"A free-play player joining under their own offline UUID is never moved");
+            var backup=FreePlayNames.moveToBackup(world,"Notch",owner,java.time.Instant.ofEpochSecond(42));
+            check(backup!=null&&backup.endsWith("free-play-Notch-42")&&java.nio.file.Files.exists(backup.resolve("moved.txt")),"Owner join creates a backup folder with a receipt");
+            check(java.nio.file.Files.exists(backup.resolve("playerdata/"+old+".dat"))&&java.nio.file.Files.exists(backup.resolve("playerdata/"+old+".dat_old"))&&java.nio.file.Files.exists(backup.resolve("stats/"+old+".json"))&&java.nio.file.Files.exists(backup.resolve("advancements/"+old+".json")),"Player data, stats and advancements move to backup");
+            check(!java.nio.file.Files.exists(world.resolve("playerdata/"+old+".dat"))&&java.nio.file.Files.exists(world.resolve("playerdata/"+other+".dat"))&&java.nio.file.Files.exists(world.resolve("region/"+old+".dat"))&&java.nio.file.Files.exists(world.resolve("holylois/"+old+".json")),"Other players, world regions and Holy Lois private files stay");
+            check(FreePlayNames.moveToBackup(world,"Notch",owner,java.time.Instant.ofEpochSecond(43))==null,"A second join finds nothing left to move");
+        }catch(java.io.IOException error){throw new AssertionError(error);}
+    }
     private static void check(boolean value,String message) {checked++;if(!value)throw new AssertionError(message);}
 }
