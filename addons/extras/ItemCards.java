@@ -108,7 +108,10 @@ final class ItemCards {
         if (!cinematic && mc.gui.hud.isHidden() || mc.gui.screen() != null) return;
         if (shown == 0) {
             shown = now; lastShown = now; cardsShown++;
-            mc.player.playSound(net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 0.6f, current.rarity().equals("legendary") ? 1.5f : 1.2f);
+            // One chime per tier: higher tiers ring brighter, Legendary and Mythic add a sparkle.
+            float pitch = switch (current.rarity()) { case "epic" -> 1.35f; case "legendary", "mythic" -> 1.5f; default -> 1.2f; };
+            mc.player.playSound(net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 0.6f, pitch);
+            if (HolyRarity.rank(current.rarity()) >= HolyRarity.rank("legendary")) mc.player.playSound(net.minecraft.sounds.SoundEvents.AMETHYST_CLUSTER_BREAK, 0.35f, 1.6f);
         }
         long age = now - shown;
         if (age > LIFE) { current = null; lastShown = now; return; }

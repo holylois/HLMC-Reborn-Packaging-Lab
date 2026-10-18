@@ -122,7 +122,8 @@ public final class FishLook {
                 if (FishData.shiny(item.getItem()) && random.nextInt(2) == 0)
                     mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.END_ROD, item.getX() + (random.nextDouble() - 0.5) * 0.6,
                         item.getY() + 0.2 + random.nextDouble() * 0.4, item.getZ() + (random.nextDouble() - 0.5) * 0.6, 0, 0.04, 0);
-                String rarity = FishData.rarity(item.getItem());
+                // Every Epic, Legendary and Mythic item sparkles on the ground in its tier colour (HolyRarity), not only fish.
+                String rarity = HolyRarity.of(item.getItem());
                 int chance = switch (rarity) { case "epic" -> 4; case "legendary" -> 2; case "mythic" -> 1; default -> 0; };
                 if (chance == 0 || random.nextInt(chance) != 0) continue;
                 float size = scale(item.getItem(), ItemDisplayContext.GROUND);
