@@ -40,9 +40,10 @@ public final class RarityOutline {
     /** ARGB of the stroke, 0 for none. Alpha 254 = flat colour, 253/252 = the Legendary/Mythic gradient (see the shader). */
     public static int of(ItemStack stack) {
         String rarity = HolyRarity.of(stack);
+        if (!HolyRarity.outlined(stack, rarity)) return 0;
         int rgb = FishData.color(rarity) & 0xFFFFFF;
         return switch (rarity) {
-            case "uncommon", "rare", "epic" -> 0xFE000000 | rgb;
+            case "uncommon", "rare", "epic", "cursed" -> 0xFE000000 | rgb;
             case "legendary" -> 0xFD000000 | rgb;
             case "mythic" -> 0xFC000000 | rgb;
             default -> 0;

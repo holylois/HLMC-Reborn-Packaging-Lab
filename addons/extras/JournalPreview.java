@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 public final class JournalPreview {
     private final LinkedHashMap<DefeatRecord,LivingEntity> cache=new LinkedHashMap<>();
     private Object level;
-    private final long clockStarted=net.minecraft.util.Util.getMillis();
+    private long startTick=-1;
     private static int nextPreviewId=-1_000_000;
     public LivingEntity entity(DefeatRecord record){
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||record==null||record.type().equals("minecraft:player"))return null;
@@ -67,10 +67,17 @@ public final class JournalPreview {
             }
         }
         var renderer=Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entity);
-        float age=JournalHints.motionEnabled()?(net.minecraft.util.Util.getMillis()-clockStarted)/50f:0;
-        // Fresh Animations (EMF) drives idle motion from the entity's own tick clock, so it advances with the GUI clock.
-        entity.tickCount=(int)age;
-        var state=renderer.createRenderState(entity,age-(int)age);
+        // Fresh Animations (EMF) adds the game's own partial tick to the entity's tick count, so the preview clock must follow
+        // game ticks too: a separate wall clock drifted against it inside each tick and made bodies (spiders) jump.
+        var mc=Minecraft.getInstance();long now=mc.level.getGameTime();if(startTick<0||now<startTick)startTick=now;
+        boolean motion=JournalHints.motionEnabled();
+        float partial=motion?mc.getDeltaTracker().getGameTimeDeltaPartialTick(true):0;
+        entity.tickCount=motion?(int)(now-startTick):0;
+        float age=entity.tickCount+partial;
+        if(entity instanceof net.minecraft.world.entity.animal.fish.AbstractFish)((holylois.boombox.mixins.EntityWaterAccessor)entity).holyLois$setInWater(true);
+        // A witch recorded mid-drink still had the potion in hand; the preview shows it idle.
+        if(entity instanceof net.minecraft.world.entity.monster.Witch witch)witch.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,ItemStack.EMPTY);
+        var state=renderer.createRenderState(entity,partial);
         idleState(state,age,entity instanceof net.minecraft.world.entity.animal.fish.AbstractFish);
         state.shadowPieces.clear();state.outlineColor=0;
         state.lightCoords=net.minecraft.util.LightCoordsUtil.pack(15,15);

@@ -89,7 +89,7 @@ final class ItemCards {
             return new Card(stack, kinds >= 4 || levels >= 12 ? "epic" : "rare", label("enchanted"), best + more);
         }
         String tier = HolyRarity.of(stack);
-        if (HolyRarity.rank(tier) >= HolyRarity.rank("legendary")) return new Card(stack, "legendary", label("legendary"), amount + name);
+        if (HolyRarity.rank(tier) >= HolyRarity.rank("legendary")) return new Card(stack, tier, label(tier), amount + name);
         if (tier.equals("epic")) return new Card(stack, "epic", label("epic"), amount + name);
         if (tier.equals("rare")) return new Card(stack, "rare", label("rare"), amount + name);
         return null;

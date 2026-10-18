@@ -206,6 +206,8 @@
   "holylois.card.crate": "Ящик с добычей",
   "holylois.card.enchanted": "Зачаровано",
   "holylois.card.legendary": "Легендарная находка",
+  "holylois.card.mythic": "Мифическая находка",
+  "holylois.card.cursed": "Проклятая находка",
   "holylois.card.epic": "Эпическая находка",
   "holylois.card.rare": "Редкая находка",
   "holylois.card.enabled": "Карточки предметов включены.",

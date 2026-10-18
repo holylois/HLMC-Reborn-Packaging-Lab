@@ -849,7 +849,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var enchanted=item.apply("minecraft:diamond_sword");
             enchanted.enchant(registries.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS),3);
             check(nameColor.apply(enchanted)==green,"an enchanted sword is Uncommon green, not vanilla aqua ("+holylois.boombox.HolyRarity.of(enchanted)+" "+enchanted.getStyledHoverName()+")");
-            check(nameColor.apply(item.apply("minecraft:enchanted_golden_apple"))==(holylois.boombox.FishData.color("rare")&0xFFFFFF),"an enchanted golden apple (vanilla aqua) is our Rare blue");
+            check(nameColor.apply(item.apply("minecraft:enchanted_golden_apple"))==purple&&holylois.boombox.HolyRarity.of(item.apply("minecraft:mace")).equals("legendary"),"enchanted golden apple is Epic, mace Legendary (item floors)");
             var epic=item.apply("minecraft:stick");epic.set(net.minecraft.core.component.DataComponents.RARITY,net.minecraft.world.item.Rarity.EPIC);
             check(nameColor.apply(epic)==purple,"a vanilla Epic item is our Epic purple");
             var link=epic.getDisplayName().getStyle().getColor();
@@ -864,6 +864,28 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var magic=item.apply("minecraft:iron_sword");
             com.ultimatearpg.item.ArpgWeaponHelper.setQuality(magic,com.ultimatearpg.item.ArpgItemQuality.MAGIC);
             check(nameColor.apply(magic)==green,"a Runeforged magic item is Uncommon green");
+            var lootboxTool=item.apply("minecraft:diamond_pickaxe");
+            lootboxTool.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Tester's Lucky Pickaxe").withStyle(st->st.withColor(0xFFAA00)));
+            check(holylois.boombox.HolyRarity.of(lootboxTool).equals("legendary"),"a gold or orange named item (lootbox tools) is Legendary");
+            var runeRare=item.apply("minecraft:iron_sword");
+            com.ultimatearpg.item.ArpgWeaponHelper.setQuality(runeRare,com.ultimatearpg.item.ArpgItemQuality.RARE);
+            var lines=runeRare.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(registries),null,net.minecraft.world.item.TooltipFlag.NORMAL);
+            var title=lines.getFirst().getStyle().getColor();
+            check(title!=null&&title.getValue()==(holylois.boombox.FishData.color("rare")&0xFFFFFF),"Runeforged tooltip titles use our tier colour ("+lines.getFirst()+")");
+            var qualityLine=lines.stream().filter(l->l.getString().startsWith("Quality:")).findFirst();
+            check(qualityLine.isEmpty()||qualityLine.get().getString().equals("Quality: Rare")&&qualityLine.get().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents q
+                &&q.getArgs()[0] instanceof net.minecraft.network.chat.Component word&&word.getStyle().getColor()!=null&&word.getStyle().getColor().getValue()==(holylois.boombox.FishData.color("rare")&0xFFFFFF),
+                "the Runeforged quality line names and colours our tier ("+qualityLine.map(Object::toString).orElse("none")+")");
+            var cursed=item.apply("minecraft:iron_sword");
+            com.ultimatearpg.item.ArpgWeaponHelper.setQuality(cursed,com.ultimatearpg.item.ArpgItemQuality.CURSED);
+            check(holylois.boombox.HolyRarity.of(cursed).equals("cursed")&&nameColor.apply(cursed)==(holylois.boombox.FishData.color("cursed")&0xFFFFFF),"Runeforged cursed gear is our Cursed violet");
+            java.util.function.Function<String,ItemStack> trophy=tier->{var cod=item.apply("minecraft:cod");var tag=new net.minecraft.nbt.CompoundTag();var fishTag=new net.minecraft.nbt.CompoundTag();
+                fishTag.putString("rarity",tier);fishTag.putDouble("kg",2.0);tag.put("holylois_fish",fishTag);
+                cod.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(tag));
+                cod.set(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE,true);return cod;};
+            check(!trophy.apply("rare").hasFoil()&&trophy.apply("mythic").hasFoil(),"trophy fish glint only when Mythic (or Shiny)");
+            check(holylois.boombox.RarityOutline.of(enchanted)==0&&holylois.boombox.RarityOutline.of(trophy.apply("uncommon"))!=0&&holylois.boombox.RarityOutline.of(runeRare)!=0,
+                "Uncommon gear has no inventory outline; fish and Rare gear do");
         });
     }
 

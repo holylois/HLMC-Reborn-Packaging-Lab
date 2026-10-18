@@ -229,10 +229,11 @@ public final class JournalScreen extends TravelScreen {
                 lines.add(Component.literal(entry.x()+", "+entry.y()+", "+entry.z()));
             }else if(entry.kind()!=JournalState.FISH&&!entry.location())lines.add(label("no_location"));
             int textTop=dy,contentHeight=0;
-            for(var line:lines)contentHeight+=font.split(line,dw-8).size()*11+2;
+            for(var line:lines)contentHeight+=font.split(line,dw-16).size()*11+2;
             maxScroll=detailOverflow(contentHeight,max+2-textTop);detailScroll=Math.clamp(detailScroll,0,maxScroll);
             dy-=detailScroll;g.enableScissor(dx,textTop,dx+dw,max+2);
-            for(var line:lines){for(var part:font.split(line,dw-8)){g.text(font,part,dx+4,dy,Ui.MUTED,false);dy+=11;}dy+=2;}
+            // Details start on the preview box's left edge (dx+8), so the pane reads as one column.
+            for(var line:lines){for(var part:font.split(line,dw-16)){g.text(font,part,dx+8,dy,Ui.MUTED,false);dy+=11;}dy+=2;}
             g.disableScissor();
             if(maxScroll>0)g.text(font,Component.literal("↕"),dx+dw-8,boxY+2,Ui.MUTED,false);
         }

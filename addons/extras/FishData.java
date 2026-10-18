@@ -62,7 +62,8 @@ public final class FishData {
         if (!(kg > 0)) return 1;
         kg = Math.min(kg, MAX_KG);
         double s = 0.9 + 0.55 * Math.sqrt(Math.min(kg, 20));
-        if (kg > 20) s += 0.9 * Math.log(kg / 20) / Math.log(2);
+        // Past 20 kg the size follows weight^0.4, so 96 kg is clearly bigger than 36 kg (1.5x) and a 255 kg colossal is huge.
+        if (kg > 20) s *= Math.pow(kg / 20, 0.4);
         return (float) Math.max(1, s);
     }
 
@@ -119,6 +120,7 @@ public final class FishData {
             case "epic" -> 0xFFC27CFF;
             case "legendary" -> 0xFFFFB43D;
             case "mythic" -> 0xFFFF5A5A;
+            case "cursed" -> 0xFFA14BE0;
             default -> 0;
         };
     }
