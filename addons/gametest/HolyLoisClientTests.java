@@ -86,6 +86,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "cards over the cinematic camera", context, world, HolyLoisClientTests::cinematicCards);
             run(failed, "hooked school fish arrives as an item", context, world, HolyLoisClientTests::schoolCatch);
             run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);
+            run(failed, "a bite catches the fish swimming at the bobber", context, world, HolyLoisClientTests::seenCatch);
             run(failed, "persistent shoal fish and swimming sizes", context, world, HolyLoisClientTests::shoalIdentity);
             run(failed, "fish variant models", context, world, HolyLoisClientTests::fishVariantModels);
             run(failed, "quiet favorites and first descriptions", context, world, HolyLoisClientTests::uiRefinements);
@@ -832,6 +833,31 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             drop.discard();
         });
         server.runCommand("clear @a");
+    }
+
+    /** Catch the fish you see: the closest wild fish within reach of the bobber; bucket fish and far fish never count. */
+    private static void seenCatch(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        world.getServer().runCommand("clear @a");
+        world.getServer().runOnServer(s->{
+            var player=s.getPlayerList().getPlayers().getFirst();
+            var level=(ServerLevel)player.level();
+            var origin=player.blockPosition().offset(12,0,0);
+            for(var pos:net.minecraft.core.BlockPos.betweenClosed(origin.offset(-5,-1,-2),origin.offset(5,1,2)))level.setBlockAndUpdate(pos,net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
+            var bobber=net.minecraft.world.phys.Vec3.atCenterOf(origin);
+            java.util.function.BiFunction<Double,Boolean,net.minecraft.world.entity.animal.fish.AbstractFish> cod=(dx,bucket)->{
+                var fish=(net.minecraft.world.entity.animal.fish.AbstractFish)BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("minecraft:cod")).create(level,net.minecraft.world.entity.EntitySpawnReason.NATURAL);
+                fish.setNoAi(true);fish.setPos(bobber.add(dx,0,0));fish.setFromBucket(bucket);level.addFreshEntity(fish);return fish;
+            };
+            var released=cod.apply(0.5,true);var wild=cod.apply(-1.5,false);var far=cod.apply(4.5,false);
+            var hook=new net.minecraft.world.entity.projectile.FishingHook(player,level,0,0);hook.setPos(bobber);level.addFreshEntity(hook);
+            var seen=holylois.boombox.SchoolCatch.seen(hook);
+            check(seen==wild,"the bite takes the wild fish next to the bobber, not the closer released one ("+seen+")");
+            released.discard();wild.discard();
+            check(holylois.boombox.SchoolCatch.seen(hook)==null,"a fish 4.5 blocks away is out of reach, so the normal loot roll stays");
+            far.discard();hook.discard();
+            for(var pos:net.minecraft.core.BlockPos.betweenClosed(origin.offset(-5,-1,-2),origin.offset(5,1,2)))level.setBlockAndUpdate(pos,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        });
+        world.getServer().runCommand("clear @a");
     }
 
     private static void shoalCatch(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {

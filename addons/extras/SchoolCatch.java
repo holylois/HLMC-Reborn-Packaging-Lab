@@ -38,6 +38,27 @@ public final class SchoolCatch {
         return stack;
     }
 
+    /** How close (blocks) a swimming fish must be to the bobber at a bite to become the catch. */
+    public static final double SEEN_RADIUS = 2.5;
+
+    /**
+     * Catch the fish you see (owner 2026-10-18): at a bite, the closest wild swimming fish next to the bobber is the catch
+     * instead of a loot roll. Fish released from buckets or name-tagged (persistent) never count, so a released Legendary
+     * cannot be caught again and again; a Fish of Thieves shoal at the bobber keeps its own catch.
+     */
+    public static AbstractFish seen(net.minecraft.world.entity.projectile.FishingHook hook) {
+        if (!(hook.level() instanceof ServerLevel level)) return null;
+        var box = hook.getBoundingBox().inflate(SEEN_RADIUS + 1);
+        if (!level.getEntitiesOfClass(com.stevekung.fishofthieves.entity.shoal.Shoal.class, box.inflate(1)).isEmpty()) return null;
+        return level.getEntitiesOfClass(AbstractFish.class, box, fish -> countsAsSeen(fish, hook.position()))
+            .stream().min(java.util.Comparator.comparingDouble(fish -> fish.distanceToSqr(hook))).orElse(null);
+    }
+
+    static boolean countsAsSeen(AbstractFish fish, net.minecraft.world.phys.Vec3 bobber) {
+        return fish.isAlive() && fish.level().getFluidState(fish.blockPosition()).is(net.minecraft.tags.FluidTags.WATER) && !fish.isPersistenceRequired() && !fish.fromBucket()
+            && fish.position().distanceToSqr(bobber) <= SEEN_RADIUS * SEEN_RADIUS && !rawItemFor(fish).isEmpty();
+    }
+
     /** True when the hooked fish became a flying item (the hook then retrieves nothing else). */
     public static boolean reel(ServerPlayer angler, AbstractFish fish) {
         return reel(angler,fish,fish.position());

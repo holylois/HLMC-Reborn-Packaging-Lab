@@ -12,16 +12,19 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** A hooked swimming fish arrives as the fish item instead of being pulled in alive (SchoolCatch). */
+/** A hooked swimming fish, or one swimming next to the bobber at a bite, arrives as the fish item (SchoolCatch). */
 @Mixin(FishingHook.class)
 public abstract class SchoolCatchMixin {
     @Shadow private Entity hookedIn;
+    @Shadow private int nibble;
 
     @Shadow public abstract net.minecraft.world.entity.player.Player getPlayerOwner();
 
     @Inject(method = "retrieve", at = @At("HEAD"), cancellable = true)
     private void holyLoisReelFish(ItemStack rod, CallbackInfoReturnable<Integer> info) {
-        if (!(hookedIn instanceof AbstractFish fish) || !(getPlayerOwner() instanceof ServerPlayer angler)) return;
+        if (!(getPlayerOwner() instanceof ServerPlayer angler)) return;
+        var fish = hookedIn instanceof AbstractFish hooked ? hooked : hookedIn == null && nibble > 0 ? SchoolCatch.seen((FishingHook)(Object)this) : null;
+        if (fish == null) return;
         if (!SchoolCatch.reel(angler, fish,((FishingHook)(Object)this).position())) return;
         var hook=(FishingHook)(Object)this;
         net.minecraft.advancements.triggers.CriteriaTriggers.FISHING_ROD_HOOKED.trigger(angler,rod,hook,java.util.List.of(SchoolCatch.itemFor(fish)));
