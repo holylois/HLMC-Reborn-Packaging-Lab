@@ -34,9 +34,10 @@ public static class AppMaintenance
             RemoveShortcut(true); RemoveShortcut(false);
             window.SetStage("Removing the launcher app. Keeping game files...",65);
             await Task.Run(() => ApplicationRemoval.RemoveOwnedApp(LauncherStartup.InstallRoot,expected));
+            UninstallEntry.Remove();
         }
         finally { AppUpdates.ReleaseLock(); }
-        AtomicFiles.Write(SafePaths.Resolve(LauncherStartup.InstallRoot,"removal-result.txt"),"Holy Lois launcher removed. Game files and personal settings were kept."u8.ToArray());
+        AtomicFiles.Write(SafePaths.Resolve(LauncherStartup.InstallRoot,LauncherSetup.RemovedMarker),"Holy Lois launcher removed. Game files and personal settings were kept."u8.ToArray());
         window.SetStage("Launcher removed. Game files were kept.",100,true); await Task.Delay(750); window.FinishAndClose();
     }
     private static void RemoveShortcut(bool desktop)

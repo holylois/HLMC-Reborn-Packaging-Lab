@@ -51,6 +51,10 @@ public partial class App : Application
             { data ??= Path.Combine(LauncherStartup.InstallRoot,"data"); launcherTestRoot ??= Path.Combine(Path.GetFullPath(args[migrationTestIndex+1]),"minecraft"); }
             if (!development) AppPromotion.RelocateSettings(args);
             var context = new ClientContext(data, launcherTestRoot);
+            if (args.Contains("--verify-uninstall-entry")) {
+                if (data is null || !context.IsIsolated) throw new IOException("Uninstall entry verification requires an isolated folder.");
+                File.WriteAllText(Path.Combine(data,"uninstall-entry-result.txt"),UninstallEntry.Verify()); Shutdown(0); return;
+            }
             if (args.Contains("--verify-shortcut-names")) {
                 if (data is null || !context.IsIsolated) throw new IOException("Shortcut verification requires an isolated folder.");
                 AppPromotion.RenameShortcutAt(Path.Combine(data,"shortcuts"),Path.Combine(data,"source"),Path.Combine(data,"target"));
@@ -294,6 +298,16 @@ public partial class App : Application
                 bool readyMarked = false;
                 void Ready() { if (readyNonce is not null && !readyMarked) { AppUpdates.MarkReady(readyNonce); readyMarked = true; } }
                 if (args.Contains("--app-update-smoke-fail")) throw new IOException("Simulated updated app startup failure.");
+                // Windows "Installed apps" -> Uninstall: the same remove dialog as Settings, then the usual maintenance worker.
+                if (args.Contains("--uninstall")) {
+                    Localize.Use(context.Settings.Language);
+                    var forget = new System.Windows.Controls.CheckBox { Content = Localize.Text("ForgetNames"), IsChecked = false, Margin = new Thickness(0,0,0,18), Visibility = File.Exists(context.PlayersPath) ? Visibility.Visible : Visibility.Collapsed };
+                    if (AppDialog.Show(null,Localize.Text("UninstallApp"),Localize.Text("UninstallInfo"),Localize.Text("UninstallApp"),true,forget)) {
+                        if (forget.IsChecked == true) context.ForgetPlayers();
+                        AppMaintenance.RequestRemoval();
+                    }
+                    Shutdown(0); return;
+                }
                 if (args.Contains("--app-update-smoke") && args.Contains("--skip-app-update-once")) {
                     AtomicFiles.Write(SafePaths.Resolve(LauncherStartup.InstallRoot,"smoke-rollback.txt"),System.Text.Encoding.ASCII.GetBytes(AppUpdates.RunningVersion.ToString())); Shutdown(0); return;
                 }
@@ -315,6 +329,7 @@ public partial class App : Application
                 {
                     AppUpdates.ReleaseLock(); LauncherStartup.RunInstalled(); Shutdown(0); return;
                 }
+                UninstallEntry.Register();
                 if (readyNonce is null && !args.Contains("--skip-app-update-once"))
                 {
                     Localize.Use(context.Settings.Language);

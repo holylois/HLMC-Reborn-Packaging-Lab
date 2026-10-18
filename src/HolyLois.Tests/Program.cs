@@ -116,6 +116,12 @@ tests.Add(("First setup choices, cancelled setup, deletion and legacy migration"
     Check(!LauncherSetup.NeedsSetup(legacy,false), "Legacy deleted shortcuts would be recreated.");
     LauncherSetup.Migrate(legacy,"sk"); Check(!LauncherSetup.NeedsSetup(legacy,false), "Migration did not persist.");
     Check(!LauncherSetup.NeedsSetup(Dir("setup-settings"),true), "Existing player was forced through first setup.");
+    // Removal deletes the setup receipts but keeps settings and leaves its result file: a reinstall offers setup again.
+    var reinstall = Dir("setup-reinstall"); System.IO.File.WriteAllText(Path.Combine(reinstall,"shortcuts-initialized.txt"),"old");
+    System.IO.File.WriteAllText(Path.Combine(reinstall,LauncherSetup.RemovedMarker),"removed");
+    Check(LauncherSetup.NeedsSetup(reinstall,true), "A reinstall after removal skipped setup, so no shortcuts were offered.");
+    var before = calls.Count; LauncherSetup.Complete(reinstall,new("sk",true,false),calls.Add);
+    Check(calls.Count == before + 1 && calls[^1] && !LauncherSetup.NeedsSetup(reinstall,true) && !System.IO.File.Exists(Path.Combine(reinstall,LauncherSetup.RemovedMarker)), "Reinstall setup did not create the chosen shortcut and clear the removal marker.");
     return Task.CompletedTask;
 }));
 tests.Add(("Reject traversal, reserved names, personal-file manifests and HTTP", async () => {
