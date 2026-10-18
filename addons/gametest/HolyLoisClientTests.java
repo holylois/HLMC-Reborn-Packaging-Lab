@@ -80,6 +80,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "holy lois journal", context, world, HolyLoisClientTests::journal);
             run(failed, "strongest journal record and zombie preview", context, world, holylois.StrongestJournalChecks::run);
             run(failed, "journal fresh animations", context, world, holylois.FreshAnimationJournalChecks::run);
+            run(failed, "liteminer operator hint hidden", context, world, HolyLoisClientTests::liteminerHint);
             run(failed, "fish records and catch milestones", context, world, holylois.CollectionChecks::run);
             run(failed, "smelting enchantment compatibility", context, world, holylois.SmeltingChecks::run);
             run(failed, "cards over the cinematic camera", context, world, HolyLoisClientTests::cinematicCards);
@@ -121,6 +122,14 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             org.slf4j.LoggerFactory.getLogger("HolyLoisTest").error("TEST FAILED: " + name, failure);
             context.runOnClient(client -> { if (client.player != null) client.player.closeContainer(); });
         }
+    }
+
+    /** Liteminer's status lines stay, its operator-only "/amber doctor" hint is gone for everyone. */
+    private static void liteminerHint(ClientGameTestContext context, TestSingleplayerContext world) {
+        context.runOnClient(client -> {
+            check(net.minecraft.client.resources.language.I18n.get("liteminer.connection.doctor_hint").isEmpty(), "Liteminer doctor hint is blank");
+            check(net.minecraft.client.resources.language.I18n.get("liteminer.connection.unconfirmed").startsWith("The server"), "Liteminer status text stays");
+        });
     }
 
     private static void inventoryOpens(ClientGameTestContext context, TestSingleplayerContext world) {
