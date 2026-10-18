@@ -47,16 +47,18 @@ tests.Add(("Release history reads an optional fixed list and omits it when empty
     Check(!JsonSerializer.Serialize(without, JsonSettings.Options).Contains("fixed"), "An empty fixed list was written; launcher 1.4.1 would reject the manifest.");
     return Task.CompletedTask;
 }));
-tests.Add(("TOML defaults change only the keys that changed, inside their own section", () => {
+tests.Add(("TOML defaults change only untouched keys that changed, inside their own section", () => {
     const string target = "config/DistantHorizons.toml";
     static byte[] B(string s) => Encoding.UTF8.GetBytes(s.Replace("\n", "\r\n"));
     var previous = B("[client]\n\t[client.advanced.graphics.quality]\n\t\thorizontalQuality = \"HIGH\"\n\t\tlodChunkRenderDistanceRadius = 128\n\t[client.advanced.multiplayer]\n\t\tlodChunkRenderDistanceRadius = 5\n");
     var next = B("[client]\n\t[client.advanced.graphics.quality]\n\t\thorizontalQuality = \"HIGH\"\n\t\tlodChunkRenderDistanceRadius = 64\n\t\tnewQualityKey = true\n\t[client.advanced.multiplayer]\n\t\tlodChunkRenderDistanceRadius = 5\n[server]\n\tfresh = 1\n");
     var personal = B("# mine\n[client]\n\t[client.advanced.graphics.quality]\n\t\thorizontalQuality = \"LOW\"\n\t\tlodChunkRenderDistanceRadius = 256\n\t[client.advanced.multiplayer]\n\t\tlodChunkRenderDistanceRadius = 9\n");
     var merged = Encoding.UTF8.GetString(SharedDefaults.Merge(target, personal, previous, next));
-    Check(merged.Contains("\t\tlodChunkRenderDistanceRadius = 64\n") && merged.Contains("horizontalQuality = \"LOW\""), "The changed key was not written or a personal key was overwritten.");
+    Check(merged.Contains("\t\tlodChunkRenderDistanceRadius = 256\n") && merged.Contains("horizontalQuality = \"LOW\""), "A value the player chose was overwritten by a changed default.");
+    var untouched = Encoding.UTF8.GetString(SharedDefaults.Merge(target, B("[client]\n\t[client.advanced.graphics.quality]\n\t\tlodChunkRenderDistanceRadius = 128\n"), previous, next));
+    Check(untouched.Contains("\t\tlodChunkRenderDistanceRadius = 64\n"), "A player still on the old default did not get the new default.");
     Check(merged.Contains("[client.advanced.multiplayer]\n\t\tlodChunkRenderDistanceRadius = 9"), "The same key name in another section was touched.");
-    Check(merged.Contains("lodChunkRenderDistanceRadius = 64\n\t\tnewQualityKey = true\n\t[client.advanced.multiplayer]"), "A new key was not added inside its section with its indentation.");
+    Check(merged.Contains("lodChunkRenderDistanceRadius = 256\n\t\tnewQualityKey = true\n\t[client.advanced.multiplayer]"), "A new key was not added inside its section with its indentation.");
     Check(merged.TrimEnd().EndsWith("[server]\nfresh = 1") && merged.StartsWith("# mine\n"), "A new section was not appended or a comment was lost.");
     Check(ReferenceEquals(SharedDefaults.Merge(target, personal, next, next), personal), "Unchanged defaults rewrote the personal file.");
     Check(Encoding.UTF8.GetString(SharedDefaults.Merge(target, personal, null, B("x = [\n1]\n"))).StartsWith("x = ["), "A TOML shape the merge cannot read did not fall back to the complete file.");

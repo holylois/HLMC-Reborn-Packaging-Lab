@@ -45,11 +45,13 @@ public static class SharedDefaults
             if (target == "options.txt") { MigrateBodyToggle(lines, oldKeys, newKeys); SeedNewKeybinds(lines, oldKeys, newKeys); ResolveKeyConflicts(lines); }
             return Encoding.UTF8.GetBytes(string.Join("\n", lines).TrimEnd('\n') + "\n");
         }
-        // TOML: like options.txt, only the keys whose shared default changed are written, inside their own [section].
-        if (target.EndsWith(".toml", StringComparison.OrdinalIgnoreCase) && Toml(next) is { } newToml && Toml(personal) is not null)
+        // TOML: only keys whose shared default changed are written, inside their own [section], and only where the player
+        // still has the old default (or no value): a value the player chose stays theirs (DH range 128 -> 64 keeps a personal 256).
+        if (target.EndsWith(".toml", StringComparison.OrdinalIgnoreCase) && Toml(next) is { } newToml && Toml(personal) is { } mine)
         {
             var oldToml = previous is null ? [] : Toml(previous) ?? [];
-            var changed = newToml.Where(x => !oldToml.TryGetValue(x.Key, out var old) || old != x.Value).ToList();
+            var changed = newToml.Where(x => !oldToml.TryGetValue(x.Key, out var old) || old != x.Value)
+                .Where(x => !mine.TryGetValue(x.Key, out var own) || oldToml.TryGetValue(x.Key, out var was) && own == was).ToList();
             if (changed.Count == 0) return personal;
             var lines = Encoding.UTF8.GetString(personal).Replace("\r\n", "\n").Split('\n').ToList();
             foreach (var ((section, key), value) in changed) SetToml(lines, section, key, value);
