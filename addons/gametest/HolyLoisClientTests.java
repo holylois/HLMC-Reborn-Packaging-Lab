@@ -88,6 +88,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);
             run(failed, "a bite catches the fish swimming at the bobber", context, world, HolyLoisClientTests::seenCatch);
             run(failed, "one rarity system names every item in our tiers", context, world, HolyLoisClientTests::holyRarity);
+            run(failed, "tier tooltip screenshots", context, world, HolyLoisClientTests::tierTooltipShots);
             run(failed, "persistent shoal fish and swimming sizes", context, world, HolyLoisClientTests::shoalIdentity);
             run(failed, "fish variant models", context, world, HolyLoisClientTests::fishVariantModels);
             run(failed, "quiet favorites and first descriptions", context, world, HolyLoisClientTests::uiRefinements);
@@ -886,7 +887,63 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             check(!trophy.apply("rare").hasFoil()&&trophy.apply("mythic").hasFoil(),"trophy fish glint only when Mythic (or Shiny)");
             check(holylois.boombox.RarityOutline.of(enchanted)==0&&holylois.boombox.RarityOutline.of(trophy.apply("uncommon"))!=0&&holylois.boombox.RarityOutline.of(runeRare)!=0,
                 "Uncommon gear has no inventory outline; fish and Rare gear do");
+            var book=item.apply("minecraft:enchanted_book");
+            book.set(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS,enchanted.getEnchantments());
+            var bookFrame=com.anthonyhilyard.legendarytooltips.LegendaryTooltips.getDefinitionColors(book,0,0,0,0,registries);
+            check(holylois.boombox.RarityOutline.of(book)==0&&(bookFrame==null||bookFrame.index()<0),
+                "enchanted books: no outline and no spike frame (tier "+holylois.boombox.HolyRarity.of(book)+", frame "+(bookFrame==null?"none":bookFrame.index())+")");
+            var legendaryFish=trophy.apply("legendary");var mythicFish=trophy.apply("mythic");
+            var legendaryFrame=com.anthonyhilyard.legendarytooltips.LegendaryTooltips.getDefinitionColors(legendaryFish,0,0,0,0,registries);
+            var mythicFrame=com.anthonyhilyard.legendarytooltips.LegendaryTooltips.getDefinitionColors(mythicFish,0,0,0,0,registries);
+            check(legendaryFrame!=null&&legendaryFrame.index()>=0&&mythicFrame!=null&&mythicFrame.index()==0&&mythicFrame.resource().getNamespace().equals("holylois"),
+                "Legendary fish get gold spikes and Mythic fish our red frame");
         });
+    }
+
+    /** Screenshots of real tooltips (frame, spikes, colours) for owner review: one per tier example, hovered in the inventory. */
+    private static void tierTooltipShots(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        var server = world.getServer();
+        server.runCommand("gamemode survival @a");
+        String[] kinds = {"rod", "book", "lootbox-pickaxe", "rune-magic", "rune-legendary", "rune-cursed", "fish-legendary", "fish-mythic"};
+        for (String kind : kinds) {
+            server.runCommand("clear @a");
+            server.runOnServer(s -> {
+                var player = s.getPlayerList().getPlayers().getFirst(); var registries = s.registryAccess();
+                var sharp = registries.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
+                ItemStack stack = switch (kind) {
+                    case "rod" -> { var r = new ItemStack(net.minecraft.world.item.Items.FISHING_ROD); r.enchant(sharp.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.LURE), 3); yield r; }
+                    case "book" -> { var b = new ItemStack(net.minecraft.world.item.Items.ENCHANTED_BOOK); var e = new net.minecraft.world.item.enchantment.ItemEnchantments.Mutable(net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY);
+                        e.set(sharp.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.MENDING), 1); b.set(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, e.toImmutable()); yield b; }
+                    case "lootbox-pickaxe" -> { var t = new ItemStack(net.minecraft.world.item.Items.DIAMOND_PICKAXE); t.enchant(sharp.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.FORTUNE), 2);
+                        t.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Tester's Lucky Pickaxe").withStyle(st -> st.withColor(0xFFAA00).withItalic(false))); yield t; }
+                    case "fish-legendary", "fish-mythic" -> { var cod = new ItemStack(net.minecraft.world.item.Items.COD); var tag = new net.minecraft.nbt.CompoundTag(); var fishTag = new net.minecraft.nbt.CompoundTag();
+                        fishTag.putString("rarity", kind.substring(5)); fishTag.putDouble("kg", kind.endsWith("mythic") ? 60 : 25); tag.put("holylois_fish", fishTag);
+                        cod.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag)); yield cod; }
+                    default -> { var sword = new ItemStack(net.minecraft.world.item.Items.IRON_SWORD);
+                        com.ultimatearpg.monster.ArpgGeneratedWeaponService.applyQualityAndRollAffixes(sword, switch (kind) { case "rune-magic" -> com.ultimatearpg.item.ArpgItemQuality.MAGIC;
+                            case "rune-legendary" -> com.ultimatearpg.item.ArpgItemQuality.LEGENDARY; default -> com.ultimatearpg.item.ArpgItemQuality.CURSED; }, player.getRandom()); yield sword; }
+                };
+                player.getInventory().setItem(20, stack);
+            });
+            context.waitTicks(5);
+            context.getInput().pressKey(options -> options.keyInventory);
+            context.waitTicks(5);
+            var pos = context.computeOnClient(client -> {
+                var screen = (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) client.gui.screen();
+                Slot target = null;
+                for (var slot : screen.getMenu().slots)
+                    if (slot.container instanceof net.minecraft.world.entity.player.Inventory && slot.getContainerSlot() == 20) target = slot;
+                int left = (int) field(screen, "leftPos"), top = (int) field(screen, "topPos");
+                double scale = client.getWindow().getGuiScale();
+                return new double[] {(left + target.x + 8) * scale, (top + target.y + 8) * scale};
+            });
+            context.getInput().setCursorPos(pos[0], pos[1]);
+            context.waitTicks(8);
+            context.takeScreenshot("tier-" + kind);
+            context.getInput().pressKey(options -> options.keyInventory);
+            context.waitTicks(3);
+        }
+        server.runCommand("clear @a");
     }
 
     /** Catch the fish you see: the closest wild fish within reach of the bobber; bucket fish and far fish never count. */

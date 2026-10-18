@@ -40,6 +40,8 @@
     "ManagedPackScreenMixin",
     "CrateNameMixin",
     "TooltipPaletteMixin",
+    "TooltipFrameMixin",
+    "SelectedNameTierMixin",
     "ShoalRadiusMixin",
     "LiteminerScrollMixin",
     "BetterAdvancementsClickMixin",

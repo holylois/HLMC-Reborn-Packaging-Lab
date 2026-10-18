@@ -31,11 +31,10 @@ public abstract class HolyRarityNameMixin {
         int color = holylois.boombox.FishData.color(tier) & 0xFFFFFF;
         var out = new java.util.ArrayList<Component>();
         for (var line : lines) out.add(HolyRarity.recolor(line));
-        boolean italic = Boolean.TRUE.equals(out.getFirst().getStyle().isItalic());
         var self = (ItemStack) (Object) this;
         // Fish and crates style their own names (Shiny star, crate tip); everything else gets one clean tier-coloured title.
         if (holylois.boombox.FishData.rarity(self).isEmpty() && holylois.boombox.CrateStyle.rarity(self).isEmpty())
-            out.set(0, Component.literal(out.getFirst().getString()).withStyle(s -> holylois.boombox.FishData.shine(s.withColor(color).withItalic(italic), tier)));
+            out.set(0, HolyRarity.title(self, out.getFirst(), tier));
         for (int i = 1; i < out.size(); i++) {
             if (!(out.get(i).getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents quality)
                 || !quality.getKey().equals("tooltip.runeforged.quality_line")) continue;
