@@ -45,8 +45,67 @@ public static class SharedDefaults
             if (target == "options.txt") { MigrateBodyToggle(lines, oldKeys, newKeys); SeedNewKeybinds(lines, oldKeys, newKeys); ResolveKeyConflicts(lines); }
             return Encoding.UTF8.GetBytes(string.Join("\n", lines).TrimEnd('\n') + "\n");
         }
-        // TOML and other formats use the reviewed complete shared file when its bytes change.
+        // TOML: like options.txt, only the keys whose shared default changed are written, inside their own [section].
+        if (target.EndsWith(".toml", StringComparison.OrdinalIgnoreCase) && Toml(next) is { } newToml && Toml(personal) is not null)
+        {
+            var oldToml = previous is null ? [] : Toml(previous) ?? [];
+            var changed = newToml.Where(x => !oldToml.TryGetValue(x.Key, out var old) || old != x.Value).ToList();
+            if (changed.Count == 0) return personal;
+            var lines = Encoding.UTF8.GetString(personal).Replace("\r\n", "\n").Split('\n').ToList();
+            foreach (var ((section, key), value) in changed) SetToml(lines, section, key, value);
+            return Encoding.UTF8.GetBytes(string.Join("\n", lines).TrimEnd('\n') + "\n");
+        }
+        // Other formats use the reviewed complete shared file when its bytes change.
         return previous is not null && previous.SequenceEqual(next) ? personal : next;
+    }
+
+    /// <summary>"[section]" and "key = value" lines of a simple TOML file; null when it has something this merge does not
+    /// understand (array tables, multi-line values), so the caller falls back to the complete file.</summary>
+    private static Dictionary<(string Section, string Key), string>? Toml(byte[] bytes)
+    {
+        var map = new Dictionary<(string, string), string>();
+        var section = "";
+        foreach (var raw in Encoding.UTF8.GetString(bytes).Replace("\r\n", "\n").Split('\n'))
+        {
+            var line = raw.Trim();
+            if (line.Length == 0 || line[0] == '#') continue;
+            if (line[0] == '[') { if (!line.EndsWith(']') || line.StartsWith("[[")) return null; section = line[1..^1].Trim(); continue; }
+            var eq = line.IndexOf('=');
+            if (eq <= 0) return null;
+            var value = line[(eq + 1)..].Trim();
+            if (value.StartsWith("\"\"\"") || value.StartsWith("'''") || value.StartsWith('[') && !value.EndsWith(']')) return null;
+            map[(section, line[..eq].Trim())] = value;
+        }
+        return map;
+    }
+
+    private static void SetToml(List<string> lines, string section, string key, string value)
+    {
+        var current = ""; var start = section.Length == 0 ? -1 : -2; var end = -1;
+        for (var i = 0; i < lines.Count; i++)
+        {
+            var line = lines[i].Trim();
+            if (line.StartsWith('[') && line.EndsWith(']'))
+            {
+                if (current == section && end < 0 && start != -2) end = i;
+                current = line[1..^1].Trim();
+                if (current == section) { start = i; end = -1; }
+                continue;
+            }
+            var eq = line.IndexOf('=');
+            if (current == section && eq > 0 && line[..eq].Trim() == key)
+            {
+                var indent = lines[i][..(lines[i].Length - lines[i].TrimStart().Length)];
+                lines[i] = indent + key + " = " + value; return;
+            }
+        }
+        if (start == -2) { lines.Add("[" + section + "]"); lines.Add(key + " = " + value); return; }
+        if (end < 0) end = lines.Count;
+        // A new key goes after the section's last non-empty line, with that line's indentation.
+        var at = end; while (at > start + 1 && lines[at - 1].Trim().Length == 0) at--;
+        var near = at > 0 ? lines[at - 1] : "";
+        var pad = near.Trim().StartsWith('[') ? near[..(near.Length - near.TrimStart().Length)] + "\t" : near[..(near.Length - near.TrimStart().Length)];
+        lines.Insert(at, (start < 0 ? "" : pad) + key + " = " + value);
     }
 
     private static void MigrateBodyToggle(List<string> lines, Dictionary<string, string> oldKeys, Dictionary<string, string> newKeys)

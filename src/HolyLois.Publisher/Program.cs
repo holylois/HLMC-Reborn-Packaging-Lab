@@ -120,7 +120,7 @@ static byte[] CaptureDefaults(string profile, string defaultsZip, string selecti
             data = Encoding.UTF8.GetBytes(string.Join("\n", lines));
         }
         if (target == "config/iris.properties") data = Encoding.UTF8.GetBytes(System.Text.RegularExpressions.Regex.Replace(Encoding.UTF8.GetString(data), @"(?m)^enableShaders=.*$", "enableShaders=false"));
-        if (target == "config/DistantHorizons.toml") data = Encoding.UTF8.GetBytes(System.Text.RegularExpressions.Regex.Replace(Encoding.UTF8.GetString(data), @"(?m)^(\s*lodChunkRenderDistance\s*=\s*)\d+", "${1}64"));
+        if (target == "config/DistantHorizons.toml") data = Encoding.UTF8.GetBytes(System.Text.RegularExpressions.Regex.Replace(Encoding.UTF8.GetString(data), @"(?m)^(\s*lodChunkRenderDistance(?:Radius)?\s*=\s*)\d+", "${1}64"));
         defaults["config/yosbr/" + target] = data;
     }
     using var memory = new MemoryStream();
