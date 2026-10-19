@@ -36,7 +36,8 @@ public partial class MainWindow : ThemedWindow
             { context.UsePlayerName(known); StatusText.Text = string.Format(T("FastStartIntro"), known); }
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException) { }
-        NewsPicture.Background = new ImageBrush(LauncherArt.Pick("cow", !context.IsIsolated)) { Stretch = Stretch.UniformToFill, AlignmentX = AlignmentX.Center };
+        // The latest-update card shows the newest release's picture (2.2.0: a Mythic catch tooltip, owner 2026-10-19).
+        NewsPicture.Background = new ImageBrush(LauncherArt.Pick("mythic-catch", false)) { Stretch = Stretch.UniformToFill, AlignmentX = AlignmentX.Center };
         // Roomier on bigger screens (up to 1200 x 860), never larger than the work area; small laptops keep the minimum size.
         var area = SystemParameters.WorkArea;
         Width = Math.Clamp(Math.Min(1200, area.Width - 80), MinWidth, Math.Max(MinWidth, area.Width));
