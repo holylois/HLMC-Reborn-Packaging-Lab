@@ -951,6 +951,13 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
     /** Drawn relics: their own icon in the inventory and on the ground, a 3D model in hand (screenshots for owner review). */
     private static void relicLooks(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
         var server=world.getServer();
+        // Compare an alternative relic art pack: HOLYLOIS_EXTRA_PACK=name.zip from run/gametest/resourcepacks.
+        String extraPack=System.getenv("HOLYLOIS_EXTRA_PACK");
+        if(extraPack!=null&&!extraPack.isBlank()){
+            context.runOnClient(client->{var repo=client.getResourcePackRepository();repo.reload();
+                check(repo.addPack("file/"+extraPack),"the extra resource pack "+extraPack+" loads");client.reloadResourcePacks();});
+            context.waitTicks(200);
+        }
         server.runCommand("clear @a");server.runCommand("gamemode survival @a");
         server.runCommand("execute as @p run legends give staff_of_quiet_roads");
         context.waitTicks(5);
@@ -980,7 +987,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.runOnClient(client->client.player.setXRot(0));
         context.getInput().pressKey(options->options.keyInventory);context.waitTicks(8);context.takeScreenshot("relic-all-inventory");
         context.getInput().pressKey(options->options.keyInventory);context.waitTicks(3);
-        for(String id:new String[]{"loiss_lantern","first_rune_hammer","bell_keepers_hook","unfinished_blade"}){
+        for(String id:new String[]{"loiss_lantern","first_rune_hammer","bell_keepers_hook","unfinished_blade","drowned_bell_clapper","staff_of_quiet_roads"}){
             server.runOnServer(s->{var p=s.getPlayerList().getPlayers().getFirst();var inv=p.getInventory();
                 for(int i=0;i<inv.getContainerSize();i++)if(holylois.boombox.RelicPowers.idOf(inv.getItem(i)).equals(id)){var st=inv.getItem(i);inv.setItem(i,inv.getItem(0));inv.setItem(0,st);}
                 inv.setSelectedSlot(0);});
@@ -997,6 +1004,8 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
                 &&holylois.boombox.RelicLooks.worn(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST))!=null,"the Circlet and the Apron have their own worn look");});
         context.runOnClient(client->{client.player.setXRot(0);client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);});
         context.waitTicks(15);context.takeScreenshot("relic-front-worn");
+        context.runOnClient(client->client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK));
+        context.waitTicks(15);context.takeScreenshot("relic-back-worn");
         context.runOnClient(client->client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
         server.runCommand("item replace entity @a armor.head with air");server.runCommand("item replace entity @a armor.chest with air");
         server.runCommand("clear @a");
