@@ -41,8 +41,7 @@ public final class Achievements {
         }
         if (tick % 1200 != 0) return;
         if (java.time.LocalTime.now(DailyRewards.RIGA).getHour() == 3) award(server, player, "fun/night_owl", "done");
-        if (Economy.unclaimedDaily(server, player.getUUID()) < 0 && net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("economycraft"))
-            award(server, player, "daily/pocket_money", "done");
+        // The Pocket Money achievement (daily coins) was removed on the owner's word (2026-10-19).
         var stats = player.getStats();
         long centimetres = 0;
         // Iterate the registered values: Stats.CUSTOM.get needs the registry's own instances, not equal keys.

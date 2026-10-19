@@ -109,6 +109,7 @@ public final class OnboardingTest {
         check(!AudioUrlGuard.isPublic(ip("::1"))&&!AudioUrlGuard.isPublic(ip("fd12::1"))&&!AudioUrlGuard.isPublic(ip("fe80::1"))&&!AudioUrlGuard.isPublic(ip("::ffff:10.0.0.1"))&&AudioUrlGuard.isPublic(ip("1.1.1.1"))&&AudioUrlGuard.isPublic(ip("2606:4700::1111")),"IPv6 private and mapped addresses are blocked, public ones pass");
         check(rejects("http://example.com/a.mp3")&&rejects("file:///etc/passwd")&&rejects("https://user:pw@example.com/a.mp3")&&!rejects("https://example.com/a.mp3"),"Only plain https links are accepted");
         check(AudioUrlGuard.waitMs(null,5000)==0&&AudioUrlGuard.waitMs(1000L,6000)==15000&&AudioUrlGuard.waitMs(1000L,30000)==0,"One audio link per player every 20 seconds");
+        check(StatsVisibility.display("N1663R").equals("N*****")&&StatsVisibility.display("Elza").equals("Elza")&&StatsVisibility.display("Knight").equals("Knight"),"Offensive names with number swaps are masked, normal names stay");
         check(Quiet.quiet("PJAMPJAM")&&!Quiet.quiet("pjampjam2")&&!Quiet.quiet("Elza")&&!Quiet.quiet(null),"Quiet names match whole names in any case");
         Quiet.SHOWN.add("pjampjam");
         check(!Quiet.quiet("pjampjam")&&Quiet.listed("pjampjam")&&Quiet.allow("pjampjam joined the game","multiplayer.player.joined")&&!Quiet.quiet("Elza"),"/hidden off shows that quiet name and lets its join through");
