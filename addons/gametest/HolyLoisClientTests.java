@@ -988,9 +988,10 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         server.runCommand("execute as @p run legends give staff_of_quiet_roads");
         context.waitTicks(5);
         server.runOnServer(s->{var p=s.getPlayerList().getPlayers().getFirst();var inv=p.getInventory();
-            for(int i=0;i<inv.getContainerSize();i++)if(holylois.boombox.RelicLooks.model(inv.getItem(i))!=null){var st=inv.getItem(i);inv.setItem(i,ItemStack.EMPTY);inv.setItem(0,st);}
+            for(int i=0;i<inv.getContainerSize();i++)if(holylois.boombox.RelicPowers.idOf(inv.getItem(i)).equals("staff_of_quiet_roads")){var st=inv.getItem(i);inv.setItem(i,ItemStack.EMPTY);inv.setItem(0,st);}
             inv.setSelectedSlot(0);
-            check(holylois.boombox.RelicLooks.model(p.getMainHandItem())!=null,"the Staff of Quiet Roads has its own look");});
+            check(holylois.boombox.RelicPowers.idOf(p.getMainHandItem()).equals("staff_of_quiet_roads")&&holylois.boombox.RelicLooks.model(p.getMainHandItem())==null,
+                "the Staff of Quiet Roads keeps its vanilla look for 2.2.0");});
         context.runOnClient(client->{client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);client.player.setXRot(10);});
         context.waitTicks(20);context.takeScreenshot("relic-staff-first-person");
         context.runOnClient(client->{client.player.setXRot(0);client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);});
@@ -1009,7 +1010,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.waitTicks(5);
         server.runOnServer(s->{var inv=s.getPlayerList().getPlayers().getFirst().getInventory();int drawn=0;
             for(int i=0;i<inv.getContainerSize();i++)if(holylois.boombox.RelicLooks.model(inv.getItem(i))!=null)drawn++;
-            check(drawn==6,"all six hand-held relics have their own look ("+drawn+")");});
+            check(inv.countItem(net.minecraft.world.item.Items.STICK)+inv.countItem(net.minecraft.world.item.Items.LANTERN)>0&&drawn==0,"relic looks are off for 2.2.0: every relic keeps its vanilla item ("+drawn+")");});
         context.runOnClient(client->client.player.setXRot(0));
         context.getInput().pressKey(options->options.keyInventory);context.waitTicks(8);context.takeScreenshot("relic-all-inventory");
         context.getInput().pressKey(options->options.keyInventory);context.waitTicks(3);

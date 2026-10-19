@@ -268,8 +268,8 @@
     {
       "path": "mods/holylois-extras-1.9.0+26.3.jar",
       "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.2.0/holylois-extras-1.9.0+26.3.jar",
-      "size": 1304471,
-      "sha256": "3372c8eb74fb14f18d7d0efe72c7842e8508d92a7260a8cd920e7adb958eeae5",
+      "size": 1304356,
+      "sha256": "0a063e5970c5550df226f54d3707de7f9551b4d999e2a073da0ef76459646fac",
       "policy": "managed"
     },
     {
@@ -754,7 +754,7 @@
         "A bite catches the fish swimming right at your bobber: you land that exact fish, with its size and rarity.",
         "/played shows your total, active and AFK time, plus time spent fishing and listening to boomboxes.",
         "Gear on dungeon shelves sometimes comes out as a Runeforged piece.",
-        "Relics look like themselves: their own icons, the Staff of Quiet Roads as a real staff in hand, and the Bell-Keeper's Hook gives +1 luck for rarer fish.",
+        "The Bell-Keeper's Hook relic gives +1 luck while held, so rarer fish bite more often.",
         "Every trophy fish now helps while held in either hand: Pondie adds health, Plentifin luck for better catches, Devilfish shortens burning, Stormfish softens falls, and a Pufferfish hurts whoever hits you."
       ],
       "updated": [

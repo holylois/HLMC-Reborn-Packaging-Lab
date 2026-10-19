@@ -7,8 +7,10 @@ import java.util.Set;
 /** Relics with their own art (assets/holylois/items/relic): a flat icon in menus, frames and on the ground, a 3D model in hand. */
 public final class RelicLooks {
     private RelicLooks() {}
-    static final Set<String> DRAWN = Set.of("staff_of_quiet_roads", "loiss_lantern", "drowned_bell_clapper", "bell_keepers_hook",
-        "first_rune_hammer", "unfinished_blade", "circlet_of_the_wanderer", "smiths_apron_scrap");
+    /** Off for 2.2.0 (owner 2026-10-19: relics keep their vanilla looks until the proper relic art lands); turn back on with
+     *  "staff_of_quiet_roads", "loiss_lantern", "drowned_bell_clapper", "bell_keepers_hook", "first_rune_hammer",
+     *  "unfinished_blade", "circlet_of_the_wanderer", "smiths_apron_scrap". */
+    static final Set<String> DRAWN = Set.of();
     /** Worn relics with their own armor texture (assets/holylois/equipment). Off for 2.2.0 (owner 2026-10-19: faces still
      *  flicker); turn back on with "circlet_of_the_wanderer", key("circlet"), "smiths_apron_scrap", key("smiths_apron"). */
     static final java.util.Map<String, net.minecraft.resources.ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset>> WORN = java.util.Map.of();
