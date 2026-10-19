@@ -970,6 +970,9 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             check(tagged==13&&relics==8,"the gallery spawns 13 pieces and gives 8 relics ("+tagged+", "+relics+")");});
         context.runOnClient(client->{client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);client.player.setYRot(180);client.player.setXRot(5);});
         context.waitTicks(30);context.takeScreenshot("relic-gallery");
+        // The worn stand (-3, -2 from the start) from its side, back and front.
+        String[][] views={{"-0.6 100 -2 90 20","side"},{"-3 100 -4.3 0 20","back"},{"-3 100 0.4 180 20","front"},{"-5.4 100 -2 -90 20","other-side"}};
+        for(String[] view:views){server.runCommand("tp @p "+view[0]);context.waitTicks(15);context.takeScreenshot("relic-stand-"+view[1]);}
     }
 
     private static void relicLooks(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
