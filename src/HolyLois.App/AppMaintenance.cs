@@ -24,15 +24,15 @@ public static class AppMaintenance
         var expected = args[i+3];
         var source = Path.GetFullPath(Environment.ProcessPath!); var tempRoot = Path.Combine(Path.GetTempPath(),"HolyLoisReborn-Maintenance") + Path.DirectorySeparatorChar;
         if (!source.StartsWith(tempRoot,StringComparison.OrdinalIgnoreCase) || AtomicFiles.Hash(source) != expected) throw new IOException("The maintenance worker could not be verified.");
-        var window = new AppUpdateWindow(Localize.Text("UninstallApp"),false); window.Show(); window.SetStage("Waiting for the launcher to close...",10);
+        var window = new AppUpdateWindow(Localize.Text("UninstallApp"),false); window.Show(); window.SetStage(Localize.Text("UpdWaitClose"),10);
         try { using var parent = Process.GetProcessById(pid); if (parent.StartTime.ToUniversalTime().Ticks != ticks) throw new IOException("The original app process changed."); using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30)); await parent.WaitForExitAsync(timeout.Token); }
         catch (ArgumentException) { }
         if (!AppUpdates.AcquireLock()) throw new IOException("Another Holy Lois window is still open.");
         try
         {
-            window.SetStage("Removing launcher shortcuts...",35);
+            window.SetStage(Localize.Text("RemoveShortcuts"),35);
             RemoveShortcut(true); RemoveShortcut(false);
-            window.SetStage("Removing the launcher app. Keeping game files...",65);
+            window.SetStage(Localize.Text("RemoveAppFiles"),65);
             await Task.Run(() => ApplicationRemoval.RemoveOwnedApp(LauncherStartup.InstallRoot,expected));
             UninstallEntry.Remove();
         }

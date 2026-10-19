@@ -143,6 +143,8 @@ internal static class FastStartTests
             var text = GameReports.Redact("C:/Users/example/AppData/x --accessToken eyJabc.def --uuid 1234 token:secret) joined 79.76.40.155 from 192.168.1.5 and 127.0.0.1", "example");
             Check(!text.Contains("example") && !text.Contains("eyJabc") && !text.Contains("secret") && !text.Contains("192.168.1.5") && !text.Contains("1234"), "Personal details stayed in the report: " + text);
             Check(text.Contains("79.76.40.155") && text.Contains("127.0.0.1") && text.Contains("C:/Users/<user>/AppData"), "Useful details were removed: " + text);
+            var lines = GameReports.Redact(@"USERPROFILE=C:\Users\example" + "\r\nhome \"C:/Users/example\" done", "example");
+            Check(!lines.Contains("example") && lines.Contains(@"C:\Users\<user>" + "\r\n"), "A user path at a line end or before a quote stayed: " + lines);
             var game = Path.Combine(testRoot, "report-game"); Directory.CreateDirectory(Path.Combine(game, "crash-reports")); Directory.CreateDirectory(Path.Combine(game, "logs"));
             File.WriteAllText(Path.Combine(game, "crash-reports", "crash-2026-10-05_12.00.00-client.txt"), "---- Minecraft Crash Report ----\nDescription: Rendering overlay");
             File.WriteAllText(Path.Combine(game, "logs", "latest.log"), "Setting user: pjamtest\nfrom C:/Users/example/x");

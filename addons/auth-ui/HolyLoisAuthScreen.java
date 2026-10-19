@@ -26,26 +26,27 @@ public final class HolyLoisAuthScreen extends Screen {
     }
     public void feedback(String message) {
         String lower = message.toLowerCase(java.util.Locale.ROOT);
-        if (lower.contains("wrong password") || lower.contains("incorrect password")) notice = "Wrong password. Try again.";
-        else if (lower.contains("match")) notice = "The passwords do not match.";
-        else if (lower.contains("characters") && !lower.contains("/register")) notice = "Use at least " + state.minimumLength() + " characters.";
+        if (lower.contains("wrong password") || lower.contains("incorrect password")) notice = tr("holylois.auth.wrong");
+        else if (lower.contains("match")) notice = tr("holylois.auth.mismatch");
+        else if (lower.contains("characters") && !lower.contains("/register")) notice = tr("holylois.auth.min", state.minimumLength());
         else return;
         waiting = false; if (submit != null) submit.active = true;
     }
+    private static String tr(String key, Object... args) { return net.minecraft.client.resources.language.I18n.get(key, args); }
     private int top() { return Math.max(8, (height - 222) / 2); }
     @Override protected void init() {
         int x = width / 2 - 118, y = top();
         if (quitting) {
-            addRenderableWidget(new ActionButton(x, y + 100, 236, "Back", AuthUi.Kind.NORMAL, b -> minecraft.gui.setScreen(new HolyLoisAuthScreen(state))));
-            addRenderableWidget(new ActionButton(x, y + 130, 236, "Disconnect", AuthUi.Kind.DANGER, b -> {
+            addRenderableWidget(new ActionButton(x, y + 100, 236, tr("holylois.auth.back"), AuthUi.Kind.NORMAL, b -> minecraft.gui.setScreen(new HolyLoisAuthScreen(state))));
+            addRenderableWidget(new ActionButton(x, y + 130, 236, tr("holylois.auth.disconnect"), AuthUi.Kind.DANGER, b -> {
                 clearPasswords(); HolyLoisAuthClient.status = null;
-                minecraft.disconnectFromWorld(Component.literal("Disconnected from Holy Lois: Reborn"));
+                minecraft.disconnectFromWorld(Component.translatable("holylois.auth.disconnected"));
             }));
         } else if (state.mode() != 3) {
-            password = addRenderableWidget(new PasswordBox(x, y + 86, "Password"));
-            if (state.mode() == 2) confirm = addRenderableWidget(new PasswordBox(x, y + 130, "Confirm password"));
+            password = addRenderableWidget(new PasswordBox(x, y + 86, tr("holylois.auth.password")));
+            if (state.mode() == 2) confirm = addRenderableWidget(new PasswordBox(x, y + 130, tr("holylois.auth.confirm")));
             submit = addRenderableWidget(new ActionButton(x, y + (state.mode() == 2 ? 162 : 124), 236,
-                state.mode() == 2 ? "Create account" : "Log in", AuthUi.Kind.CONFIRM, b -> submit()));
+                state.mode() == 2 ? tr("holylois.auth.create") : tr("holylois.auth.login"), AuthUi.Kind.CONFIRM, b -> submit()));
             setInitialFocus(password);
         }
     }
@@ -66,7 +67,7 @@ public final class HolyLoisAuthScreen extends Screen {
             return super.keyPressed(event);
         }
         @Override public void updateWidgetNarration(NarrationElementOutput output) {
-            output.add(NarratedElementType.TITLE, label + ", " + getValue().length() + " characters");
+            output.add(NarratedElementType.TITLE, tr("holylois.auth.narration", label, getValue().length()));
         }
     }
     private final class ActionButton extends Button {
@@ -83,13 +84,14 @@ public final class HolyLoisAuthScreen extends Screen {
         if (waiting || password == null || minecraft.getConnection() == null) return;
         boolean registration = state.mode() == 2;
         String value = password.getValue();
-        notice = AuthPolicy.validate(value, confirm == null ? "" : confirm.getValue(), registration, state.minimumLength());
+        String problem = AuthPolicy.validate(value, confirm == null ? "" : confirm.getValue(), registration, state.minimumLength());
+        notice = problem.isEmpty() ? "" : tr(problem, state.minimumLength());
         if (!notice.isEmpty()) return;
         String command = registration ? "register " + AuthPolicy.argument(value) + " " + AuthPolicy.argument(confirm.getValue())
             : "login " + AuthPolicy.argument(value);
         minecraft.getConnection().sendCommand(command);
         clearPasswords(); waiting = true; submittedTicks = 0; submit.active = false;
-        notice = "Checking with the server...";
+        notice = tr("holylois.auth.checking");
     }
     private void clearPasswords() { if (password != null) password.setValue(""); if (confirm != null) confirm.setValue(""); }
     /** The HUD and every mod overlay (hotbar, chat, minimap...) stay hidden behind the panorama while the form is open (owner 2026-10-11). */
@@ -105,7 +107,7 @@ public final class HolyLoisAuthScreen extends Screen {
     @Override public void tick() {
         if (waiting && ++submittedTicks >= 60) {
             waiting = false; if (submit != null) submit.active = true;
-            notice = "Not logged in yet. Check your password and try again.";
+            notice = tr("holylois.auth.not_yet");
         }
     }
     @Override public boolean keyPressed(KeyEvent event) {
@@ -131,22 +133,22 @@ public final class HolyLoisAuthScreen extends Screen {
     @Override public void extractRenderState(GuiGraphicsExtractor g, int x, int y, float delta) {
         if (state.mode() == 3 && !quitting) {
             g.centeredText(font, "HOLY LOIS: REBORN", width/2, height/2 - 16, AuthUi.GOLD);
-            g.centeredText(font, "Arriving...", width/2, height/2, AuthUi.MUTED);
+            g.centeredText(font, tr("holylois.auth.arriving"), width/2, height/2, AuthUi.MUTED);
             return;
         }
         int left = width/2 - 140, top = top();
         AuthUi.box(g, left, top, 280, 222, AuthUi.SURFACE, AuthUi.LINE);
         g.nextStratum();
         g.centeredText(font, "HOLY LOIS: REBORN", width/2, top + 14, AuthUi.GOLD);
-        g.centeredText(font, quitting ? "Leave the server?" : state.mode() == 2 ? "Create your server account" : "Welcome back", width/2, top + 32, AuthUi.TEXT);
+        g.centeredText(font, quitting ? tr("holylois.auth.leave") : state.mode() == 2 ? tr("holylois.auth.title_create") : tr("holylois.auth.welcome"), width/2, top + 32, AuthUi.TEXT);
         g.fill(width/2 - 12, top + 44, width/2 + 12, top + 45, AuthUi.GOLD);
         if (!quitting && state.mode() != 3) {
-            g.centeredText(font, state.mode() == 2 ? "At least " + state.minimumLength() + " characters, no spaces." : "Use the password you registered here.", width/2, top + 54, AuthUi.MUTED);
-            g.text(font, "Password", width/2 - 118, top + 73, AuthUi.MUTED, false);
-            if (state.mode() == 2) g.text(font, "Confirm password", width/2 - 118, top + 117, AuthUi.MUTED, false);
+            g.centeredText(font, state.mode() == 2 ? tr("holylois.auth.hint_create", state.minimumLength()) : tr("holylois.auth.hint_login"), width/2, top + 54, AuthUi.MUTED);
+            g.text(font, tr("holylois.auth.password"), width/2 - 118, top + 73, AuthUi.MUTED, false);
+            if (state.mode() == 2) g.text(font, tr("holylois.auth.confirm"), width/2 - 118, top + 117, AuthUi.MUTED, false);
         }
         if (!notice.isEmpty() && !quitting) g.centeredText(font, notice, width/2, top + 196, waiting ? AuthUi.MUTED : AuthUi.DANGER);
-        g.centeredText(font, "Esc: leave server", width/2, Math.min(height - 10, top + 230), AuthUi.alpha(AuthUi.MUTED, 0.6f));
+        g.centeredText(font, tr("holylois.auth.esc"), width/2, Math.min(height - 10, top + 230), AuthUi.alpha(AuthUi.MUTED, 0.6f));
         g.nextStratum();
         super.extractRenderState(g, x, y, delta);
     }

@@ -17,7 +17,29 @@ public static class UninstallEntry
     {
         if (!RealInstall) return;
         try { Write(KeyPath, LauncherStartup.InstalledExe, LauncherStartup.InstallRoot); }
-        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or System.Security.SecurityException) { LauncherErrors.Log(ex); }
+        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or System.Security.SecurityException) { LauncherErrors.Log(ex); return; }
+        // Installed apps shows the whole installation (game, pack, maps), measured off the UI thread after start.
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                var kb = FolderBytes(LauncherStartup.InstallRoot) / 1024;
+                using var key = Registry.CurrentUser.OpenSubKey(KeyPath, true);
+                key?.SetValue("EstimatedSize", (int)Math.Clamp(kb, 1, int.MaxValue), RegistryValueKind.DWord);
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException or System.Security.SecurityException) { LauncherErrors.Log(ex); }
+        });
+    }
+
+    internal static long FolderBytes(string root)
+    {
+        long total = 0;
+        var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint };
+        foreach (var file in new DirectoryInfo(root).EnumerateFiles("*", options))
+        {
+            try { total += file.Length; } catch (IOException) { }
+        }
+        return total;
     }
 
     private static void Write(string keyPath, string exe, string root)
@@ -32,7 +54,7 @@ public static class UninstallEntry
         key.SetValue("URLInfoAbout", "https://holylois.com");
         key.SetValue("NoModify", 1, RegistryValueKind.DWord);
         key.SetValue("NoRepair", 1, RegistryValueKind.DWord);
-        key.SetValue("EstimatedSize", (int)Math.Max(1, new FileInfo(exe).Length / 1024), RegistryValueKind.DWord);
+        if (key.GetValue("EstimatedSize") is null) key.SetValue("EstimatedSize", (int)Math.Max(1, new FileInfo(exe).Length / 1024), RegistryValueKind.DWord);
     }
 
     /// <summary>--verify-uninstall-entry: the same write, read back and delete on a throwaway key, never the real entry.</summary>

@@ -1,0 +1,50 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "holylois.boombox.mixins",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "EliteColorMixin",
+    "ShoalItemCatchMixin",
+    "ShoalIdentityMixin",
+    "ShoalCatchRadiusMixin",
+    "ClaimFeedbackMixin",
+    "RuneforgedAcquisitionInvoker",
+    "FilletMixin"
+  ],
+  "client": [
+    "TooltipPaletteMixin",
+    "TooltipFrameMixin",
+    "TooltipOptionsMixin",
+    "TooltipCrestMixin",
+    "ShoalRadiusMixin",
+    "LiteminerScrollMixin",
+    "BetterAdvancementsClickMixin",
+    "NemoTooltipMixin",
+    "DeathpointMixin",
+    "IpnSortKeyMixin",
+    "IpnToolSkipMixin",
+    "ReiSortGuardMixin",
+    "WorldClaimFogMixin",
+    "MiniClaimFogMixin",
+    "XaeroTeleportMenuMixin",
+    "XaeroOptionAccessor",
+    "XaeroPartyMarkerMixin",
+    "BoomboxInEarMixin",
+    "CinematicManagerMixin",
+    "CinematicCameraMixin",
+    "CinematicShotsMixin",
+    "CinematicAfkMixin",
+    "NeaLanternSmoothMixin",
+    "NeaRelicLanternMixin",
+    "NeaMapItemsMixin",
+    "ShaderPackNamesMixin",
+    "ShaderPackListMixin",
+    "FirstPersonMapItemsMixin",
+    "NeaPitchSmoothMixin",
+    "CinematicMusicQuietMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

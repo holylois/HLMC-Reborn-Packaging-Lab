@@ -26,7 +26,7 @@ public sealed class AppUpdateWindow : ThemedWindow
         var heading = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center };
         heading.Children.Add(new Image { Source = new BitmapImage(new Uri("pack://application:,,,/Assets/compact.png")), Width = 32, Height = 32, Stretch = Stretch.Uniform, Margin = new Thickness(0,0,12,0) });
         heading.Children.Add(new TextBlock { Text = title ?? "Holy Lois: Reborn", FontSize = 22, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center }); grid.Children.Add(heading);
-        status = new TextBlock { Text = "Checking for launcher updates...", TextAlignment = TextAlignment.Center, VerticalAlignment = VerticalAlignment.Center, FontSize = 14 };
+        status = new TextBlock { Text = Localize.Text("UpdChecking"), TextAlignment = TextAlignment.Center, VerticalAlignment = VerticalAlignment.Center, FontSize = 14 };
         Grid.SetRow(status,1); grid.Children.Add(status);
         details = new TextBlock { Text = "", FontSize = 12, TextAlignment = TextAlignment.Center, Foreground = (Brush)Application.Current.Resources["Muted"], Margin = new Thickness(0,8,0,14) };
         Grid.SetRow(details,2); grid.Children.Add(details);

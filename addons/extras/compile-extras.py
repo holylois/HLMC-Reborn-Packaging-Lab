@@ -46,6 +46,7 @@ out = w / f"holylois-extras-{meta['version']}+26.3.jar"
 with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
     z.writestr('fabric.mod.json', json.dumps(meta, indent=2))
     z.write(w / 'holylois-extras.mixins.json', 'holylois-extras.mixins.json')
+    z.write(w / 'holylois-extras-compat.mixins.json', 'holylois-extras-compat.mixins.json')
     z.writestr('META-INF/jars/jlayer-1.0.1-holylois.jar', wrapped.getvalue())
     for folder in ['assets', 'data']:
         for p in sorted((w / folder).rglob('*')):

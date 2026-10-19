@@ -24,7 +24,9 @@
             "3D Skin Layers 1.11.4 fixes skin textures piling up in memory.",
             "Fresh Animations 1.11 gives polar bears and pandas full animations, and baby mobs get their own look.",
             "Crickets chirp near rivers again, and grass sounds better match the ground you walk on.",
-            "Distant Horizons now draws 64 chunks far instead of 128, so laptops run smoother. If you changed that distance yourself, your setting stays."
+            "Distant Horizons now draws 64 chunks far at medium detail instead of 128, so laptops run smoother, and it no longer updates itself. If you changed these settings yourself, they stay.",
+            "Achievements and the server login screen are in Russian and Latvian too.",
+            "New installs start without update and donation pop-ups from mods, and pressing R while playing no longer reloads shaders."
           ],
           "fixed": [
             "Mining no longer shows a \"Run /amber doctor\" hint that players cannot use."
@@ -49,7 +51,9 @@
             "3D Skin Layers 1.11.4 больше не копит текстуры скинов в памяти.",
             "Fresh Animations 1.11 даёт белым медведям и пандам полные анимации, а у детёнышей мобов появился свой вид.",
             "Сверчки снова стрекочут у рек, а звуки травы лучше подходят к земле под ногами.",
-            "Distant Horizons теперь рисует на 64 чанка вместо 128, чтобы ноутбукам было легче. Если ты менял эту дальность сам, твоя настройка остаётся."
+            "Distant Horizons теперь рисует на 64 чанка вместо 128 со средней детализацией, чтобы ноутбукам было легче, и больше не обновляется сам. Если ты менял эти настройки сам, они остаются.",
+            "Достижения и экран входа на сервер теперь тоже на русском и латышском.",
+            "Новые установки начинаются без всплывающих окон обновлений и пожертвований от модов, а R во время игры больше не перезагружает шейдеры."
           ],
           "fixed": [
             "Добыча больше не показывает подсказку \"Run /amber doctor\", которой игроки не могут воспользоваться."
@@ -74,7 +78,9 @@
             "3D Skin Layers 1.11.4 vairs nekrāj skinu tekstūras atmiņā.",
             "Fresh Animations 1.11 dod polārlāčiem un pandām pilnas animācijas, un radību mazuļiem ir savs izskats.",
             "Sienāži atkal sisina pie upēm, un zāles skaņas labāk atbilst zemei, pa kuru ej.",
-            "Distant Horizons tagad zīmē 64 gabalus tālu, nevis 128, lai klēpjdatori strādātu vienmērīgāk. Ja tu pats mainīji šo attālumu, tavs iestatījums paliek."
+            "Distant Horizons tagad zīmē 64 gabalus tālu, nevis 128, ar vidēju detalizāciju, lai klēpjdatori strādātu vienmērīgāk, un vairs neatjauninās pats. Ja tu pats mainīji šos iestatījumus, tie paliek.",
+            "Sasniegumi un servera ielogošanās ekrāns tagad ir arī krievu un latviešu valodā.",
+            "Jaunas instalācijas sākas bez modu atjauninājumu un ziedojumu uznirstošajiem logiem, un R spēles laikā vairs nepārlādē šeiderus."
           ],
           "fixed": [
             "Rakšana vairs nerāda padomu \"Run /amber doctor\", ko spēlētāji nevar izmantot."
@@ -797,13 +803,17 @@
           "summary": "Settings in sections and an entry in Windows Installed apps.",
           "added": [
             "Holy Lois: Reborn appears in Windows Installed apps, so you can remove it from there and choose to keep your data.",
-            "Settings is split into sections: Player and launch, Graphics and memory, Help and diagnostics, Shortcuts and links, Advanced."
+            "Settings is split into sections: Player and launch, Graphics and memory, Help and diagnostics, Shortcuts and links, Advanced.",
+            "Help and diagnostics has a Screenshots folder button."
           ],
           "changed": [
             "What changed shows the pack and the launcher as separate entries.",
             "The main window opens larger on big screens and still fits small laptops.",
             "Installing again after a removal shows the first-time setup again.",
-            "Pack updates keep your own values in settings files that use sections (TOML), changing only what the pack changed."
+            "Pack updates keep your own values in settings files that use sections (TOML), changing only what the pack changed.",
+            "Update shows only what it downloads, and Install shows how much space the game takes.",
+            "Windows Installed apps shows the real size of the installation.",
+            "The launcher update and removal windows use your language."
           ],
           "fixed": []
         },
@@ -811,13 +821,17 @@
           "summary": "Настройки по разделам и запись в списке установленных приложений Windows.",
           "added": [
             "Holy Lois: Reborn появляется в списке установленных приложений Windows: удали его оттуда и выбери, оставить ли данные.",
-            "Настройки разделены на разделы: Игрок и запуск, Графика и память, Помощь и диагностика, Ярлыки и ссылки, Дополнительно."
+            "Настройки разделены на разделы: Игрок и запуск, Графика и память, Помощь и диагностика, Ярлыки и ссылки, Дополнительно.",
+            "В разделе Помощь и диагностика есть кнопка \"Папка скриншотов\"."
           ],
           "changed": [
             "\"Что нового\" показывает сборку и лаунчер отдельными записями.",
             "Главное окно открывается больше на больших экранах и всё равно помещается на маленьких ноутбуках.",
             "Повторная установка после удаления снова показывает первую настройку.",
-            "Обновления сборки сохраняют твои значения в файлах настроек с разделами (TOML) и меняют только то, что изменила сборка."
+            "Обновления сборки сохраняют твои значения в файлах настроек с разделами (TOML) и меняют только то, что изменила сборка.",
+            "Обновление показывает только то, что нужно скачать, а установка показывает, сколько места займёт игра.",
+            "В списке установленных приложений Windows виден настоящий размер установки.",
+            "Окна обновления и удаления лаунчера на твоём языке."
           ],
           "fixed": []
         },
@@ -825,13 +839,17 @@
           "summary": "Iestatījumi sadaļās un ieraksts Windows instalēto lietotņu sarakstā.",
           "added": [
             "Holy Lois: Reborn parādās Windows instalēto lietotņu sarakstā: noņem to no turienes un izvēlies, vai paturēt datus.",
-            "Iestatījumi ir sadalīti sadaļās: Spēlētājs un palaišana, Grafika un atmiņa, Palīdzība un diagnostika, Saīsnes un saites, Papildus."
+            "Iestatījumi ir sadalīti sadaļās: Spēlētājs un palaišana, Grafika un atmiņa, Palīdzība un diagnostika, Saīsnes un saites, Papildus.",
+            "Sadaļā Palīdzība un diagnostika ir poga \"Ekrānuzņēmumu mape\"."
           ],
           "changed": [
             "\"Kas mainījies\" rāda pakotni un palaidēju kā atsevišķus ierakstus.",
             "Galvenais logs lielos ekrānos atveras lielāks un joprojām ietilpst mazos klēpjdatoros.",
             "Atkārtota instalēšana pēc noņemšanas atkal rāda pirmo iestatīšanu.",
-            "Pakotnes atjauninājumi saglabā tavas vērtības iestatījumu failos ar sadaļām (TOML) un maina tikai to, ko mainīja pakotne."
+            "Pakotnes atjauninājumi saglabā tavas vērtības iestatījumu failos ar sadaļām (TOML) un maina tikai to, ko mainīja pakotne.",
+            "Atjauninājums rāda tikai to, kas jālejupielādē, un instalēšana rāda, cik vietas aizņems spēle.",
+            "Windows instalēto lietotņu sarakstā redzams īstais instalācijas izmērs.",
+            "Palaidēja atjaunināšanas un noņemšanas logi ir tavā valodā."
           ],
           "fixed": []
         }

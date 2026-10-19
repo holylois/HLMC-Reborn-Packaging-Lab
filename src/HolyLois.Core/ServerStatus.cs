@@ -9,6 +9,8 @@ public sealed record ServerPing(int Online, int Max, string[] Players, string Ve
 // The same status ping the Minecraft server list uses. Bounded, read-only and never sends account data.
 public static class ServerStatus
 {
+    // Minecraft 26.3 (protocol_version in the server jar's version.json). Status pings answer any number; this keeps it honest.
+    private const int GameProtocol = 777;
     public static async Task<ServerPing?> PingAsync(string address, CancellationToken cancel)
     {
         var (host, port) = Split(address);
@@ -21,7 +23,7 @@ public static class ServerStatus
             await using var stream = client.GetStream();
             var hostBytes = Encoding.UTF8.GetBytes(host);
             var handshake = new List<byte> { 0x00 };
-            handshake.AddRange(VarInt(767)); handshake.AddRange(VarInt(hostBytes.Length)); handshake.AddRange(hostBytes);
+            handshake.AddRange(VarInt(GameProtocol)); handshake.AddRange(VarInt(hostBytes.Length)); handshake.AddRange(hostBytes);
             handshake.Add((byte)(port >> 8)); handshake.Add((byte)port); handshake.Add(0x01);
             var request = VarInt(handshake.Count).Concat(handshake).Concat(new byte[] { 0x01, 0x00 }).ToArray();
             await stream.WriteAsync(request, timeout.Token);

@@ -104,6 +104,7 @@ public final class Boombox implements ModInitializer {
     private static Path placedFile;
 
     @Override public void onInitialize() {
+        AutoSmelt.register();
         var blockKey = ResourceKey.create(Registries.BLOCK, ID);
         BLOCK = Registry.register(BuiltInRegistries.BLOCK, ID, new BoomboxBlock(BlockBehaviour.Properties.of().setId(blockKey)
             .strength(0.8f, 3f).sound(SoundType.METAL).noOcclusion()));

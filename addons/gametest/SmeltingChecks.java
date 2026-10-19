@@ -16,7 +16,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import java.util.List;
 
-/** Exercise the installed mod's real ore loot and vein-mining path, not a replacement smelting implementation. */
+/** Smelting (autosmelt:auto_smelt, built into Holy Lois Extras since 2.2.0) on real ore loot and the vein-mining path. */
 public final class SmeltingChecks {
     public static void run(ClientGameTestContext context,TestSingleplayerContext world)throws Exception{
         world.getServer().runOnServer(server->{

@@ -111,6 +111,8 @@ public sealed class SettingsWindow : ThemedWindow
         ReportButton(Localize.Text("ReportCopy"), () => ReportActions.Copy(context));
         ReportButton(Localize.Text("ReportSave"), () => ReportActions.Save(context));
         ReportButton("Discord", () => { ReportActions.OpenDiscord(); return null; });
+        // F2 screenshots, for reports after a release.
+        ReportButton(Localize.Text("ScreenshotsFolder"), () => { var shots = Path.Combine(context.Instance, "screenshots"); Directory.CreateDirectory(shots); Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true, ArgumentList = { shots } }); return null; });
         panel.Children.Add(reportRow); panel.Children.Add(reportStatus);
 
         Section("GroupLinks");
@@ -133,6 +135,7 @@ public sealed class SettingsWindow : ThemedWindow
             linkRow.Children.Add(button);
         }
         panel.Children.Add(linkRow);
+        Text(Localize.Text("NotMojang"),12);
 
         // Rare maintenance on its own page, so it never competes with the everyday choices.
         Section("GroupAdvanced");

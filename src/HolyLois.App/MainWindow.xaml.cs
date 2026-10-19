@@ -37,7 +37,7 @@ public partial class MainWindow : ThemedWindow
         }
         catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException) { }
         // The latest-update card shows the newest release's picture (2.2.0: a Mythic catch tooltip, owner 2026-10-19).
-        NewsPicture.Background = new ImageBrush(LauncherArt.Pick("mythic-catch", false)) { Stretch = Stretch.UniformToFill, AlignmentX = AlignmentX.Center };
+        NewsPicture.Background = new ImageBrush(LauncherArt.Pick("trophy-fish", false)) { Stretch = Stretch.UniformToFill, AlignmentX = AlignmentX.Center };
         // Roomier on bigger screens (up to 1200 x 860), never larger than the work area; small laptops keep the minimum size.
         var area = SystemParameters.WorkArea;
         Width = Math.Clamp(Math.Min(1200, area.Width - 80), MinWidth, Math.Max(MinWidth, area.Width));
@@ -100,9 +100,14 @@ public partial class MainWindow : ThemedWindow
         var onAction = (Brush)FindResource(step == Step.Play ? "OnGreen" : step == Step.Blocked ? "Muted" : "OnGold");
         PrimaryLabel.Foreground = PrimarySub.Foreground = onAction;
         PrimaryLabel.Text = T(step switch { Step.Install => "BigInstall", Step.Update => "BigUpdate", Step.Repair => "BigRepair", _ => "Play" });
-        PrimarySub.Text = step is Step.Install or Step.Update ? $"{T("Version")} {context.Manifest.Version}  -  {megabytes:N0} MB"
+        // Update shows only what changed; Install shows the whole footprint on disk.
+        var download = step == Step.Update ? context.DownloadBytes() / 1048576.0 : 0;
+        var diskGb = step == Step.Install ? context.InstallDiskBytes() / 1073741824.0 : 0;
+        PrimarySub.Text = step == Step.Update ? $"{T("Version")} {context.Manifest.Version}  -  {Math.Max(1, download):N0} MB"
+            : step == Step.Install ? $"{T("Version")} {context.Manifest.Version}  -  {diskGb:N1} GB"
             : step == Step.Repair ? T("RepairSub") : fast ? T("FastStart") : sk ? "SKlauncher" : "Minecraft Launcher";
-        PrimaryHint.Text = busy ? T("WorkingHint") : step == Step.Install ? string.Format(T("StateInstall"), megabytes) : T(step switch
+        PrimaryHint.Text = busy ? T("WorkingHint") : step == Step.Install ? string.Format(T("StateInstall"), diskGb.ToString("N1"))
+            : step == Step.Update ? string.Format(T("UpdateHint"), Math.Max(1, download).ToString("N0")) : T(step switch
         {
             Step.Update => "UpdateHint", Step.Repair => "RepairHint",
             Step.Play => fast ? "PlayFastHint" : "PlayReadyHint",
@@ -353,6 +358,19 @@ public partial class MainWindow : ThemedWindow
         if (starting || cancellation is not null) return;
         if (game is not null) { StatusText.Text = T("GameRunning"); return; }
         starting = true; Refresh();
+        // Damaged pack files are repaired here in the main window first, so its progress and dialogs never fight the launch window.
+        try
+        {
+            if (context.Guard().Damaged.Length > 0)
+            {
+                await RunInstallAsync(false);
+                if (context.Guard().Damaged.Length > 0) throw new IOException(T("GuardFailed"));
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or System.Net.Http.HttpRequestException)
+        {
+            starting = false; StatusText.Text = Localize.Error(ex); Refresh(); return;
+        }
         var window = new LaunchWindow(context.PlayerName ?? "", context.Settings.JoinServer) { Owner = this };
         window.Show();
         GameSession? session = null;
@@ -360,12 +378,6 @@ public partial class MainWindow : ThemedWindow
         try
         {
             window.SetStep("check");
-            var report = context.Guard();
-            if (report.Damaged.Length > 0)
-            {
-                await RunInstallAsync(false);
-                if (context.Guard().Damaged.Length > 0) throw new IOException(T("GuardFailed"));
-            }
             token.ThrowIfCancellationRequested();
             var progress = new Progress<GameProgress>(p => { if (!window.IsClosed) { window.SetStep(p.Step); window.SetBytes(p.DoneBytes, p.TotalBytes); } });
             var plan = await Task.Run(() => context.PrepareFastStartAsync(progress, token), token);

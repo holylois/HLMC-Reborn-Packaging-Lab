@@ -32,14 +32,37 @@ public static class LauncherArt
         return image;
     }
 
-    private static readonly HttpClient http = new() { Timeout = TimeSpan.FromSeconds(10) };
+    private static readonly HttpClient http = CreateClient();
+    private static HttpClient CreateClient()
+    {
+        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("HolyLoisReborn/" + AppUpdates.RunningVersion.ToString(3));
+        return client;
+    }
+
+    // The stats feed is a few hundred KB and changes every 10 minutes: keep it for 3 minutes so switching names or views
+    // does not download it again.
+    private static (DateTime At, string Body)? feed;
+    private static readonly SemaphoreSlim feedGate = new(1, 1);
+    private static async Task<string> FeedAsync(CancellationToken cancel)
+    {
+        await feedGate.WaitAsync(cancel);
+        try
+        {
+            if (feed is { } kept && DateTime.UtcNow - kept.At < TimeSpan.FromMinutes(3)) return kept.Body;
+            var body = await http.GetStringAsync(SkinHeads.Feed, cancel);
+            feed = (DateTime.UtcNow, body);
+            return body;
+        }
+        finally { feedGate.Release(); }
+    }
 
     /// <summary>The 8x8 face plus the hat layer of the player's selected skin, scaled up without smoothing; null when unknown or offline.</summary>
     public static async Task<ImageSource?> HeadAsync(string name, CancellationToken cancel)
     {
         try
         {
-            var stats = await http.GetStringAsync(SkinHeads.Feed, cancel);
+            var stats = await FeedAsync(cancel);
             if (SkinHeads.Find(stats, name) is not { } texture) return null;
             using var response = await http.GetAsync(texture, HttpCompletionOption.ResponseHeadersRead, cancel);
             if (!response.IsSuccessStatusCode || response.Content.Headers.ContentLength > SkinHeads.MaxTextureBytes) return null;

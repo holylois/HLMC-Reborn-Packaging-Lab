@@ -217,6 +217,30 @@ public sealed class ClientContext
     public static long ComputerMemoryBytes => GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
     public int GameMemoryMb => Settings.MemoryMb is int chosen ? Math.Clamp(chosen, 2048, FastStart.MaxMemoryMb(ComputerMemoryBytes)) : FastStart.MemoryMb(ComputerMemoryBytes);
     /// <summary>Bytes of pack files that are not in place yet (by size; the installer checks hashes). Downloads are cached, then copied.</summary>
+    /// <summary>What Install or Update really downloads: files that are missing, a different size, or changed since the last install.</summary>
+    public long DownloadBytes()
+    {
+        var receipt = Receipt; long bytes = 0;
+        foreach (var file in Manifest.Files)
+        {
+            var path = SafePaths.Resolve(Instance, file.Path);
+            var same = File.Exists(path) && new FileInfo(path).Length == file.Size
+                && (receipt is null || !receipt.ManagedFiles.TryGetValue(file.Path, out var sha) || string.Equals(sha, file.Sha256, StringComparison.OrdinalIgnoreCase));
+            if (!same) bytes += file.Size;
+        }
+        return bytes;
+    }
+
+    /// <summary>Disk space a first install takes: the pack plus Minecraft 26.3 itself (measured: about 730 MB) while the game folder
+    /// that will run it (fast start, Minecraft Launcher or SKlauncher) does not have 26.3 yet.</summary>
+    public long InstallDiskBytes()
+    {
+        var root = UsesFastStart ? GameRoot : Settings.Launcher == "sk" ? SkLauncherRoot : MinecraftRoot;
+        var versions = Path.Combine(root, "versions");
+        var hasGame = Directory.Exists(versions) && Directory.EnumerateDirectories(versions, "26.3*").Any();
+        return Manifest.Files.Sum(f => f.Size) + (hasGame ? 0 : 730L * 1024 * 1024);
+    }
+
     private long MissingPackBytes()
     {
         long missing = 0;

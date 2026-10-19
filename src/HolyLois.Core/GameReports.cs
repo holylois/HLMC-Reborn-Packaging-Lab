@@ -24,7 +24,7 @@ public static partial class GameReports
     public static string Redact(string text, string? windowsUser)
     {
         if (!string.IsNullOrWhiteSpace(windowsUser) && windowsUser.Length >= 2)
-            text = Regex.Replace(text, @"(?<=[\\/]Users[\\/])" + Regex.Escape(windowsUser) + @"(?=[\\/]|$)", "<user>", RegexOptions.IgnoreCase);
+            text = Regex.Replace(text, @"(?<=[\\/]Users[\\/])" + Regex.Escape(windowsUser) + @"(?=[\\/\r\n""']|$)", "<user>", RegexOptions.IgnoreCase | RegexOptions.Multiline);
         text = Token().Replace(text, m => m.Groups[1].Value + " HIDDEN");
         text = Ids().Replace(text, m => m.Groups[1].Value + " HIDDEN");
         text = Ipv6().Replace(text, "IP-HIDDEN");

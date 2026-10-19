@@ -49,13 +49,6 @@
       "policy": "managed"
     },
     {
-      "path": "mods/Auto Smelt 26.3.jar",
-      "url": "https://mediafilez.forgecdn.net/files/9083/250/Auto%20Smelt%2026.3.jar",
-      "size": 9217,
-      "sha256": "2b0c655ce85607655523a98c90b2285547d25617b8af7f870376e7dd391d3446",
-      "policy": "managed"
-    },
-    {
       "path": "mods/BetterAdvancements-Fabric-26.3-0.6.0.78.jar",
       "url": "https://cdn.modrinth.com/data/Q2OqKxDG/versions/Y2FyQ15a/BetterAdvancements-Fabric-26.3-0.6.0.78.jar",
       "size": 105885,
@@ -259,24 +252,17 @@
       "policy": "managed"
     },
     {
-      "path": "mods/holylois-auth-ui-1.1.2+26.3.jar",
-      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.0.0/holylois-auth-ui-1.1.2+26.3.jar",
-      "size": 6540375,
-      "sha256": "e331c28b490356017448b820445cd0ae541031809e120c002ed3efcfcbfe7279",
+      "path": "mods/holylois-auth-ui-1.2.0+26.3.jar",
+      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.2.0/holylois-auth-ui-1.2.0+26.3.jar",
+      "size": 71875,
+      "sha256": "ad1019e1a5b7b4d7680241c7c9c6127a99708581724bd00b1951eb001f306798",
       "policy": "managed"
     },
     {
       "path": "mods/holylois-extras-1.9.0+26.3.jar",
       "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.2.0/holylois-extras-1.9.0+26.3.jar",
-      "size": 1304356,
-      "sha256": "0a063e5970c5550df226f54d3707de7f9551b4d999e2a073da0ef76459646fac",
-      "policy": "managed"
-    },
-    {
-      "path": "mods/holylois-glint-preload-1.0.1+26.3.jar",
-      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v1.7.6/holylois-glint-preload-1.0.1+26.3.jar",
-      "size": 7676,
-      "sha256": "e6904fe952b4ae95203e78fe0069fc4c87bf142d75f62c6b155ea369330653f9",
+      "size": 1322393,
+      "sha256": "270cfc0a844f8eeb226a20da31e42f967d77ffbc3881d8759f5870ee60d472a8",
       "policy": "managed"
     },
     {
@@ -624,11 +610,10 @@
     },
     {
       "path": "resourcepacks/HolyLois-FishEating.zip",
-      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.0.0/HolyLois-FishEating.zip",
-      "size": 200986,
-      "sha256": "a79d9e47abbae91a759fbafed3189bf9694482279a04a19456785ee61a6d11fb",
-      "policy": "managed",
-      "autoEnable": true
+      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.2.0/HolyLois-FishEating-220.zip",
+      "size": 6670594,
+      "sha256": "a991279271e6bd40878f58050fd785781a3202b42c8ead1ac690f4731a5b23de",
+      "policy": "managed"
     },
     {
       "path": "resourcepacks/JustExpressions_v1.2.1.zip",
@@ -741,8 +726,8 @@
   "defaults": {
     "path": "defaults.zip",
     "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.2.0/defaults.zip",
-    "size": 54089,
-    "sha256": "ff705d614fd3978f6fa8826a8b80e20ede65ee2463f154469ab6b076744002e2",
+    "size": 54085,
+    "sha256": "b9655a20dde6c7cbb68666bd06c3fe4747004f4df7d7144a82e3017d4e4f6b40",
     "policy": "seed"
   },
   "history": [
@@ -766,7 +751,9 @@
         "3D Skin Layers 1.11.4 fixes skin textures piling up in memory.",
         "Fresh Animations 1.11 gives polar bears and pandas full animations, and baby mobs get their own look.",
         "Crickets chirp near rivers again, and grass sounds better match the ground you walk on.",
-        "Distant Horizons now draws 64 chunks far instead of 128, so laptops run smoother. If you changed that distance yourself, your setting stays."
+        "Distant Horizons now draws 64 chunks far at medium detail instead of 128, so laptops run smoother, and it no longer updates itself. If you changed these settings yourself, they stay.",
+        "Achievements and the server login screen are in Russian and Latvian too.",
+        "New installs start without update and donation pop-ups from mods, and pressing R while playing no longer reloads shaders."
       ],
       "fixed": [
         "Mining no longer shows a \"Run /amber doctor\" hint that players cannot use."

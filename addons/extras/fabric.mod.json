@@ -28,7 +28,8 @@
     "client": [
       "holylois.boombox.VeinMineTweaks",
       "holylois.boombox.BoomboxClient",
-      "holylois.boombox.ZoneTitles"
+      "holylois.boombox.ZoneTitles",
+      "holylois.boombox.GlintPreload"
     ],
     "preLaunch": [
       "holylois.boombox.ClientDefaults"
@@ -46,8 +47,13 @@
     "voicechat": ">=2.6"
   },
   "mixins": [
-    "holylois-extras.mixins.json"
+    "holylois-extras.mixins.json",
+    "holylois-extras-compat.mixins.json"
   ],
+  "breaks": {
+    "autosmelt": "*",
+    "holylois-glint-preload": "*"
+  },
   "suggests": {
     "liteminer": "*",
     "betteradvancements": "*",

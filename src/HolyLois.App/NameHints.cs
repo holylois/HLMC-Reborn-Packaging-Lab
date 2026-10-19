@@ -12,6 +12,9 @@ namespace HolyLois.App;
 /// </summary>
 public static class NameHints
 {
+    // The last answer from the live check, reused when the player saves right after it (one request instead of two).
+    private static (string Name, NameStatus Status, DateTime At)? last;
+
     public static void Attach(TextBox box, TextBlock hint, ClientContext context)
     {
         CancellationTokenSource? running = null;
@@ -30,6 +33,7 @@ public static class NameHints
             try { status = await context.CheckNameAsync(name, mine.Token); }
             catch (OperationCanceledException) { return; }
             if (mine.IsCancellationRequested || box.Text.Trim() != name) return;
+            if (status is not NameStatus.Unknown) last = (name, status, DateTime.UtcNow);
             switch (status)
             {
                 case NameStatus.Invalid: Show(hint, "NameInvalid", "Danger"); break;
@@ -48,6 +52,8 @@ public static class NameHints
     /// </summary>
     public static async Task<bool> ConfirmAsync(Window owner, ClientContext context, string name)
     {
+        if (last is { } seen && string.Equals(seen.Name, name, StringComparison.OrdinalIgnoreCase) && DateTime.UtcNow - seen.At < TimeSpan.FromMinutes(1))
+            return seen.Status != NameStatus.Premium || AppDialog.Show(owner, Localize.Text("PremiumConfirmTitle"), string.Format(Localize.Text("PremiumConfirmInfo"), name), Localize.Text("PremiumConfirmAgree"));
         NameStatus status;
         try { using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8)); status = await context.CheckNameAsync(name, timeout.Token); }
         catch (OperationCanceledException) { return true; }

@@ -1550,6 +1550,8 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
     /** Each rarity's fish hovered in the inventory, for the name and tooltip colors. */
     private static void fishTooltips(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
         var server = world.getServer();
+        // Earlier tests can leave the player flying over open air; give survival mode a floor so nobody falls out of the world.
+        server.runCommand("execute at @p run fill ~-2 ~-1 ~-2 ~2 ~-1 ~2 minecraft:stone");
         server.runCommand("gamemode survival @a");
         String[] kinds = {"plain-cod", "plain-pondie", "plain-splashtail", "rare", "epic", "legendary", "mythic", "shiny"};
         for (String kind : kinds) {

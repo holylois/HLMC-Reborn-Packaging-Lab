@@ -6,12 +6,13 @@ public final class AuthPolicy {
     public static int mode(boolean authenticated, boolean registered, boolean placing) {
         return authenticated ? (placing ? 3 : 0) : (registered ? 1 : 2);
     }
+    /** "" when fine, else a translation key (holylois.auth.*; "min" takes the minimum length). */
     public static String validate(String password, String confirmation, boolean registering, int minimum) {
-        if (password.isEmpty()) return "Enter your server password.";
-        if (registering && password.length() < minimum) return "Use at least " + minimum + " characters.";
+        if (password.isEmpty()) return "holylois.auth.enter";
+        if (registering && password.length() < minimum) return "holylois.auth.min";
         if (password.chars().anyMatch(c -> Character.isWhitespace(c) || Character.isISOControl(c)))
-            return "Use a password without spaces.";
-        if (registering && !password.equals(confirmation)) return "The passwords do not match.";
+            return "holylois.auth.spaces";
+        if (registering && !password.equals(confirmation)) return "holylois.auth.mismatch";
         return "";
     }
     public static String argument(String value) {

@@ -12,7 +12,8 @@ repositories { mavenCentral() }
 
 // Keep our FoT bite models above the mod's base models even when dev pack discovery interleaves file packs with mods.
 tasks.named('processResources') {
-    from(rootProject.file('fish-eating')) { include 'assets/**' }
+    // The title panorama ships only in the resource pack (HolyLois-FishEating.zip), never in this code jar.
+    from(rootProject.file('fish-eating')) { include 'assets/**'; exclude 'assets/minecraft/textures/gui/title/**' }
     from(rootProject.file('fish-eating/CREDITS.txt')) { rename { 'FISH-EATING-CREDITS.txt' } }
 }
 

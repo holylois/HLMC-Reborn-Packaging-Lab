@@ -87,8 +87,8 @@ public static class AppUpdates
         var recovery = args.Contains("--recover-app-update");
         var i = Array.IndexOf(args,recovery ? "--recover-app-update" : "--apply-app-update");
         if (i < 0 || i + 3 >= args.Length || !int.TryParse(args[i+2],out var pid) || !long.TryParse(args[i+3],out var ticks)) throw new InvalidDataException("Invalid app update handoff.");
-        var workerWindow = args.Any(a => a.StartsWith("--app-update-smoke")) ? null : new AppUpdateWindow("Updating Holy Lois",false);
-        workerWindow?.Show(); workerWindow?.SetStage("Waiting for the launcher to close...",10);
+        var workerWindow = args.Any(a => a.StartsWith("--app-update-smoke")) ? null : new AppUpdateWindow(Localize.Text("UpdTitle"),false);
+        workerWindow?.Show(); workerWindow?.SetStage(Localize.Text("UpdWaitClose"),10);
         var nonce = args[i+1]; var deployment = Deployment; var pending = deployment.ValidatePending(nonce);
         var release = AppReleasePolicy.Parse(pending.Release,Key);
         if (!Path.GetFullPath(Environment.ProcessPath!).Equals(deployment.Stage(release),StringComparison.OrdinalIgnoreCase)
@@ -110,13 +110,13 @@ public static class AppUpdates
         Process? child = null;
         try
         {
-            workerWindow?.SetStage("Installing the verified launcher...",40);
+            workerWindow?.SetStage(Localize.Text("UpdInstalling"),40);
             await Task.Run(() => deployment.Commit(nonce));
-            workerWindow?.SetStage("Starting the updated launcher...",80);
+            workerWindow?.SetStage(Localize.Text("UpdStarting"),80);
             ReleaseLock(); child = Start(deployment.Target,args.Contains("--app-update-smoke-fail") ? ["--app-update-ready",nonce,"--app-update-smoke-fail"] : args.Contains("--app-update-smoke") ? ["--app-update-ready",nonce,"--app-update-smoke"] : ["--app-update-ready",nonce]);
             var deadline = DateTime.UtcNow.AddSeconds(30);
             while (!child.HasExited && DateTime.UtcNow < deadline && !deployment.IsAcknowledged(nonce)) await Task.Delay(100);
-            if (deployment.IsAcknowledged(nonce)) { deployment.Finalize(nonce); workerWindow?.SetStage("Launcher updated.",100,true); if (workerWindow is not null) await Task.Delay(500); return 0; }
+            if (deployment.IsAcknowledged(nonce)) { deployment.Finalize(nonce); workerWindow?.SetStage(Localize.Text("UpdDone"),100,true); if (workerWindow is not null) await Task.Delay(500); return 0; }
             if (!child.HasExited) { child.Kill(); await child.WaitForExitAsync(); }
             if (!AcquireLock()) throw new IOException("Update recovery is waiting for Holy Lois to close.");
             deployment.Rollback(nonce); ReleaseLock();

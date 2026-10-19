@@ -112,8 +112,8 @@ public static partial class PlayerNames
 
     /// <summary>
     /// What a free-play name means on Holy Lois. The server locks a name to whoever joins with it first: a free name stays
-    /// the player's even if someone buys it later, a taken one needs its server password, and a bought account's name can
-    /// still be claimed here (its paid owner then cannot join under it).
+    /// the player's, and a taken one needs its server password. A bought account's name has priority: when its paid owner
+    /// joins, the free-play account under that name is moved to a backup and the owner gets the name.
     /// </summary>
     public static async Task<NameStatus> CheckAsync(HttpClient http, PlayerBook book, string name, CancellationToken token)
     {

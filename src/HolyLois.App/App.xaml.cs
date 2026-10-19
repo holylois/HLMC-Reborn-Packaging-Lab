@@ -24,6 +24,8 @@ public partial class App : Application
             var development = args.Contains("--data-dir") || args.Any(a => a.StartsWith("--render-", StringComparison.Ordinal) || a.StartsWith("--verify-", StringComparison.Ordinal)) || args.Contains("--publish-prepared");
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
             if (args.Contains("--promote-install")) { await AppPromotion.RunAsync(args); Shutdown(0); return; }
+            // Worker windows start before any ClientContext: read the player's language straight from the saved settings.
+            if (args.Contains("--remove-app") || args.Contains("--apply-app-update") || args.Contains("--recover-app-update")) Localize.Use(WorkerLanguage());
             if (args.Contains("--remove-app")) { await AppMaintenance.RemoveAsync(args); Shutdown(0); return; }
             if (args.Contains("--apply-app-update") || args.Contains("--recover-app-update")) { Shutdown(await AppUpdates.ApplyAsync(args)); return; }
             if (!development && !args.Contains("--app-update-ready") && AppPromotion.Request(args)) { Shutdown(0); return; }
@@ -383,5 +385,19 @@ public partial class App : Application
         bitmap.Render(background); bitmap.Render(content);
         var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var file = File.Create(Path.Combine(root, name)); encoder.Save(file);
+    }
+
+    private static string WorkerLanguage()
+    {
+        try
+        {
+            var path = Path.Combine(LauncherStartup.InstallRoot, "data", "launcher-settings.json");
+            if (!File.Exists(path) || new FileInfo(path).Length > 1024 * 1024) return "en";
+            using var json = System.Text.Json.JsonDocument.Parse(File.ReadAllBytes(path));
+            foreach (var p in json.RootElement.EnumerateObject())
+                if (p.NameEquals("language") || p.NameEquals("Language")) return p.Value.GetString() ?? "en";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or InvalidOperationException) { }
+        return "en";
     }
 }

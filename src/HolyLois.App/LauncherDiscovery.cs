@@ -13,7 +13,26 @@ public static class LauncherDiscovery
     public static string? Registered(string launcher) => registered.Value.IsCompletedSuccessfully
         ? registered.Value.Result.GetValueOrDefault(launcher) : null;
 
+    // Fast path without starting PowerShell: the Store launcher's package in the registry and SKlauncher's Start menu
+    // shortcut. Get-StartApps stays as the fallback when neither is found.
     private static Dictionary<string, string> ReadStartApps()
+    {
+        var result = new Dictionary<string, string>();
+        try
+        {
+            using var packages = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages");
+            if (packages?.GetSubKeyNames().Any(n => n.StartsWith("Microsoft.4297127D64EC6_", StringComparison.OrdinalIgnoreCase) && n.EndsWith("_8wekyb3d8bbwe", StringComparison.OrdinalIgnoreCase)) == true)
+                result["official"] = @"shell:AppsFolder\Microsoft.4297127D64EC6_8wekyb3d8bbwe!Minecraft";
+            var menus = new[] { Environment.GetFolderPath(Environment.SpecialFolder.Programs), Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms) };
+            var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, MaxRecursionDepth = 3 };
+            var sk = menus.Where(Directory.Exists).SelectMany(m => Directory.EnumerateFiles(m, "SKlauncher*.lnk", options)).OrderBy(p => p.Length).FirstOrDefault();
+            if (sk is not null) result["sk"] = sk;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException) { }
+        return result.Count > 0 ? result : ReadWithPowerShell();
+    }
+
+    private static Dictionary<string, string> ReadWithPowerShell()
     {
         try
         {
