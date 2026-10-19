@@ -51,6 +51,7 @@ public final class StrongestJournalChecks {
         context.runOnClient(client->{
             var preview=new JournalPreview();var record=page.entries().getFirst().strongest();var entity=preview.entity(record);
             check(entity!=null&&client.level.getEntity(entity.getId())==null,"preview zombie is never inserted into the world");
+            check(entity.yo==entity.getY()&&entity.xo==entity.getX(),"preview entity has no stale old position (Fresh Animations eases toward it)");
             check(entity.getItemBySlot(EquipmentSlot.HEAD).is(Items.DIAMOND_HELMET),"isolated preview restores strongest equipment");
             check(entity.getItemBySlot(EquipmentSlot.MAINHAND).is(Items.IRON_SWORD),"isolated preview restores the recorded weapon");
             String details=JournalScreen.recordLines(record).stream().map(c->c.getString()).collect(java.util.stream.Collectors.joining("\n"));

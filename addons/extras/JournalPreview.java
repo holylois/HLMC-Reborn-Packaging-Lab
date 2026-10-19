@@ -37,7 +37,9 @@ public final class JournalPreview {
         if(zombie instanceof Zombie z)z.setBaby(record.baby());else if(zombie instanceof AgeableMob a)a.setBaby(record.baby());
         var scale=zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.SCALE);if(scale!=null)scale.setBaseValue(record.scale());
         zombie.refreshDimensions();
-        zombie.setPos(mc.player.position());
+        // Old position too: Fresh Animations eases the body toward the interpolated height, and an old position of 0 made
+        // the spider abdomen flip between two poses inside every tick.
+        zombie.setPos(mc.player.position());zombie.setOldPosAndRot();
         for(var gear:record.gear()){
             var item=BuiltInRegistries.ITEM.getOptional(Identifier.parse(gear.item()));if(item.isEmpty())continue;var stack=new ItemStack(item.get());
             if(gear.dye()>=0)stack.set(DataComponents.DYED_COLOR,new net.minecraft.world.item.component.DyedItemColor(gear.dye()));

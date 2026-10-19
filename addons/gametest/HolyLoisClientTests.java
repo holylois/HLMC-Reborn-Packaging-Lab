@@ -853,11 +853,21 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             enchanted.enchant(registries.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS),3);
             check(nameColor.apply(enchanted)==green,"an enchanted sword is Uncommon green, not vanilla aqua ("+holylois.boombox.HolyRarity.of(enchanted)+" "+enchanted.getStyledHoverName()+")");
             check(nameColor.apply(item.apply("minecraft:enchanted_golden_apple"))==gold&&holylois.boombox.HolyRarity.of(item.apply("minecraft:mace")).equals("legendary"),"enchanted golden apple and mace are Legendary (item floors)");
+            var sealedDef=com.ultimatearpg.item.ArpgCurrencyService.getDefinition(item.apply("runeforged:tempering_stone"));check(sealedDef.isPresent(),"tempering stone is a Runeforged currency");
+            if(sealedDef.isPresent()){var stone=com.ultimatearpg.item.ArpgCurrencyService.createGuaranteedSpecialCurrencyStack(sealedDef.get(),net.minecraft.util.RandomSource.create(7));
+                var affix=com.ultimatearpg.item.ArpgCurrencyService.specialPreviewAffix(stone);
+                String want=affix.map(a->switch(a.tier()){case T0->"mythic";case T1->"legendary";case T2->"epic";case T3->"rare";case T4->"uncommon";}).orElse("legendary");
+                check(affix.isPresent()&&holylois.boombox.HolyRarity.of(stone).equals(want),"a sealed stone is as rare as its sealed affix ("+affix.map(a->a.tier().name()).orElse("none")+" -> "+holylois.boombox.HolyRarity.of(stone)+")");
+                var celestial=com.ultimatearpg.item.ArpgCurrencyService.createHighTierCurrencyStack(sealedDef.get());
+                check(holylois.boombox.HolyRarity.of(celestial).equals("legendary"),"a Celestial stone is Legendary ("+celestial.getHoverName().getString()+" "+holylois.boombox.HolyRarity.of(celestial)+")");
+                var advanced=com.ultimatearpg.item.ArpgCurrencyService.createHiddenSpecialCurrencyPreviewStack(sealedDef.get());
+                check(holylois.boombox.HolyRarity.of(advanced).equals("epic"),"an Advanced stone is Epic ("+advanced.getHoverName().getString()+" "+holylois.boombox.HolyRarity.of(advanced)+")");
+                check(holylois.boombox.HolyRarity.of(item.apply("runeforged:tempering_stone")).equals("rare"),"a plain Tempering Stone stays Rare");}
             var ours=java.util.Set.of("uncommon","rare","epic","legendary","mythic","cursed").stream().map(t->holylois.boombox.FishData.color(t)&0xFFFFFF).collect(java.util.stream.Collectors.toSet());
             for(int affixes=1;affixes<=8;affixes++){int c=com.ultimatearpg.monster.ArpgEliteMonsterService.eliteColor(affixes);
                 check(ours.contains(c)||c==0xFFFFFF,"elite name tags use our tier colours ("+affixes+" affixes: "+Integer.toHexString(c)+")");}
-            check(holylois.boombox.HolyRarity.of(item.apply("runeforged:amethyst_sword")).equals("uncommon")&&holylois.boombox.HolyRarity.of(item.apply("runeforged:shaping_stone")).equals("uncommon")
-                &&holylois.boombox.HolyRarity.of(item.apply("runeforged:elite_zombie_spawn_egg_cursed")).equals("mythic"),"gem weapons and basic stones are Uncommon, the Cursed Elite egg Mythic");
+            check(holylois.boombox.HolyRarity.of(item.apply("runeforged:lesser_amethyst_sword")).equals("uncommon")&&holylois.boombox.HolyRarity.of(item.apply("runeforged:amethyst_sword")).equals("rare")&&holylois.boombox.HolyRarity.of(item.apply("runeforged:infused_ruby")).equals("rare")&&holylois.boombox.HolyRarity.of(item.apply("runeforged:shaping_stone")).equals("uncommon")
+                &&holylois.boombox.HolyRarity.of(item.apply("runeforged:elite_zombie_spawn_egg_cursed")).equals("mythic"),"plain gem weapons and basic stones Uncommon, charged weapons and gems Rare, the Cursed Elite egg Mythic");
             for(String id:new String[]{"minecraft:dirt","minecraft:diamond_sword","runeforged:amethyst_sword"}){
                 var f=com.anthonyhilyard.legendarytooltips.LegendaryTooltips.getDefinitionColors(item.apply(id),0xF0100010,0xF0100010,0x505000FF,0x5028007F,registries);
                 check(f==null||f.index()==-1,"below Legendary keeps the plain standard border ("+id+" "+(f==null?"none":f.index())+")");

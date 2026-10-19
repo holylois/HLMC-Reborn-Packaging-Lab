@@ -32,8 +32,11 @@ public final class HolyRarity {
         // Enchanted books are everyday loot: Uncommon, no outline and no spikes, whatever vanilla says (Rare in 26.3).
         if (stack.is(net.minecraft.world.item.Items.ENCHANTED_BOOK)) return "uncommon";
         String fixed = RUNEFORGED_ITEMS.get(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+        // Advanced, Sealed and Celestial stones are the base stones with extra data, not their own items.
+        if (RUNEFORGED) { String variant = Runeforged.currencyTier(stack, fixed == null ? "" : fixed); if (!variant.isEmpty()) return variant; }
         if (fixed != null) return fixed;
-        if (gemWeapon(stack)) return "uncommon";
+        String gem = gemWeapon(stack);
+        if (!gem.isEmpty()) return gem;
         int best = vanilla(stack.getOrDefault(DataComponents.RARITY, Rarity.COMMON), stack.isEnchanted());
         best = Math.max(best, rank(nameTier(stack.getHoverName())));
         best = Math.max(best, FLOORS.getOrDefault(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), 0));
@@ -49,8 +52,10 @@ public final class HolyRarity {
 
     public static int rank(String tier) { return Math.max(0, TIERS.indexOf(tier)); }
 
-    /** Runeforged stones, gems and eggs on one ladder by power (owner 2026-10-19): shaping/reinforcement stones, rune fragments
-     *  and charged gems Uncommon, the other basic stones Rare, advanced stones and infusion gems Epic, high, sealed and Celestial stones Legendary, Alien gems Mythic (they make Alien-Cursed gear), Sealed gems Cursed. Exact, not a floor. */
+    /** Runeforged stones, gems and eggs on one ladder by power (owner 2026-10-19): shaping/reinforcement stones and rune
+     *  fragments Uncommon, charged gems and the other basic stones Rare, Infusion Gems Epic, Ascension stones and Celestial
+     *  Fragments Legendary, Alien Orbs Mythic (they make Alien-Cursed gear), Sealed Gems Cursed. Advanced, Sealed and
+     *  Celestial stones are data variants of these items: Runeforged.currencyTier. Exact, not a floor. */
     static final java.util.Map<String, String> RUNEFORGED_ITEMS = java.util.Map.ofEntries(
         java.util.Map.entry("runeforged:shaping_stone", "uncommon"),
         java.util.Map.entry("runeforged:reinforcement_stone", "uncommon"),
@@ -60,45 +65,30 @@ public final class HolyRarity {
         java.util.Map.entry("runeforged:penance_stone", "rare"),
         java.util.Map.entry("runeforged:edict_stone", "rare"),
         java.util.Map.entry("runeforged:rune_fragment", "uncommon"),
-        java.util.Map.entry("runeforged:advanced_shaping_stone", "epic"),
-        java.util.Map.entry("runeforged:advanced_reinforcement_stone", "epic"),
-        java.util.Map.entry("runeforged:advanced_tempering_stone", "epic"),
         java.util.Map.entry("runeforged:infusion_gem", "epic"),
-        java.util.Map.entry("runeforged:high_infusion_gem", "epic"),
-        java.util.Map.entry("runeforged:infused_obsidian", "uncommon"),
-        java.util.Map.entry("runeforged:infused_amethyst", "uncommon"),
-        java.util.Map.entry("runeforged:infused_lapis_lazuli", "uncommon"),
-        java.util.Map.entry("runeforged:infused_ruby", "uncommon"),
-        java.util.Map.entry("runeforged:infused_emerald", "uncommon"),
+        java.util.Map.entry("runeforged:infused_obsidian", "rare"),
+        java.util.Map.entry("runeforged:infused_amethyst", "rare"),
+        java.util.Map.entry("runeforged:infused_lapis_lazuli", "rare"),
+        java.util.Map.entry("runeforged:infused_ruby", "rare"),
+        java.util.Map.entry("runeforged:infused_emerald", "rare"),
         java.util.Map.entry("runeforged:ascension_stone", "legendary"),
-        java.util.Map.entry("runeforged:sealed_shaping_stone", "legendary"),
-        java.util.Map.entry("runeforged:sealed_reinforcement_stone", "legendary"),
-        java.util.Map.entry("runeforged:sealed_tempering_stone", "legendary"),
-        java.util.Map.entry("runeforged:high_shaping_stone", "legendary"),
-        java.util.Map.entry("runeforged:high_reinforcement_stone", "legendary"),
-        java.util.Map.entry("runeforged:high_tempering_stone", "legendary"),
-        java.util.Map.entry("runeforged:high_reforging_stone", "legendary"),
-        java.util.Map.entry("runeforged:high_stripping_stone", "legendary"),
-        java.util.Map.entry("runeforged:high_penance_stone", "legendary"),
-        java.util.Map.entry("runeforged:high_edict_stone", "legendary"),
-        java.util.Map.entry("runeforged:high_ascension_stone", "legendary"),
         java.util.Map.entry("runeforged:celestial_fragment", "legendary"),
         java.util.Map.entry("runeforged:alien_orb", "mythic"),
-        java.util.Map.entry("runeforged:high_alien_orb", "mythic"),
         java.util.Map.entry("runeforged:sealed_gem", "cursed"),
-        java.util.Map.entry("runeforged:high_sealed_gem", "cursed"),
         java.util.Map.entry("runeforged:elite_zombie_spawn_egg_magic", "uncommon"),
         java.util.Map.entry("runeforged:elite_zombie_spawn_egg_rare", "rare"),
         java.util.Map.entry("runeforged:elite_zombie_spawn_egg_legendary", "legendary"),
         java.util.Map.entry("runeforged:elite_zombie_spawn_egg_cursed", "mythic"));
 
-    /** Plain gem weapons (Gem Modification: obsidian, amethyst, lapis, ruby, emerald) without a Runeforged quality: Uncommon. */
-    static boolean gemWeapon(ItemStack stack) {
+    /** Gem weapons (Gem Modification) without a Runeforged quality (owner 2026-10-19): plain (lesser_*) Uncommon, charged Rare. */
+    static String gemWeapon(ItemStack stack) {
         var id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
-        if (!id.getNamespace().equals("runeforged")) return false;
+        if (!id.getNamespace().equals("runeforged") || RUNEFORGED && Runeforged.rank(stack) != 0) return "";
         String path = id.getPath();
-        return (path.startsWith("obsidian_") || path.startsWith("amethyst_") || path.startsWith("lapis_lazuli_") || path.startsWith("ruby_") || path.startsWith("emerald_"))
-            && (!RUNEFORGED || Runeforged.rank(stack) == 0);
+        boolean lesser = path.startsWith("lesser_");
+        if (lesser) path = path.substring("lesser_".length());
+        boolean gem = path.startsWith("obsidian_") || path.startsWith("amethyst_") || path.startsWith("lapis_lazuli_") || path.startsWith("ruby_") || path.startsWith("emerald_");
+        return !gem ? "" : lesser ? "uncommon" : "rare";
     }
 
     /** Items worth more than their vanilla rarity says (owner 2026-10-19): a floor, enchanting can still lift them. */
@@ -196,6 +186,19 @@ public final class HolyRarity {
 
     /** Separate class so Runeforged is only loaded when installed. */
     private static final class Runeforged {
+        /** Stone variants (owner 2026-10-19): Sealed as rare as its sealed affix (T1 Legendary, T0 Mythic), Advanced Epic,
+         *  Celestial Legendary; Mythic and Cursed bases (Alien Orb, Sealed Gem) keep their tier. "" for no variant. */
+        static String currencyTier(ItemStack stack, String base) {
+            if (!com.ultimatearpg.item.ArpgCurrencyService.isCurrency(stack)) return "";
+            var affix = com.ultimatearpg.item.ArpgCurrencyService.specialPreviewAffix(stack);
+            if (affix.isPresent()) return switch (affix.get().tier()) {
+                case T0 -> "mythic"; case T1 -> "legendary"; case T2 -> "epic"; case T3 -> "rare"; case T4 -> "uncommon";
+            };
+            if (base.equals("mythic") || base.equals("cursed")) return "";
+            if (com.ultimatearpg.item.ArpgCurrencyService.isHighTierCurrency(stack) || com.ultimatearpg.item.ArpgCurrencyService.isCelestialCurrency(stack)) return "legendary";
+            if (com.ultimatearpg.item.ArpgCurrencyService.hasSpecialCurrencyData(stack) || com.ultimatearpg.item.ArpgCurrencyService.isSpecialEnchantCurrency(stack)) return HolyRarity.rank(base) > HolyRarity.rank("epic") ? "" : "epic";
+            return "";
+        }
         static int rank(ItemStack stack) {
             try {
                 var quality = com.ultimatearpg.item.ArpgWeaponHelper.peekVisualQuality(stack);
