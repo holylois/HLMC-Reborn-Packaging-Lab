@@ -11,6 +11,7 @@ final class RelicTooltips {
                 case "loiss_lantern"->"lantern";
                 case "staff_of_quiet_roads"->"staff";
                 case "circlet_of_the_wanderer"->"circlet";
+                case "bell_keepers_hook"->"hook";
                 default->null;
             };
             if(key==null)return;

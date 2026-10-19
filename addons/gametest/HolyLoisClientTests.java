@@ -944,7 +944,16 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.runOnClient(client->client.player.setXRot(35));
         context.waitTicks(20);context.takeScreenshot("relic-staff-ground");
         server.runCommand("kill @e[type=item]");server.runCommand("clear @a");
+        for(String id:new String[]{"staff_of_quiet_roads","loiss_lantern","drowned_bell_clapper","bell_keepers_hook","first_rune_hammer","unfinished_blade"})
+            server.runCommand("execute as @p run legends give "+id);
+        context.waitTicks(5);
+        server.runOnServer(s->{var inv=s.getPlayerList().getPlayers().getFirst().getInventory();int drawn=0;
+            for(int i=0;i<inv.getContainerSize();i++)if(holylois.boombox.RelicLooks.model(inv.getItem(i))!=null)drawn++;
+            check(drawn==6,"all six hand-held relics have their own look ("+drawn+")");});
         context.runOnClient(client->client.player.setXRot(0));
+        context.getInput().pressKey(options->options.keyInventory);context.waitTicks(8);context.takeScreenshot("relic-all-inventory");
+        context.getInput().pressKey(options->options.keyInventory);context.waitTicks(3);
+        server.runCommand("clear @a");
     }
 
     /** A trophy pufferfish in either hand (here the off hand) hurts a melee attacker back, and thorns never answer thorns. */

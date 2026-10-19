@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/handheld_rod",
+ "textures": {
+  "layer0": "holylois:item/relic/bell_keepers_hook_cast"
+ }
+}

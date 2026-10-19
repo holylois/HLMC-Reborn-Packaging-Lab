@@ -29,6 +29,8 @@ public final class RelicPowers {
         boolean ready=PartySupport.ready(p)&&!p.isSpectator();
         modifier(p,Attributes.BLOCK_BREAK_SPEED,"relic_lantern_mining",.10,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,ready&&held(p,"loiss_lantern"));
         modifier(p,Attributes.MOVEMENT_SPEED,"relic_staff_speed",.08,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,ready&&held(p,"staff_of_quiet_roads"));
+        // Bell-Keeper's Hook: luck feeds the trophy fish roll, so rarer fish bite more often (owner 2026-10-19).
+        modifier(p,Attributes.LUCK,"relic_hook_luck",1,AttributeModifier.Operation.ADD_VALUE,ready&&held(p,"bell_keepers_hook"));
         modifier(p,Attributes.LUCK,"relic_circlet_luck",1,AttributeModifier.Operation.ADD_VALUE,ready&&id(p.getItemBySlot(EquipmentSlot.HEAD)).equals("circlet_of_the_wanderer"));
     }
     static boolean outOfCombat(ServerPlayer p){
