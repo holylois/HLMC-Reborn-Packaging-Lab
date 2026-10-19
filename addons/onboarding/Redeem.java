@@ -167,8 +167,10 @@ final class Redeem {
         String name = player.getGameProfile().name();
         String prize = roll(secret, id, day);
         String text = give(server, player, prize, name);
-        DailyRewards.celebrate(player, "legendary".equals(prize) ? 3 : 1);
-        player.sendSystemMessage(Component.literal("✦ Secret code: ").withStyle(ChatFormatting.GOLD).append(Component.literal(text).withStyle(ChatFormatting.YELLOW)));
+        // The real prize, small above the hotbar (it is not always a lootbox), and the same line in chat.
+        var line = Component.literal("✦ Secret code: ").withStyle(ChatFormatting.GOLD).append(Component.literal(text).withStyle(ChatFormatting.YELLOW));
+        DailyRewards.celebrate(player, "legendary".equals(prize) ? 3 : 1, line);
+        player.sendSystemMessage(line);
         if ("legendary".equals(prize))
             server.getPlayerList().broadcastSystemMessage(Component.literal("✦ ").withStyle(ChatFormatting.GOLD)
                 .append(Component.literal(name).withStyle(ChatFormatting.YELLOW))
