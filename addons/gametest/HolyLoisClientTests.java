@@ -90,6 +90,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "one rarity system names every item in our tiers", context, world, HolyLoisClientTests::holyRarity);
             run(failed, "shelf frame rolls once", context, world, HolyLoisClientTests::shelfFrameOnce);
             run(failed, "relic looks", context, world, HolyLoisClientTests::relicLooks);
+            run(failed, "relic gallery function", context, world, HolyLoisClientTests::relicGallery);
             run(failed, "pufferfish thorns", context, world, HolyLoisClientTests::pufferThorns);
             run(failed, "tier tooltip screenshots", context, world, HolyLoisClientTests::tierTooltipShots);
             run(failed, "persistent shoal fish and swimming sizes", context, world, HolyLoisClientTests::shoalIdentity);
@@ -949,6 +950,28 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
     }
 
     /** Drawn relics: their own icon in the inventory and on the ground, a 3D model in hand (screenshots for owner review). */
+    /** Runs the art-comparison gallery function (HOLYLOIS_GALLERY = path to gallery.mcfunction); skipped otherwise. */
+    private static void relicGallery(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        String path=System.getenv("HOLYLOIS_GALLERY");if(path==null||path.isBlank())return;
+        var server=world.getServer();
+        String extraPack=System.getenv("HOLYLOIS_EXTRA_PACK");
+        if(extraPack!=null&&!extraPack.isBlank()){
+            context.runOnClient(client->{var repo=client.getResourcePackRepository();repo.reload();
+                check(repo.addPack("file/"+extraPack),"the extra resource pack "+extraPack+" loads");client.reloadResourcePacks();});
+            context.waitTicks(200);
+        }
+        server.runCommand("tp @p 0 100 0 180 0");context.waitTicks(10);
+        for(String line:java.nio.file.Files.readAllLines(java.nio.file.Path.of(path)))
+            if(!line.isBlank()&&!line.startsWith("#"))server.runCommand("execute as @p at @p run "+line);
+        context.waitTicks(10);
+        server.runOnServer(s->{var p=s.getPlayerList().getPlayers().getFirst();
+            int tagged=p.level().getEntities((net.minecraft.world.entity.Entity)null,p.getBoundingBox().inflate(16),e->e.entityTags().contains("relictest")).size();
+            int relics=0;for(int i=0;i<p.getInventory().getContainerSize();i++)if(!holylois.boombox.RelicPowers.idOf(p.getInventory().getItem(i)).isEmpty())relics++;
+            check(tagged==13&&relics==8,"the gallery spawns 13 pieces and gives 8 relics ("+tagged+", "+relics+")");});
+        context.runOnClient(client->{client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);client.player.setYRot(180);client.player.setXRot(5);});
+        context.waitTicks(30);context.takeScreenshot("relic-gallery");
+    }
+
     private static void relicLooks(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
         var server=world.getServer();
         // Compare an alternative relic art pack: HOLYLOIS_EXTRA_PACK=name.zip from run/gametest/resourcepacks.
