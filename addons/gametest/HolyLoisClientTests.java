@@ -88,6 +88,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);
             run(failed, "a bite catches the fish swimming at the bobber", context, world, HolyLoisClientTests::seenCatch);
             run(failed, "one rarity system names every item in our tiers", context, world, HolyLoisClientTests::holyRarity);
+            run(failed, "pufferfish thorns", context, world, HolyLoisClientTests::pufferThorns);
             run(failed, "tier tooltip screenshots", context, world, HolyLoisClientTests::tierTooltipShots);
             run(failed, "persistent shoal fish and swimming sizes", context, world, HolyLoisClientTests::shoalIdentity);
             run(failed, "fish variant models", context, world, HolyLoisClientTests::fishVariantModels);
@@ -903,6 +904,33 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var mythicFrame=com.anthonyhilyard.legendarytooltips.LegendaryTooltips.getDefinitionColors(mythicFish,0,0,0,0,registries);
             check(legendaryFrame!=null&&legendaryFrame.index()>=0&&mythicFrame!=null&&mythicFrame.index()==0&&mythicFrame.resource().getNamespace().equals("holylois"),
                 "Legendary fish get gold spikes and Mythic fish our red frame");
+        });
+    }
+
+    /** A trophy pufferfish in the main hand hurts a melee attacker back, and thorns never answer thorns. */
+    private static void pufferThorns(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        var server=world.getServer();
+        server.runCommand("gamemode survival @a");
+        float[] health=new float[2];java.util.UUID[] id=new java.util.UUID[1];
+        server.runOnServer(s->{
+            var player=s.getPlayerList().getPlayers().getFirst();var level=(ServerLevel)player.level();
+            var puffer=new ItemStack(net.minecraft.world.item.Items.PUFFERFISH);var tag=new net.minecraft.nbt.CompoundTag();var fishTag=new net.minecraft.nbt.CompoundTag();
+            fishTag.putString("rarity","legendary");fishTag.putDouble("kg",3.0);tag.put("holylois_fish",fishTag);
+            puffer.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(tag));
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,puffer);
+            var zombie=(net.minecraft.world.entity.LivingEntity)BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("minecraft:zombie")).create(level,net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            zombie.setPos(player.getX()+1,player.getY(),player.getZ());level.addFreshEntity(zombie);id[0]=zombie.getUUID();
+            health[0]=zombie.getHealth();
+            player.hurtServer(level,level.damageSources().thorns(zombie),1);
+            check(zombie.getHealth()==health[0],"thorns damage is not reflected again");
+        });
+        context.waitTicks(15);
+        server.runOnServer(s->{
+            var player=s.getPlayerList().getPlayers().getFirst();var level=(ServerLevel)player.level();
+            var zombie=(net.minecraft.world.entity.LivingEntity)level.getEntity(id[0]);
+            player.hurtServer(level,level.damageSources().mobAttack(zombie),1);
+            check(zombie.getHealth()<health[0],"a held Legendary pufferfish hurts the zombie that hit you ("+health[0]+" -> "+zombie.getHealth()+")");
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,ItemStack.EMPTY);player.setHealth(player.getMaxHealth());zombie.discard();
         });
     }
 

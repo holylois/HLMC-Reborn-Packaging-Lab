@@ -57,7 +57,8 @@ public final class FishTraits {
 
     static void registerThorns() {
         net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.ALLOW_DAMAGE.register((victim, source, amount) -> {
-            if (victim instanceof net.minecraft.world.entity.player.Player player && source.getDirectEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
+            // Thorns never answer thorns: two pufferfish holders would bounce damage forever.
+            if (victim instanceof net.minecraft.world.entity.player.Player player && !source.is(net.minecraft.world.damagesource.DamageTypes.THORNS) && source.getDirectEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
                 && source.getDirectEntity() == source.getEntity() && attacker != player && player.level() instanceof net.minecraft.server.level.ServerLevel level) {
                 float back = thorns(player.getMainHandItem());
                 if (back > 0) attacker.hurtServer(level, level.damageSources().thorns(player), back);
