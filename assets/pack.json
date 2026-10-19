@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "2.1.0",
+  "version": "2.2.0",
   "minecraft": "26.3",
   "fabric": "0.19.5",
   "java": 25,
@@ -28,10 +28,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/AmbientSounds_FABRIC_v6.3.10_mc26.3.jar",
-      "url": "https://cdn.modrinth.com/data/fM515JnW/versions/T9Nl4OKj/AmbientSounds_FABRIC_v6.3.10_mc26.3.jar",
-      "size": 84824816,
-      "sha256": "5505a777b64762a1094cc5ecbb41df0306cd2831f8df3327cbfe2a02ba45be85",
+      "path": "mods/AmbientSounds_FABRIC_v6.3.11_mc26.3.jar",
+      "url": "https://cdn.modrinth.com/data/fM515JnW/versions/LFUkYKC1/AmbientSounds_FABRIC_v6.3.11_mc26.3.jar",
+      "size": 84825097,
+      "sha256": "5e9677b06ed2ada8108b42e1d78355853b5193565d61af3c9509981344fa1a73",
       "policy": "managed"
     },
     {
@@ -189,10 +189,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/fabric-api-0.163.0+26.3.jar",
-      "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/bq3SsNGk/fabric-api-0.163.0%2B26.3.jar",
-      "size": 1774707,
-      "sha256": "4969f5197ebedaf681cc913e4258c8bd17ccb98029db52a29e9b48e998267a2d",
+      "path": "mods/fabric-api-0.164.0+26.3.jar",
+      "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/LEklt8GT/fabric-api-0.164.0%2B26.3.jar",
+      "size": 1775592,
+      "sha256": "5a75198715a50a86787658617b03b97da9936d32df04896748c12135ba709de3",
       "policy": "managed"
     },
     {
@@ -266,10 +266,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/holylois-extras-1.8.3+26.3.jar",
-      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.1.0/holylois-extras-1.8.3+26.3.jar",
-      "size": 1229562,
-      "sha256": "81c52d1a4333f8aba86e72bd23285bf4808ff5e7a2d396edba89b2f7b800f4fe",
+      "path": "mods/holylois-extras-1.9.0+26.3.jar",
+      "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.2.0/holylois-extras-1.9.0+26.3.jar",
+      "size": 1304471,
+      "sha256": "3372c8eb74fb14f18d7d0efe72c7842e8508d92a7260a8cd920e7adb958eeae5",
       "policy": "managed"
     },
     {
@@ -518,10 +518,10 @@
       "policy": "managed"
     },
     {
-      "path": "mods/skinlayers3d-fabric-1.11.3-mc26.3.jar",
-      "url": "https://cdn.modrinth.com/data/zV5r3pPn/versions/G8BCRxv5/skinlayers3d-fabric-1.11.3-mc26.3.jar",
-      "size": 1890220,
-      "sha256": "50764a93bd75a70a7fdc899d4910f34f7982ab63497e63d17a27cdd512fedecb",
+      "path": "mods/skinlayers3d-fabric-1.11.4-mc26.3.jar",
+      "url": "https://cdn.modrinth.com/data/zV5r3pPn/versions/gjM2TO0L/skinlayers3d-fabric-1.11.4-mc26.3.jar",
+      "size": 1892299,
+      "sha256": "82450ed109221b571f60f6115c31a384f9cfb072deb5135b11c16febce672387",
       "policy": "managed"
     },
     {
@@ -617,9 +617,9 @@
     },
     {
       "path": "resourcepacks/FreshAnimations_v1.10.5.zip",
-      "url": "https://cdn.modrinth.com/data/50dA9Sha/versions/RGIzA5em/FreshAnimations_v1.10.5.zip",
-      "size": 645816,
-      "sha256": "cf9f17a2977e171b33cb0b598bc4357dd0383e09c10d5f768ff17c12d0a028ee",
+      "url": "https://cdn.modrinth.com/data/50dA9Sha/versions/KRebM55x/FreshAnimations_v1.11_26.1%2B.zip",
+      "size": 777123,
+      "sha256": "e73f5fab0792a6276c394ad327f7dc1113b14e01ecd5e3b8bf52a4a4b02101be",
       "policy": "managed"
     },
     {
@@ -740,12 +740,39 @@
   ],
   "defaults": {
     "path": "defaults.zip",
-    "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.1.0/defaults.zip",
-    "size": 54091,
-    "sha256": "c4662a966d6b53a31dd280ec7c94b388e2e4c73856b6add4e4b968fd1380d6da",
+    "url": "https://github.com/holylois/HLMC-Reborn/releases/download/pack-v2.2.0/defaults.zip",
+    "size": 54089,
+    "sha256": "ff705d614fd3978f6fa8826a8b80e20ede65ee2463f154469ab6b076744002e2",
     "policy": "seed"
   },
   "history": [
+    {
+      "version": "2.2.0",
+      "date": "2026-10-19",
+      "summary": "Catch the fish you see, one set of rarity colours for every item and a new /played command.",
+      "added": [
+        "A bite catches the fish swimming right at your bobber: you land that exact fish, with its size and rarity.",
+        "/played shows your total, active and AFK time, plus time spent fishing and listening to boomboxes.",
+        "Gear on dungeon shelves sometimes comes out as a Runeforged piece.",
+        "Relics look like themselves: their own icons, the Staff of Quiet Roads as a real staff in hand, and the Bell-Keeper's Hook gives +1 luck for rarer fish.",
+        "Every trophy fish now helps while held in either hand: Pondie adds health, Plentifin luck for better catches, Devilfish shortens burning, Stormfish softens falls, and a Pufferfish hurts whoever hits you."
+      ],
+      "updated": [
+        "Every item uses the same rarity colours as fish: Uncommon green, Rare blue, Epic purple, Legendary gold with a shine, Mythic red. Enchanted gear moves up one tier, and Runeforged gear, stones and gems use the same tiers. Alien-Cursed gear and Cursed elites are Mythic, other Cursed gear has its own violet tier, and elite name tags use the same colours. Charged gem weapons are Rare, and a Sealed stone is as rare as the affix sealed in it.",
+        "Legendary, Mythic and Cursed tooltips get gold, red and violet frames, other tooltips keep the plain look, and item names sit centred without the item picture. Epic and better items sparkle on the ground, and pickup cards chime brighter for higher tiers.",
+        "Trophy fish only glint when Mythic or Shiny, and heavy fish look clearly bigger the more they weigh.",
+        "The Journal shows mobs with their Fresh Animations look and idle motion on a bigger preview, without a jittering spider body or flopping fish.",
+        "The Holy Lootbox has a new gold block look.",
+        "3D Skin Layers 1.11.4 fixes skin textures piling up in memory.",
+        "Fresh Animations 1.11 gives polar bears and pandas full animations, and baby mobs get their own look.",
+        "Crickets chirp near rivers again, and grass sounds better match the ground you walk on.",
+        "Distant Horizons now draws 64 chunks far instead of 128, so laptops run smoother. If you changed that distance yourself, your setting stays."
+      ],
+      "fixed": [
+        "Mining no longer shows a \"Run /amber doctor\" hint that players cannot use."
+      ],
+      "removed": []
+    },
     {
       "version": "2.1.0",
       "date": "2026-10-18",
@@ -1103,23 +1130,6 @@
         "Server: world border 20000 (10000 blocks out from the centre); the land is pre-generated while the server is empty and the web map follows the border",
         "Tab shows the player count like the server list",
         "Correction: the world map opens with J (the 1.7.4 notes said M). Claiming needs no team; name your land with ' then Player config then Claimed Area Name"
-      ]
-    },
-    {
-      "version": "1.7.4",
-      "date": "2026-10-04",
-      "summary": "Land and zones: claim land right on the map, see whose land you are on, and fair fights.",
-      "added": [
-        "Land claims on the world map (Open Parties and Claims): press M, right-click a chunk and claim it. 16 chunks free, more by playing or with coins (/claims)",
-        "Teams: /oparties create and /oparties invite NAME, your team can build on your land",
-        "Zone titles at the top of the screen: the biome and whose land you are on (or Wilderness)",
-        "Server: /support MESSAGE reaches Pastor on Discord right away, /report for problems with players, /donate for the wallets"
-      ],
-      "removed": [],
-      "updated": [
-        "/rtp never drops you into or next to someone's land",
-        "PvP: logging out during a fight kills you, PvP deaths leave the loot for the winner and add no minimap death marker",
-        "Normal deaths: your drops stay 30 minutes and only you can pick them up for the first 5"
       ]
     }
   ],
