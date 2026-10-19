@@ -1,0 +1,1 @@
+{ "parent": "minecraft:item/handheld", "textures": { "layer0": "holylois:item/relic/staff_of_quiet_roads" } }

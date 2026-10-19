@@ -88,6 +88,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);
             run(failed, "a bite catches the fish swimming at the bobber", context, world, HolyLoisClientTests::seenCatch);
             run(failed, "one rarity system names every item in our tiers", context, world, HolyLoisClientTests::holyRarity);
+            run(failed, "relic looks", context, world, HolyLoisClientTests::relicLooks);
             run(failed, "pufferfish thorns", context, world, HolyLoisClientTests::pufferThorns);
             run(failed, "tier tooltip screenshots", context, world, HolyLoisClientTests::tierTooltipShots);
             run(failed, "persistent shoal fish and swimming sizes", context, world, HolyLoisClientTests::shoalIdentity);
@@ -908,6 +909,32 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             check(legendaryFrame!=null&&legendaryFrame.index()>=0&&mythicFrame!=null&&mythicFrame.index()==0&&mythicFrame.resource().getNamespace().equals("holylois"),
                 "Legendary fish get gold spikes and Mythic fish our red frame");
         });
+    }
+
+    /** Drawn relics: their own icon in the inventory and on the ground, a 3D model in hand (screenshots for owner review). */
+    private static void relicLooks(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        var server=world.getServer();
+        server.runCommand("clear @a");server.runCommand("gamemode survival @a");
+        server.runCommand("execute as @p run legends give staff_of_quiet_roads");
+        context.waitTicks(5);
+        server.runOnServer(s->{var p=s.getPlayerList().getPlayers().getFirst();var inv=p.getInventory();
+            for(int i=0;i<inv.getContainerSize();i++)if(holylois.boombox.RelicLooks.model(inv.getItem(i))!=null){var st=inv.getItem(i);inv.setItem(i,ItemStack.EMPTY);inv.setItem(0,st);}
+            inv.setSelectedSlot(0);
+            check(holylois.boombox.RelicLooks.model(p.getMainHandItem())!=null,"the Staff of Quiet Roads has its own look");});
+        context.runOnClient(client->{client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);client.player.setXRot(10);});
+        context.waitTicks(20);context.takeScreenshot("relic-staff-first-person");
+        context.runOnClient(client->{client.player.setXRot(0);client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);});
+        context.waitTicks(15);context.takeScreenshot("relic-staff-front");
+        context.runOnClient(client->client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+        context.getInput().pressKey(options->options.keyInventory);context.waitTicks(8);context.takeScreenshot("relic-staff-inventory");
+        context.getInput().pressKey(options->options.keyInventory);context.waitTicks(3);
+        server.runOnServer(s->{var p=s.getPlayerList().getPlayers().getFirst();var st=p.getMainHandItem().copy();p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+            var look=p.getLookAngle().multiply(1,0,1).normalize();
+            var e=new net.minecraft.world.entity.item.ItemEntity(p.level(),p.getX()+look.x*2,p.getY()+0.2,p.getZ()+look.z*2,st);e.setDeltaMovement(0,0,0);e.setPickUpDelay(32767);p.level().addFreshEntity(e);});
+        context.runOnClient(client->client.player.setXRot(35));
+        context.waitTicks(20);context.takeScreenshot("relic-staff-ground");
+        server.runCommand("kill @e[type=item]");server.runCommand("clear @a");
+        context.runOnClient(client->client.player.setXRot(0));
     }
 
     /** A trophy pufferfish in either hand (here the off hand) hurts a melee attacker back, and thorns never answer thorns. */

@@ -37,6 +37,7 @@
     "DeathSlotsPickupMixin"
   ],
   "client": [
+    "RelicModelMixin",
     "BundledPackOrderMixin",
     "ManagedPackScreenMixin",
     "CrateNameMixin",

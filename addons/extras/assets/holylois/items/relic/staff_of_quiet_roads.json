@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:display_context",
+    "cases": [
+      { "when": ["gui", "ground", "fixed", "on_shelf"], "model": { "type": "minecraft:model", "model": "holylois:item/relic/staff_of_quiet_roads" } }
+    ],
+    "fallback": { "type": "minecraft:model", "model": "holylois:item/relic/staff_of_quiet_roads_held" }
+  }
+}
