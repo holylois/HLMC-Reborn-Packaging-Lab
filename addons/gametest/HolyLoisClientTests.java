@@ -980,6 +980,25 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         context.runOnClient(client->client.player.setXRot(0));
         context.getInput().pressKey(options->options.keyInventory);context.waitTicks(8);context.takeScreenshot("relic-all-inventory");
         context.getInput().pressKey(options->options.keyInventory);context.waitTicks(3);
+        for(String id:new String[]{"loiss_lantern","first_rune_hammer","bell_keepers_hook","unfinished_blade"}){
+            server.runOnServer(s->{var p=s.getPlayerList().getPlayers().getFirst();var inv=p.getInventory();
+                for(int i=0;i<inv.getContainerSize();i++)if(holylois.boombox.RelicPowers.idOf(inv.getItem(i)).equals(id)){var st=inv.getItem(i);inv.setItem(i,inv.getItem(0));inv.setItem(0,st);}
+                inv.setSelectedSlot(0);});
+            context.runOnClient(client->{client.player.setXRot(0);client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);});
+            context.waitTicks(15);context.takeScreenshot("relic-front-"+id);
+        }
+        server.runCommand("clear @a");
+        server.runOnServer(s->{var p=s.getPlayerList().getPlayers().getFirst();
+            java.util.function.BiFunction<net.minecraft.world.item.Item,String,ItemStack> relic=(item,id)->{var st=new ItemStack(item);var tag=new net.minecraft.nbt.CompoundTag();tag.putString("holylois_legend",id);
+                st.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(tag));return st;};
+            p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,relic.apply(net.minecraft.world.item.Items.GOLDEN_HELMET,"circlet_of_the_wanderer"));
+            p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,relic.apply(net.minecraft.world.item.Items.LEATHER_CHESTPLATE,"smiths_apron_scrap"));
+            check(holylois.boombox.RelicLooks.worn(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD))!=null
+                &&holylois.boombox.RelicLooks.worn(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST))!=null,"the Circlet and the Apron have their own worn look");});
+        context.runOnClient(client->{client.player.setXRot(0);client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);});
+        context.waitTicks(15);context.takeScreenshot("relic-front-worn");
+        context.runOnClient(client->client.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON));
+        server.runCommand("item replace entity @a armor.head with air");server.runCommand("item replace entity @a armor.chest with air");
         server.runCommand("clear @a");
     }
 

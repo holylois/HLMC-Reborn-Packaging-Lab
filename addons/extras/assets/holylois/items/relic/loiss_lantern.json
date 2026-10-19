@@ -1,6 +1,24 @@
 {
  "model": {
-  "type": "minecraft:model",
-  "model": "holylois:item/relic/loiss_lantern"
+  "type": "minecraft:select",
+  "property": "minecraft:display_context",
+  "cases": [
+   {
+    "when": [
+     "gui",
+     "ground",
+     "fixed",
+     "on_shelf"
+    ],
+    "model": {
+     "type": "minecraft:model",
+     "model": "holylois:item/relic/loiss_lantern"
+    }
+   }
+  ],
+  "fallback": {
+   "type": "minecraft:model",
+   "model": "holylois:item/relic/loiss_lantern_held"
+  }
  }
 }

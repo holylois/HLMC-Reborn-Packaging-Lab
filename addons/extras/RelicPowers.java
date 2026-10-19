@@ -18,6 +18,8 @@ import java.util.*;
 
 /** Small server-authoritative bonuses for existing relic ids; no stack replacement or renderer dependence. */
 public final class RelicPowers {
+    /** The relic id of a stack, "" for anything else (public for tests). */
+    public static String idOf(ItemStack stack){return id(stack);}
     static String id(ItemStack stack){var data=stack.get(DataComponents.CUSTOM_DATA);return data==null?"":((holylois.boombox.mixins.CustomDataAccessor)(Object)data).holyLois$tag().getStringOr(Legends.LEGEND_KEY,"");}
     private static boolean held(ServerPlayer p,String id){return id(p.getMainHandItem()).equals(id)||id(p.getOffhandItem()).equals(id);}
     private static void modifier(ServerPlayer p,Holder<Attribute> attribute,String key,double amount,AttributeModifier.Operation op,boolean wanted){

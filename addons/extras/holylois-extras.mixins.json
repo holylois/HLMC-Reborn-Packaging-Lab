@@ -104,6 +104,8 @@
     "KeptArmsDrawMixin",
     "KeptArmsPartMixin",
     "NeaLanternSmoothMixin",
+    "NeaRelicLanternMixin",
+    "RelicWornMixin",
     "NeaMapItemsMixin",
     "ShaderPackNamesMixin",
     "ShaderPackListMixin",
