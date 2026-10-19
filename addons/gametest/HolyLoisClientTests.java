@@ -1026,8 +1026,8 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
                 st.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(tag));return st;};
             p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,relic.apply(net.minecraft.world.item.Items.GOLDEN_HELMET,"circlet_of_the_wanderer"));
             p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,relic.apply(net.minecraft.world.item.Items.LEATHER_CHESTPLATE,"smiths_apron_scrap"));
-            check(holylois.boombox.RelicLooks.worn(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD))!=null
-                &&holylois.boombox.RelicLooks.worn(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST))!=null,"the Circlet and the Apron have their own worn look");});
+            check(holylois.boombox.RelicLooks.worn(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD))==null
+                &&holylois.boombox.RelicLooks.worn(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST))==null,"worn relic looks are off for 2.2.0 (vanilla helmet and tunic)");});
         context.runOnClient(client->{client.player.setXRot(0);client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);});
         context.waitTicks(15);context.takeScreenshot("relic-front-worn");
         context.runOnClient(client->client.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK));

@@ -9,9 +9,9 @@ public final class RelicLooks {
     private RelicLooks() {}
     static final Set<String> DRAWN = Set.of("staff_of_quiet_roads", "loiss_lantern", "drowned_bell_clapper", "bell_keepers_hook",
         "first_rune_hammer", "unfinished_blade", "circlet_of_the_wanderer", "smiths_apron_scrap");
-    /** Worn relics with their own armor texture (assets/holylois/equipment). */
-    static final java.util.Map<String, net.minecraft.resources.ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset>> WORN = java.util.Map.of(
-        "circlet_of_the_wanderer", key("circlet"), "smiths_apron_scrap", key("smiths_apron"));
+    /** Worn relics with their own armor texture (assets/holylois/equipment). Off for 2.2.0 (owner 2026-10-19: faces still
+     *  flicker); turn back on with "circlet_of_the_wanderer", key("circlet"), "smiths_apron_scrap", key("smiths_apron"). */
+    static final java.util.Map<String, net.minecraft.resources.ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset>> WORN = java.util.Map.of();
 
     private static net.minecraft.resources.ResourceKey<net.minecraft.world.item.equipment.EquipmentAsset> key(String name) {
         return net.minecraft.resources.ResourceKey.create(net.minecraft.world.item.equipment.EquipmentAssets.ROOT_ID, Identifier.fromNamespaceAndPath("holylois", name));
