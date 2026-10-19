@@ -112,7 +112,7 @@ public final class HolyRarity {
         java.util.Map.entry("minecraft:heart_of_the_sea", 2));
 
     // Runeforged's palette: quality and affix tier colours (ArpgItemQuality, ArpgAffixTier, ArpgWeaponHelper constants).
-    static final int RF_MAGIC = 0x4AA3FF, RF_RARE = 0xFF7CFF, RF_LEGENDARY = 0xFF8C1A, RF_RED = 0xFF3333, RF_CURSED = 0x682A93, RF_RUNE = 0xCBA365;
+    static final int RF_MAGIC = 0x4AA3FF, RF_RARE = 0xFF7BFF, RF_RARE_OLD = 0xFF7CFF, RF_LEGENDARY = 0xFF8C1A, RF_RED = 0xFF3333, RF_CURSED = 0x682A93, RF_RUNE = 0xCBA365;
 
     /** The tier a name's own colour (root or first coloured part) stands for: Runeforged colours by their tier, any other gold,
      *  orange or yellow name (lootbox tools, legendary loot) Legendary, red Runeforged names (alien) Mythic. */
@@ -123,7 +123,7 @@ public final class HolyRarity {
         if (color == null) return "";
         int rgb = color.getValue() & 0xFFFFFF;
         return switch (rgb) {
-            case RF_MAGIC -> "uncommon"; case RF_RARE -> "rare"; case RF_RED -> "mythic"; case RF_CURSED -> "cursed"; case RF_RUNE -> "legendary";
+            case RF_MAGIC -> "uncommon"; case RF_RARE, RF_RARE_OLD -> "rare"; case RF_RED -> "mythic"; case RF_CURSED -> "cursed"; case RF_RUNE -> "legendary";
             default -> golden(rgb) ? "legendary" : "";
         };
     }
@@ -131,7 +131,7 @@ public final class HolyRarity {
     /** A tooltip text colour from Runeforged's palette in ours (T0 and alien red stay red, as Mythic). Other colours unchanged. */
     public static int remap(int rgb) {
         return switch (rgb & 0xFFFFFF) {
-            case RF_MAGIC -> FishData.color("uncommon") & 0xFFFFFF; case RF_RARE -> FishData.color("rare") & 0xFFFFFF;
+            case RF_MAGIC -> FishData.color("uncommon") & 0xFFFFFF; case RF_RARE, RF_RARE_OLD -> FishData.color("rare") & 0xFFFFFF;
             case RF_LEGENDARY, RF_RUNE -> FishData.color("legendary") & 0xFFFFFF; case RF_RED -> FishData.color("mythic") & 0xFFFFFF;
             case RF_CURSED -> FishData.color("cursed") & 0xFFFFFF; default -> rgb & 0xFFFFFF;
         };

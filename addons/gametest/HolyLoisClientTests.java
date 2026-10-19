@@ -852,6 +852,9 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             enchanted.enchant(registries.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS),3);
             check(nameColor.apply(enchanted)==green,"an enchanted sword is Uncommon green, not vanilla aqua ("+holylois.boombox.HolyRarity.of(enchanted)+" "+enchanted.getStyledHoverName()+")");
             check(nameColor.apply(item.apply("minecraft:enchanted_golden_apple"))==gold&&holylois.boombox.HolyRarity.of(item.apply("minecraft:mace")).equals("legendary"),"enchanted golden apple and mace are Legendary (item floors)");
+            var ours=java.util.Set.of("uncommon","rare","epic","legendary","mythic","cursed").stream().map(t->holylois.boombox.FishData.color(t)&0xFFFFFF).collect(java.util.stream.Collectors.toSet());
+            for(int affixes=1;affixes<=8;affixes++){int c=com.ultimatearpg.monster.ArpgEliteMonsterService.eliteColor(affixes);
+                check(ours.contains(c)||c==0xFFFFFF,"elite name tags use our tier colours ("+affixes+" affixes: "+Integer.toHexString(c)+")");}
             check(holylois.boombox.HolyRarity.of(item.apply("runeforged:amethyst_sword")).equals("uncommon")&&holylois.boombox.HolyRarity.of(item.apply("runeforged:shaping_stone")).equals("uncommon")
                 &&holylois.boombox.HolyRarity.of(item.apply("runeforged:elite_zombie_spawn_egg_cursed")).equals("mythic"),"gem weapons and basic stones are Uncommon, the Cursed Elite egg Mythic");
             for(String id:new String[]{"minecraft:dirt","minecraft:diamond_sword","runeforged:amethyst_sword"}){
