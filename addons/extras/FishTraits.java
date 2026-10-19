@@ -46,7 +46,11 @@ public final class FishTraits {
         Map.entry("fishofthieves:wrecker", new Trait(null, null, false, Attributes.KNOCKBACK_RESISTANCE, 0.2, "add")),
         Map.entry("fishofthieves:stormfish", new Trait(MobEffects.SLOW_FALLING, MobEffects.SPEED, false, Attributes.FALL_DAMAGE_MULTIPLIER, -0.15, "base")));
 
-    /** Thorns of a trophy pufferfish held in the main hand (owner 2026-10-19): damage dealt back to a melee attacker, 0 for none. */
+    /** Held bonuses work in either hand (owner 2026-10-19); two fish in two hands both count. A separate id per hand keeps one
+     *  hand's change from removing the other hand's bonus. */
+    static final Identifier OFFHAND_ID = Identifier.fromNamespaceAndPath("holylois", "trophy_fish_offhand");
+
+    /** Thorns of a trophy pufferfish held in either hand (owner 2026-10-19): damage dealt back to a melee attacker, 0 for none. */
     static float thorns(ItemStack stack) {
         var fish = FishData.tag(stack);
         if (fish == null || !FishData.weighed(stack) || fish.getBooleanOr("fillet", false)) return 0;
@@ -60,7 +64,7 @@ public final class FishTraits {
             // Thorns never answer thorns: two pufferfish holders would bounce damage forever.
             if (victim instanceof net.minecraft.world.entity.player.Player player && !source.is(net.minecraft.world.damagesource.DamageTypes.THORNS) && source.getDirectEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
                 && source.getDirectEntity() == source.getEntity() && attacker != player && player.level() instanceof net.minecraft.server.level.ServerLevel level) {
-                float back = thorns(player.getMainHandItem());
+                float back = thorns(player.getMainHandItem()) + thorns(player.getOffhandItem());
                 if (back > 0) attacker.hurtServer(level, level.damageSources().thorns(player), back);
             }
             return true;
@@ -121,7 +125,8 @@ public final class FishTraits {
         if (held && !uncommon && trait.held() != null) {
             var operation = "base".equals(trait.heldOp()) ? AttributeModifier.Operation.ADD_MULTIPLIED_BASE : AttributeModifier.Operation.ADD_VALUE;
             var modifier = new AttributeModifier(Identifier.fromNamespaceAndPath("holylois", "trophy_fish"), species.equals("minecraft:cod")?codArmor(rarity,FishData.kilograms(stack),shiny,cooked):heldAmount(trait.amount(),rarity,shiny,cooked), operation);
-            stack.set(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder().add(trait.held(), modifier, EquipmentSlotGroup.MAINHAND).build());
+            stack.set(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder().add(trait.held(), modifier, EquipmentSlotGroup.MAINHAND)
+                .add(trait.held(), new AttributeModifier(OFFHAND_ID, modifier.amount(), operation), EquipmentSlotGroup.OFFHAND).build());
         }
         return lines;
     }
@@ -143,11 +148,12 @@ public final class FishTraits {
         String species=fish.getStringOr("species",net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString()).replace("cooked_","");
         var trait=SPECIES.getOrDefault(species,FALLBACK);
         var entries=new ArrayList<>(stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS,ItemAttributeModifiers.EMPTY).modifiers());
-        var id=Identifier.fromNamespaceAndPath("holylois","trophy_fish");entries.removeIf(e->e.modifier().id().equals(id));
+        var id=Identifier.fromNamespaceAndPath("holylois","trophy_fish");entries.removeIf(e->e.modifier().id().equals(id)||e.modifier().id().equals(OFFHAND_ID));
         if(trait.held()!=null&&!fish.getBooleanOr("fillet",false)){
             var operation="base".equals(trait.heldOp())?AttributeModifier.Operation.ADD_MULTIPLIED_BASE:AttributeModifier.Operation.ADD_VALUE;
             double amount=species.equals("minecraft:cod")?codArmor(FishData.rarity(stack),FishData.kilograms(stack),FishData.shiny(stack),fish.getBooleanOr("cooked",false)):heldAmount(trait.amount(),FishData.rarity(stack),FishData.shiny(stack),fish.getBooleanOr("cooked",false));
             entries.add(new ItemAttributeModifiers.Entry(trait.held(),new AttributeModifier(id,amount,operation),EquipmentSlotGroup.MAINHAND));
+            entries.add(new ItemAttributeModifiers.Entry(trait.held(),new AttributeModifier(OFFHAND_ID,amount,operation),EquipmentSlotGroup.OFFHAND));
         }
         stack.set(DataComponents.ATTRIBUTE_MODIFIERS,new ItemAttributeModifiers(entries));
     }

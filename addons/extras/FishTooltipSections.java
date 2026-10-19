@@ -15,7 +15,7 @@ public final class FishTooltipSections {
     private FishTooltipSections() {}
     static boolean normalize(ItemStack stack){
         var fish=FishData.tag(stack);
-        if(!FishData.weighed(stack)||fish.getIntOr("held_version",0)==4)return false;
+        if(!FishData.weighed(stack)||fish.getIntOr("held_version",0)==5)return false;
         var lore=stack.get(DataComponents.LORE);if(lore==null)return false;
         FishTraits.refreshHeld(stack);var attributes=stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
         var lines=new ArrayList<Component>();var credit=new ArrayList<Component>();
@@ -25,9 +25,10 @@ public final class FishTooltipSections {
             if(line.getString().startsWith("Caught by ")||line.getString().startsWith("Caught on ")){credit.add(line);oldHeld=false;}else if(!oldHeld)lines.add(line);
         }
         float thorns=FishTraits.thorns(stack);
-        if(!attributes.modifiers().isEmpty()||thorns>0){
+        var shown=attributes.modifiers().stream().filter(e->!e.modifier().id().equals(FishTraits.OFFHAND_ID)).toList();
+        if(!shown.isEmpty()||thorns>0){
         lines.add(Component.translatable("holylois.fish.held").withStyle(s->s.withColor(ChatFormatting.GRAY).withItalic(false)));
-        for(var entry:attributes.modifiers()){
+        for(var entry:shown){
             var modifier=entry.modifier();boolean percent=modifier.operation()!=AttributeModifier.Operation.ADD_VALUE;
             double amount=modifier.amount()*(percent?100:1);
             String value=java.math.BigDecimal.valueOf(amount).stripTrailingZeros().toPlainString();
@@ -38,7 +39,7 @@ public final class FishTooltipSections {
         }
         lines.addAll(credit);stack.set(DataComponents.LORE,new ItemLore(lines));
         stack.set(DataComponents.TOOLTIP_DISPLAY,stack.getOrDefault(DataComponents.TOOLTIP_DISPLAY,TooltipDisplay.DEFAULT).withHidden(DataComponents.ATTRIBUTE_MODIFIERS,true));
-        var data=stack.get(DataComponents.CUSTOM_DATA).copyTag();fish.putBoolean("held_tooltip",true);fish.putInt("held_version",4);data.put(Legends.FISH_KEY,fish);
+        var data=stack.get(DataComponents.CUSTOM_DATA).copyTag();fish.putBoolean("held_tooltip",true);fish.putInt("held_version",5);data.put(Legends.FISH_KEY,fish);
         stack.set(DataComponents.CUSTOM_DATA,CustomData.of(data));return true;
     }
 }

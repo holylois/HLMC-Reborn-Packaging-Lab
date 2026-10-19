@@ -1,6 +1,6 @@
 """Original Holy Lois tooltip frames in Legendary Tooltips' layout (64x16 per frame on a 128x128 sheet: corners 8x8 at the four
 ends, top ornament x 8-55 rows 0-7, bottom ornament rows 8-15). Drawn as half patterns (left half, mirrored around the middle).
-Row 0 Mythic: a red filigree band with curling loops and a tall flame crest. Row 1 Cursed: a violet thorn vine with an eye."""
+Row 0 Mythic: a red laurel wreath around a crowned jewel. Row 1 Cursed: a violet thorn vine with an eye."""
 from PIL import Image
 
 im = Image.new("RGBA", (128, 128), (0, 0, 0, 0))  # same canvas as the mod's own sheet
@@ -13,31 +13,35 @@ def stamp(rows, palette, x0, y0, mirror=True):
             im.putpixel((x0 + dx, y0 + dy), c)
             if mirror: im.putpixel((63 - (x0 + dx), y0 + dy), c)
 
-# Mythic: d dark red, r red, o orange, y pale gold highlight. Left half of the top ornament, x 8-31 (24 columns), rows 0-7.
-MYTHIC = {'d': (110, 14, 20), 'r': (232, 64, 64), 'o': (255, 140, 60), 'y': (255, 222, 150)}
-stamp([
-    "......................oy",
-    ".....................ror",
-    "..........o.........r.dr",
-    ".........r.r......rr..ro",
-    "....o...r...r..d.r..rr.r",
-    "...r.r.r..o..rr.r..r...r",
-    "rr.r..d..r.r.....rr.rrrr",
-    ".....r....d.r.......d..d",
-], MYTHIC, 8, 0)
-stamp([  # bottom ornament, rows 8-15
-    "........................",
-    "rr.r..d..r.r.....rr.rrrr",
-    ".....r....d.r.......d.rd",
-    "...................r..ro",
-    "......................oy",
-    "........................",
-    "........................",
-    "........................",
-], MYTHIC, 8, 8)
-for oy, rows in ((0, ["........", "..o.....", ".ryr....", "..rd....", "...d.r..", "....r...", "........", "........"]),
-                 (8, ["........", "........", "....r...", "...d.r..", "..rd....", ".ryr....", "..o.....", "........"])):
-    stamp(rows, MYTHIC, 0, oy)
+# Mythic: a laurel wreath cradling a crowned jewel, a fine line with pearls out to the corners, the Legendary layout but
+# red and taller. d dark red, r red, o orange, y pale gold, w white jewel. Full rows: left half, column 31 is the centre.
+MYTHIC = {'d': (110, 14, 20), 'r': (232, 64, 64), 'o': (255, 150, 70), 'y': (255, 222, 150), 'w': (255, 250, 235)}
+MYTHIC_TOP = [
+ '...............................y',
+ '...................yo.........yo',
+ '....................ro.o......rr',
+ '..y..................rr.o.o..row',
+ '...r....o....o....odr..rrr.o.rdo',
+ '.....dddddddddddddddd.dr..rrr.rr',
+ '.........................dr.....',
+ '................................',
+]
+MYTHIC_BOTTOM = [
+ '................................',
+ '................................',
+ '.....dddddddddddddddddddddddd.rr',
+ '...r....o....o....o....o.......o',
+ '..y............................y',
+ '................................',
+ '................................',
+ '................................',
+]
+for oy, rows in ((0, MYTHIC_TOP), (8, MYTHIC_BOTTOM)):
+    for dy, row in enumerate(rows):
+        assert len(row) == 32
+        for dx, ch in enumerate(row):
+            if ch != '.':
+                im.putpixel((dx, oy + dy), MYTHIC[ch] + (255,)); im.putpixel((62 - dx, oy + dy), MYTHIC[ch] + (255,))
 
 # Cursed: v dark violet, p violet, l lilac, g sick green eye.
 CURSED = {'v': (58, 16, 88), 'p': (160, 82, 255), 'l': (220, 170, 255), 'g': (140, 255, 120)}

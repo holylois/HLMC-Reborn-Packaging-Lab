@@ -907,7 +907,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         });
     }
 
-    /** A trophy pufferfish in the main hand hurts a melee attacker back, and thorns never answer thorns. */
+    /** A trophy pufferfish in either hand (here the off hand) hurts a melee attacker back, and thorns never answer thorns. */
     private static void pufferThorns(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
         var server=world.getServer();
         server.runCommand("gamemode survival @a");
@@ -916,8 +916,11 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var player=s.getPlayerList().getPlayers().getFirst();var level=(ServerLevel)player.level();
             var puffer=new ItemStack(net.minecraft.world.item.Items.PUFFERFISH);var tag=new net.minecraft.nbt.CompoundTag();var fishTag=new net.minecraft.nbt.CompoundTag();
             fishTag.putString("rarity","legendary");fishTag.putDouble("kg",3.0);tag.put("holylois_fish",fishTag);
+            fishTag.putString("species","minecraft:pufferfish");fishTag.putBoolean("held_tooltip",true);tag.put("holylois_fish",fishTag);
             puffer.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(tag));
-            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,puffer);
+            puffer.set(net.minecraft.core.component.DataComponents.LORE,new net.minecraft.world.item.component.ItemLore(List.of(net.minecraft.network.chat.Component.literal("Caught by TestAngler, 2026-10-19"))));
+            holylois.boombox.LowTierFish.normalize(puffer);
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,ItemStack.EMPTY);player.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND,puffer);
             var zombie=(net.minecraft.world.entity.LivingEntity)BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse("minecraft:zombie")).create(level,net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             zombie.setPos(player.getX()+1,player.getY(),player.getZ());level.addFreshEntity(zombie);id[0]=zombie.getUUID();
             health[0]=zombie.getHealth();
@@ -928,9 +931,10 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
         server.runOnServer(s->{
             var player=s.getPlayerList().getPlayers().getFirst();var level=(ServerLevel)player.level();
             var zombie=(net.minecraft.world.entity.LivingEntity)level.getEntity(id[0]);
+            check(player.getArmorValue()>0,"a trophy pufferfish in the off hand gives its armor ("+player.getArmorValue()+")");
             player.hurtServer(level,level.damageSources().mobAttack(zombie),1);
-            check(zombie.getHealth()<health[0],"a held Legendary pufferfish hurts the zombie that hit you ("+health[0]+" -> "+zombie.getHealth()+")");
-            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,ItemStack.EMPTY);player.setHealth(player.getMaxHealth());zombie.discard();
+            check(zombie.getHealth()<health[0],"a Legendary pufferfish in the off hand hurts the zombie that hit you ("+health[0]+" -> "+zombie.getHealth()+")");
+            player.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND,ItemStack.EMPTY);player.setHealth(player.getMaxHealth());zombie.discard();
         });
     }
 
