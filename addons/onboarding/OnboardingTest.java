@@ -137,7 +137,7 @@ public final class OnboardingTest {
     /** The bought-name owner's first verified join moves only the free-play character's per-player files, and only once. */
     private static void freePlayNames(){
         try{
-            var world=java.nio.file.Files.createTempDirectory("freeplay-world");var old=FreePlayNames.offline("Notch");var owner=java.util.UUID.randomUUID();var other=java.util.UUID.randomUUID();
+            var world=java.nio.file.Files.createDirectories(java.nio.file.Files.createTempDirectory("freeplay-server").resolve("world"));var old=FreePlayNames.offline("Notch");var owner=java.util.UUID.randomUUID();var other=java.util.UUID.randomUUID();
             for(var f:new String[]{"playerdata/"+old+".dat","playerdata/"+old+".dat_old","stats/"+old+".json","advancements/"+old+".json","playerdata/"+other+".dat","region/"+old+".dat","holylois/"+old+".json"}){
                 var path=world.resolve(f);java.nio.file.Files.createDirectories(path.getParent());java.nio.file.Files.writeString(path,f);
             }
@@ -147,6 +147,10 @@ public final class OnboardingTest {
             check(java.nio.file.Files.exists(backup.resolve("playerdata/"+old+".dat"))&&java.nio.file.Files.exists(backup.resolve("playerdata/"+old+".dat_old"))&&java.nio.file.Files.exists(backup.resolve("stats/"+old+".json"))&&java.nio.file.Files.exists(backup.resolve("advancements/"+old+".json")),"Player data, stats and advancements move to backup");
             check(!java.nio.file.Files.exists(world.resolve("playerdata/"+old+".dat"))&&java.nio.file.Files.exists(world.resolve("playerdata/"+other+".dat"))&&java.nio.file.Files.exists(world.resolve("region/"+old+".dat"))&&java.nio.file.Files.exists(world.resolve("holylois/"+old+".json")),"Other players, world regions and Holy Lois private files stay");
             check(FreePlayNames.moveToBackup(world,"Notch",owner,java.time.Instant.ofEpochSecond(43))==null,"A second join finds nothing left to move");
+            var lower=FreePlayNames.offline("notch");var lowerFile=world.resolve("playerdata/"+lower+".dat");java.nio.file.Files.writeString(lowerFile,"x");
+            java.nio.file.Files.writeString(world.toAbsolutePath().getParent().resolve("usercache.json"),"[{\"name\":\"notch\",\"uuid\":\""+lower+"\"}]");
+            var cased=FreePlayNames.moveToBackup(world,"Notch",owner,java.time.Instant.ofEpochSecond(44));
+            check(cased!=null&&java.nio.file.Files.exists(cased.resolve("playerdata/"+lower+".dat")),"A free-play character under another spelling of the name (notch) moves too");
         }catch(java.io.IOException error){throw new AssertionError(error);}
     }
     private static void check(boolean value,String message) {checked++;if(!value)throw new AssertionError(message);}

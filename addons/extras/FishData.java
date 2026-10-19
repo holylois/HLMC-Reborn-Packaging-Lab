@@ -17,7 +17,8 @@ public final class FishData {
         if (stack == null || stack.isEmpty()) return null;
         var data = stack.get(DataComponents.CUSTOM_DATA);
         if (data == null) return null;
-        return data.copyTag().getCompound(Legends.FISH_KEY).orElse(null);
+        // Copy only the fish part (callers may change it), and nothing at all for items without one.
+        return ((holylois.boombox.mixins.CustomDataAccessor) (Object) data).holyLois$tag().getCompound(Legends.FISH_KEY).map(CompoundTag::copy).orElse(null);
     }
 
     public static String rarity(ItemStack stack) {

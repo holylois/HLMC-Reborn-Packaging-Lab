@@ -51,10 +51,13 @@ final class FreePlayNames {
     static Path moveToBackup(Path world, String name, UUID owner, Instant now) throws IOException {
         var old = offline(name);
         if (old.equals(owner)) return null;
+        // The free-play player may have joined as "steve" before the owner of "Steve" bought it: offline UUIDs depend on case.
+        var olds = new java.util.LinkedHashSet<UUID>(); olds.add(old); olds.addAll(cachedSpellings(world, name)); olds.remove(owner);
+        var prefixes = olds.stream().map(id -> id + ".").toList();
         var files = new ArrayList<Path>();
         try (var dirs = Files.list(world)) {
             for (var dir : dirs.filter(Files::isDirectory).filter(d -> !SKIP.contains(d.getFileName().toString())).toList())
-                try (var inside = Files.list(dir)) { inside.filter(Files::isRegularFile).filter(f -> f.getFileName().toString().startsWith(old + ".")).forEach(files::add); }
+                try (var inside = Files.list(dir)) { inside.filter(Files::isRegularFile).filter(f -> prefixes.stream().anyMatch(f.getFileName().toString()::startsWith)).forEach(files::add); }
         }
         if (files.isEmpty()) return null;
         var backup = world.resolve("holylois/private-account-backups/free-play-" + name + "-" + now.getEpochSecond());
@@ -67,6 +70,20 @@ final class FreePlayNames {
             + " because the bought account " + owner + " joined with this name.\n" + files.size() + " files, original folders kept below.\n");
         LOG.info("Free-play character of {} moved to {} ({} files): the bought account owner joined", name, backup, files.size());
         return backup;
+    }
+
+    /** Offline UUIDs of other spellings of the name in the server's usercache.json (same name, different case). */
+    static List<UUID> cachedSpellings(Path world, String name) {
+        var cache = world.toAbsolutePath().getParent() == null ? null : world.toAbsolutePath().getParent().resolve("usercache.json");
+        if (cache == null || !Files.isRegularFile(cache)) return List.of();
+        try {
+            var out = new ArrayList<UUID>();
+            for (var entry : com.google.gson.JsonParser.parseString(Files.readString(cache)).getAsJsonArray()) {
+                var spelled = entry.getAsJsonObject().get("name").getAsString();
+                if (spelled.equalsIgnoreCase(name) && !spelled.equals(name)) out.add(offline(spelled));
+            }
+            return out;
+        } catch (IOException | RuntimeException error) { return List.of(); }
     }
 
     private static void tell(net.minecraft.server.MinecraftServer server, ServerPlayer owner, Path backup) {

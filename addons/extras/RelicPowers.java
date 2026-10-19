@@ -18,7 +18,7 @@ import java.util.*;
 
 /** Small server-authoritative bonuses for existing relic ids; no stack replacement or renderer dependence. */
 public final class RelicPowers {
-    static String id(ItemStack stack){return stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getString(Legends.LEGEND_KEY).orElse("");}
+    static String id(ItemStack stack){var data=stack.get(DataComponents.CUSTOM_DATA);return data==null?"":((holylois.boombox.mixins.CustomDataAccessor)(Object)data).holyLois$tag().getStringOr(Legends.LEGEND_KEY,"");}
     private static boolean held(ServerPlayer p,String id){return id(p.getMainHandItem()).equals(id)||id(p.getOffhandItem()).equals(id);}
     private static void modifier(ServerPlayer p,Holder<Attribute> attribute,String key,double amount,AttributeModifier.Operation op,boolean wanted){
         var value=p.getAttribute(attribute);if(value==null)return;var token=Identifier.fromNamespaceAndPath("holylois",key);

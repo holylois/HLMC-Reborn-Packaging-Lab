@@ -31,15 +31,20 @@ public final class HolyRarity {
         if (!crate.isEmpty()) return crate;
         // Enchanted books are everyday loot: Uncommon, no outline and no spikes, whatever vanilla says (Rare in 26.3).
         if (stack.is(net.minecraft.world.item.Items.ENCHANTED_BOOK)) return "uncommon";
-        String fixed = RUNEFORGED_ITEMS.get(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+        // Relics are named lore artifacts: Legendary until relic variants bring their own ranges (audit 2026-10-19).
+        if (!RelicPowers.id(stack).isEmpty()) return "legendary";
+        String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+        String fixed = RUNEFORGED_ITEMS.get(id);
         // Advanced, Sealed and Celestial stones are the base stones with extra data, not their own items.
         if (RUNEFORGED) { String variant = Runeforged.currencyTier(stack, fixed == null ? "" : fixed); if (!variant.isEmpty()) return variant; }
         if (fixed != null) return fixed;
         String gem = gemWeapon(stack);
         if (!gem.isEmpty()) return gem;
         int best = vanilla(stack.getOrDefault(DataComponents.RARITY, Rarity.COMMON), stack.isEnchanted());
-        best = Math.max(best, rank(nameTier(stack.getHoverName())));
-        best = Math.max(best, FLOORS.getOrDefault(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), 0));
+        // The custom name (lootbox tools) or the item's own name: not getHoverName, which Runeforged restyles on every call.
+        var custom = stack.get(DataComponents.CUSTOM_NAME);
+        best = Math.max(best, rank(nameTier(custom != null ? custom : stack.getItemName())));
+        best = Math.max(best, FLOORS.getOrDefault(id, 0));
         if (RUNEFORGED) best = Math.max(best, Runeforged.rank(stack));
         return best <= 0 ? "" : TIERS.get(best);
     }
@@ -54,7 +59,7 @@ public final class HolyRarity {
 
     /** Runeforged stones, gems and eggs on one ladder by power (owner 2026-10-19): shaping/reinforcement stones and rune
      *  fragments Uncommon, charged gems and the other basic stones Rare, Infusion Gems Epic, Ascension stones and Celestial
-     *  Fragments Legendary, Alien Orbs Mythic (they make Alien-Cursed gear), Sealed Gems Cursed. Advanced, Sealed and
+     *  Fragments Legendary, Alien Gems (alien_orb) Mythic (they make Alien-Cursed gear), Sealed Gems Cursed. Advanced, Sealed and
      *  Celestial stones are data variants of these items: Runeforged.currencyTier. Exact, not a floor. */
     static final java.util.Map<String, String> RUNEFORGED_ITEMS = java.util.Map.ofEntries(
         java.util.Map.entry("runeforged:shaping_stone", "uncommon"),
@@ -91,7 +96,7 @@ public final class HolyRarity {
         return !gem ? "" : lesser ? "uncommon" : "rare";
     }
 
-    /** Items worth more than their vanilla rarity says (owner 2026-10-19): a floor, enchanting can still lift them. */
+    /** Items worth more than their vanilla rarity says (owner 2026-10-19): a floor; the tier is the higher of this and the enchanted vanilla tier. */
     static final java.util.Map<String, Integer> FLOORS = java.util.Map.ofEntries(
         java.util.Map.entry("minecraft:mace", 4), java.util.Map.entry("minecraft:trident", 4), java.util.Map.entry("minecraft:elytra", 4),
         java.util.Map.entry("minecraft:dragon_egg", 4), java.util.Map.entry("minecraft:nether_star", 4), java.util.Map.entry("minecraft:beacon", 4),
@@ -169,7 +174,8 @@ public final class HolyRarity {
     /** A title (tooltip first line, the name over the hotbar): one clean tier-coloured name with its shine, never italic.
      *  Runeforged glues rune and weapon words ("FoundationGreatsword"); the space goes back in. */
     public static Component title(ItemStack stack, Component name, String tier) {
-        String text = name.getString();
+        // Legacy codes in a mod's name (fishing crates' "§eIron Crate") would override our colour.
+        String text = net.minecraft.ChatFormatting.stripFormatting(name.getString());
         if (net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace().equals("runeforged") || RUNEFORGED && Runeforged.rank(stack) > 0)
             text = text.replaceAll("(?<=\\p{Ll})(?=\\p{Lu})", " ");
         int color = FishData.color(tier) & 0xFFFFFF;
@@ -180,7 +186,16 @@ public final class HolyRarity {
     public static Component style(Component name, String tier) {
         int color = FishData.color(tier);
         if (tier.isEmpty() || color == 0 || name == null) return name;
-        MutableComponent copy = name.copy();
+        // Chat links wrap the name in brackets: the name inside may carry Runeforged's own colour, which would win over ours.
+        var contents = name.getContents();
+        if (contents instanceof net.minecraft.network.chat.contents.TranslatableContents brackets && brackets.getKey().equals("chat.square_brackets") && brackets.getArgs().length > 0) {
+            Object[] args = brackets.getArgs().clone();
+            for (int i = 0; i < args.length; i++) if (args[i] instanceof Component part)
+                args[i] = Component.literal(net.minecraft.ChatFormatting.stripFormatting(part.getString())).withStyle(st -> FishData.shine(st.withColor(color & 0xFFFFFF), tier));
+            contents = new net.minecraft.network.chat.contents.TranslatableContents(brackets.getKey(), brackets.getFallback(), args);
+        }
+        MutableComponent copy = MutableComponent.create(contents).setStyle(name.getStyle());
+        for (var sibling : name.getSiblings()) copy.append(sibling);
         return copy.withStyle(s -> FishData.shine(s.withColor(color & 0xFFFFFF), tier));
     }
 

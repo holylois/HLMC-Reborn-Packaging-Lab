@@ -13,6 +13,8 @@ import net.minecraft.world.item.ItemStack;
  */
 public final class RuneforgedFrameLoot {
     static final double CHANCE = 0.12;
+    /** Entity tag on a shelf frame that already rolled (InvisibleFrameDropMixin). */
+    public static final String ROLLED = "holylois_shelf_rolled";
     private RuneforgedFrameLoot() {}
 
     /** Rolls once, on the server, just before the frame drops its item. */

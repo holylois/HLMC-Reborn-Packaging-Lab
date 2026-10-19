@@ -6,6 +6,7 @@
   "mixins": [
     "HolyRarityNameMixin",
     "EliteColorMixin",
+    "CustomDataAccessor",
     "SchoolCatchMixin",
     "FishPickupNormalizeMixin",
     "ShoalItemCatchMixin",

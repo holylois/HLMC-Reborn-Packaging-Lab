@@ -88,6 +88,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             run(failed, "shoal catch arrives as an item", context, world, HolyLoisClientTests::shoalCatch);
             run(failed, "a bite catches the fish swimming at the bobber", context, world, HolyLoisClientTests::seenCatch);
             run(failed, "one rarity system names every item in our tiers", context, world, HolyLoisClientTests::holyRarity);
+            run(failed, "shelf frame rolls once", context, world, HolyLoisClientTests::shelfFrameOnce);
             run(failed, "relic looks", context, world, HolyLoisClientTests::relicLooks);
             run(failed, "pufferfish thorns", context, world, HolyLoisClientTests::pufferThorns);
             run(failed, "tier tooltip screenshots", context, world, HolyLoisClientTests::tierTooltipShots);
@@ -898,6 +899,14 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             check(qualityLine.isEmpty()||qualityLine.get().getString().equals("Quality: Rare")&&qualityLine.get().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents q
                 &&q.getArgs()[0] instanceof net.minecraft.network.chat.Component word&&word.getStyle().getColor()!=null&&word.getStyle().getColor().getValue()==(holylois.boombox.FishData.color("rare")&0xFFFFFF),
                 "the Runeforged quality line names and colours our tier ("+qualityLine.map(Object::toString).orElse("none")+")");
+            var linkArg=((net.minecraft.network.chat.contents.TranslatableContents)runeRare.getDisplayName().getContents()).getArgs()[0];
+            var inner=((net.minecraft.network.chat.Component)linkArg).getStyle().getColor();
+            check(inner!=null&&inner.getValue()==(holylois.boombox.FishData.color("rare")&0xFFFFFF),"a Runeforged chat link colours the name inside the brackets too ("+linkArg+")");
+            var crateName=holylois.boombox.HolyRarity.title(item.apply("fishing_crates:iron_crate"),item.apply("fishing_crates:iron_crate").getHoverName(),"rare").getString();
+            check(!crateName.contains("§"),"crate names lose their legacy colour codes ("+crateName+")");
+            var relic=item.apply("minecraft:stick");var relicTag=new net.minecraft.nbt.CompoundTag();relicTag.putString("holylois_legend","staff_of_quiet_roads");
+            relic.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,net.minecraft.world.item.component.CustomData.of(relicTag));
+            check(holylois.boombox.HolyRarity.of(relic).equals("legendary"),"relics are Legendary");
             var cursed=item.apply("minecraft:iron_sword");
             com.ultimatearpg.item.ArpgWeaponHelper.setQuality(cursed,com.ultimatearpg.item.ArpgItemQuality.CURSED);
             check(holylois.boombox.HolyRarity.of(cursed).equals("cursed")&&nameColor.apply(cursed)==(holylois.boombox.FishData.color("cursed")&0xFFFFFF),"Runeforged cursed gear is our Cursed violet");
@@ -918,6 +927,24 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var mythicFrame=com.anthonyhilyard.legendarytooltips.LegendaryTooltips.getDefinitionColors(mythicFish,0,0,0,0,registries);
             check(legendaryFrame!=null&&legendaryFrame.index()>=0&&mythicFrame!=null&&mythicFrame.index()==0&&mythicFrame.resource().getNamespace().equals("holylois"),
                 "Legendary fish get gold spikes and Mythic fish our red frame");
+        });
+    }
+
+    /** A dungeon shelf frame rolls its Runeforged chance once: refilling it with your own gear never rolls again. */
+    private static void shelfFrameOnce(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
+        world.getServer().runOnServer(s->{
+            var player=s.getPlayerList().getPlayers().getFirst();var level=(ServerLevel)player.level();
+            var pos=player.blockPosition().offset(3,1,0);
+            var frame=new net.minecraft.world.entity.decoration.ItemFrame(level,pos,net.minecraft.core.Direction.UP);
+            frame.setInvisible(true);frame.setItem(new ItemStack(net.minecraft.world.item.Items.IRON_SWORD));level.addFreshEntity(frame);
+            frame.hurtServer(level,level.damageSources().playerAttack(player),1);
+            check(frame.entityTags().contains(holylois.boombox.RuneforgedFrameLoot.ROLLED)&&frame.isAlive(),"a punched shelf frame is marked as rolled and stays");
+            frame.setItem(new ItemStack(net.minecraft.world.item.Items.DIAMOND_SWORD));
+            var before=frame.getItem().copy();
+            for(int i=0;i<5;i++){frame.setItem(before.copy());frame.hurtServer(level,level.damageSources().playerAttack(player),1);}
+            check(frame.entityTags().size()==1,"refilling the frame never rolls again");
+            frame.discard();
+            for(var item:level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(pos).inflate(3)))item.discard();
         });
     }
 
