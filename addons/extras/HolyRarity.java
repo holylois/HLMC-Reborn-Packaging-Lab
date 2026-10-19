@@ -33,6 +33,7 @@ public final class HolyRarity {
         if (stack.is(net.minecraft.world.item.Items.ENCHANTED_BOOK)) return "uncommon";
         String fixed = RUNEFORGED_ITEMS.get(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
         if (fixed != null) return fixed;
+        if (gemWeapon(stack)) return "uncommon";
         int best = vanilla(stack.getOrDefault(DataComponents.RARITY, Rarity.COMMON), stack.isEnchanted());
         best = Math.max(best, rank(nameTier(stack.getHoverName())));
         best = Math.max(best, FLOORS.getOrDefault(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), 0));
@@ -48,27 +49,27 @@ public final class HolyRarity {
 
     public static int rank(String tier) { return Math.max(0, TIERS.indexOf(tier)); }
 
-    /** Runeforged stones, gems and eggs on one ladder by power (owner 2026-10-19): basic stones Rare, advanced/charged gems Epic,
-     *  sealed and Celestial stones Legendary, Alien gems Mythic (they make Alien-Cursed gear), Sealed gems Cursed. Exact, not a floor. */
+    /** Runeforged stones, gems and eggs on one ladder by power (owner 2026-10-19): shaping/reinforcement stones, rune fragments
+     *  and charged gems Uncommon, the other basic stones Rare, advanced stones and infusion gems Epic, high, sealed and Celestial stones Legendary, Alien gems Mythic (they make Alien-Cursed gear), Sealed gems Cursed. Exact, not a floor. */
     static final java.util.Map<String, String> RUNEFORGED_ITEMS = java.util.Map.ofEntries(
-        java.util.Map.entry("runeforged:shaping_stone", "rare"),
-        java.util.Map.entry("runeforged:reinforcement_stone", "rare"),
+        java.util.Map.entry("runeforged:shaping_stone", "uncommon"),
+        java.util.Map.entry("runeforged:reinforcement_stone", "uncommon"),
         java.util.Map.entry("runeforged:tempering_stone", "rare"),
         java.util.Map.entry("runeforged:reforging_stone", "rare"),
         java.util.Map.entry("runeforged:stripping_stone", "rare"),
         java.util.Map.entry("runeforged:penance_stone", "rare"),
         java.util.Map.entry("runeforged:edict_stone", "rare"),
-        java.util.Map.entry("runeforged:rune_fragment", "rare"),
+        java.util.Map.entry("runeforged:rune_fragment", "uncommon"),
         java.util.Map.entry("runeforged:advanced_shaping_stone", "epic"),
         java.util.Map.entry("runeforged:advanced_reinforcement_stone", "epic"),
         java.util.Map.entry("runeforged:advanced_tempering_stone", "epic"),
         java.util.Map.entry("runeforged:infusion_gem", "epic"),
         java.util.Map.entry("runeforged:high_infusion_gem", "epic"),
-        java.util.Map.entry("runeforged:infused_obsidian", "epic"),
-        java.util.Map.entry("runeforged:infused_amethyst", "epic"),
-        java.util.Map.entry("runeforged:infused_lapis_lazuli", "epic"),
-        java.util.Map.entry("runeforged:infused_ruby", "epic"),
-        java.util.Map.entry("runeforged:infused_emerald", "epic"),
+        java.util.Map.entry("runeforged:infused_obsidian", "uncommon"),
+        java.util.Map.entry("runeforged:infused_amethyst", "uncommon"),
+        java.util.Map.entry("runeforged:infused_lapis_lazuli", "uncommon"),
+        java.util.Map.entry("runeforged:infused_ruby", "uncommon"),
+        java.util.Map.entry("runeforged:infused_emerald", "uncommon"),
         java.util.Map.entry("runeforged:ascension_stone", "legendary"),
         java.util.Map.entry("runeforged:sealed_shaping_stone", "legendary"),
         java.util.Map.entry("runeforged:sealed_reinforcement_stone", "legendary"),
@@ -89,14 +90,23 @@ public final class HolyRarity {
         java.util.Map.entry("runeforged:elite_zombie_spawn_egg_magic", "uncommon"),
         java.util.Map.entry("runeforged:elite_zombie_spawn_egg_rare", "rare"),
         java.util.Map.entry("runeforged:elite_zombie_spawn_egg_legendary", "legendary"),
-        java.util.Map.entry("runeforged:elite_zombie_spawn_egg_cursed", "cursed"));
+        java.util.Map.entry("runeforged:elite_zombie_spawn_egg_cursed", "mythic"));
+
+    /** Plain gem weapons (Gem Modification: obsidian, amethyst, lapis, ruby, emerald) without a Runeforged quality: Uncommon. */
+    static boolean gemWeapon(ItemStack stack) {
+        var id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (!id.getNamespace().equals("runeforged")) return false;
+        String path = id.getPath();
+        return (path.startsWith("obsidian_") || path.startsWith("amethyst_") || path.startsWith("lapis_lazuli_") || path.startsWith("ruby_") || path.startsWith("emerald_"))
+            && (!RUNEFORGED || Runeforged.rank(stack) == 0);
+    }
 
     /** Items worth more than their vanilla rarity says (owner 2026-10-19): a floor, enchanting can still lift them. */
     static final java.util.Map<String, Integer> FLOORS = java.util.Map.ofEntries(
         java.util.Map.entry("minecraft:mace", 4), java.util.Map.entry("minecraft:trident", 4), java.util.Map.entry("minecraft:elytra", 4),
         java.util.Map.entry("minecraft:dragon_egg", 4), java.util.Map.entry("minecraft:nether_star", 4), java.util.Map.entry("minecraft:beacon", 4),
         java.util.Map.entry("minecraft:heavy_core", 4),
-        java.util.Map.entry("minecraft:enchanted_golden_apple", 3), java.util.Map.entry("minecraft:totem_of_undying", 3), java.util.Map.entry("minecraft:conduit", 3),
+        java.util.Map.entry("minecraft:enchanted_golden_apple", 4), java.util.Map.entry("minecraft:totem_of_undying", 3), java.util.Map.entry("minecraft:conduit", 3),
         java.util.Map.entry("minecraft:dragon_head", 3), java.util.Map.entry("minecraft:end_crystal", 3),
         java.util.Map.entry("minecraft:netherite_ingot", 2), java.util.Map.entry("minecraft:netherite_upgrade_smithing_template", 2),
         java.util.Map.entry("minecraft:heart_of_the_sea", 2));
@@ -128,17 +138,25 @@ public final class HolyRarity {
     }
 
     /** The component with every Runeforged-coloured part (also inside translation arguments) in our colours. */
-    public static Component recolor(Component text) {
+    public static Component recolor(Component text) { return recolor(text, false); }
+
+    /** Mob names and boss bars: Cursed elites rank above Legendary, so their purple (and alien red) show as Mythic red. */
+    public static Component recolorMob(Component text) { return recolor(text, true); }
+
+    private static Component recolor(Component text, boolean mob) {
         var style = text.getStyle();
-        if (style.getColor() != null) { int from = style.getColor().getValue(), to = remap(from); if (to != (from & 0xFFFFFF)) style = style.withColor(to); }
+        if (style.getColor() != null) {
+            int from = style.getColor().getValue() & 0xFFFFFF, to = mob && from == RF_CURSED ? FishData.color("mythic") & 0xFFFFFF : remap(from);
+            if (to != from) style = style.withColor(to);
+        }
         var contents = text.getContents();
         if (contents instanceof net.minecraft.network.chat.contents.TranslatableContents translation && translation.getArgs().length > 0) {
             Object[] args = translation.getArgs().clone();
-            for (int i = 0; i < args.length; i++) if (args[i] instanceof Component part) args[i] = recolor(part);
+            for (int i = 0; i < args.length; i++) if (args[i] instanceof Component part) args[i] = recolor(part, mob);
             contents = new net.minecraft.network.chat.contents.TranslatableContents(translation.getKey(), translation.getFallback(), args);
         }
         MutableComponent out = MutableComponent.create(contents).setStyle(style);
-        for (var sibling : text.getSiblings()) out.append(recolor(sibling));
+        for (var sibling : text.getSiblings()) out.append(recolor(sibling, mob));
         return out;
     }
 

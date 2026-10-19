@@ -127,6 +127,7 @@ public final class Boombox implements ModInitializer {
             PayloadTypeRegistry.serverboundPlay().register(AccountIntent.TYPE,AccountIntent.CODEC);
         }
         PvpDeath.register();
+        FishTraits.registerThorns();
         DeathLootGone.register();
         StructureZone.register();
         if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("fishofthieves")) ThievesWorldgen.register();

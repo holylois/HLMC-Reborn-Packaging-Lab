@@ -237,6 +237,7 @@
   "holylois.journal.level": "Highest level: %s",
   "holylois.journal.first_level": "Level at first defeat: %s",
   "holylois.journal.unknown_first_level": "Level at first defeat: not recorded",
+  "holylois.fish.thorns": "Thorns: hits back for %s",
   "holylois.fish.held": "When held:",
   "holylois.map.treasure": "Buried Treasure Map",
   "holylois.map.clue": "An X marks the buried treasure.",

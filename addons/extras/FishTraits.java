@@ -36,15 +36,35 @@ public final class FishTraits {
         Map.entry("minecraft:tropical_fish", new Trait(MobEffects.NIGHT_VISION, null, false, Attributes.WATER_MOVEMENT_EFFICIENCY, 0.15, "add")),
         Map.entry("minecraft:pufferfish", new Trait(MobEffects.POISON, MobEffects.NAUSEA, true, Attributes.ARMOR, 1, "add")),
         Map.entry("fishofthieves:splashtail", new Trait(MobEffects.SPEED, null, false, Attributes.MOVEMENT_SPEED, 0.05, "base")),
-        Map.entry("fishofthieves:pondie", new Trait(MobEffects.REGENERATION, null, false, null, 0, null)),
+        Map.entry("fishofthieves:pondie", new Trait(MobEffects.REGENERATION, null, false, Attributes.MAX_HEALTH, 2, "add")),
         Map.entry("fishofthieves:islehopper", new Trait(MobEffects.JUMP_BOOST, null, false, Attributes.JUMP_STRENGTH, 0.06, "add")),
         Map.entry("fishofthieves:ancientscale", new Trait(MobEffects.RESISTANCE, null, false, Attributes.ARMOR, 3, "add")),
-        Map.entry("fishofthieves:plentifin", new Trait(MobEffects.SATURATION, null, false, null, 0, null)),
+        Map.entry("fishofthieves:plentifin", new Trait(MobEffects.SATURATION, null, false, Attributes.LUCK, 1, "add")),
         Map.entry("fishofthieves:wildsplash", new Trait(MobEffects.DOLPHINS_GRACE, null, false, Attributes.WATER_MOVEMENT_EFFICIENCY, 0.3, "add")),
-        Map.entry("fishofthieves:devilfish", new Trait(MobEffects.FIRE_RESISTANCE, MobEffects.WEAKNESS, false, null, 0, null)),
+        Map.entry("fishofthieves:devilfish", new Trait(MobEffects.FIRE_RESISTANCE, MobEffects.WEAKNESS, false, Attributes.BURNING_TIME, -0.2, "base")),
         Map.entry("fishofthieves:battlegill", new Trait(MobEffects.STRENGTH, null, false, Attributes.ATTACK_DAMAGE, 2, "add")),
         Map.entry("fishofthieves:wrecker", new Trait(null, null, false, Attributes.KNOCKBACK_RESISTANCE, 0.2, "add")),
-        Map.entry("fishofthieves:stormfish", new Trait(MobEffects.SLOW_FALLING, MobEffects.SPEED, false, null, 0, null)));
+        Map.entry("fishofthieves:stormfish", new Trait(MobEffects.SLOW_FALLING, MobEffects.SPEED, false, Attributes.FALL_DAMAGE_MULTIPLIER, -0.15, "base")));
+
+    /** Thorns of a trophy pufferfish held in the main hand (owner 2026-10-19): damage dealt back to a melee attacker, 0 for none. */
+    static float thorns(ItemStack stack) {
+        var fish = FishData.tag(stack);
+        if (fish == null || !FishData.weighed(stack) || fish.getBooleanOr("fillet", false)) return 0;
+        String species = fish.getStringOr("species", net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString()).replace("cooked_", "");
+        if (!species.equals("minecraft:pufferfish") || tier(FishData.rarity(stack)) == 0) return 0;
+        return (float) heldAmount(1, FishData.rarity(stack), FishData.shiny(stack), fish.getBooleanOr("cooked", false));
+    }
+
+    static void registerThorns() {
+        net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.ALLOW_DAMAGE.register((victim, source, amount) -> {
+            if (victim instanceof net.minecraft.world.entity.player.Player player && source.getDirectEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
+                && source.getDirectEntity() == source.getEntity() && attacker != player && player.level() instanceof net.minecraft.server.level.ServerLevel level) {
+                float back = thorns(player.getMainHandItem());
+                if (back > 0) attacker.hurtServer(level, level.damageSources().thorns(player), back);
+            }
+            return true;
+        });
+    }
     static final Trait FALLBACK = new Trait(MobEffects.SATURATION, null, false, null, 0, null);
 
     static int tier(String rarity) { return switch (rarity) { case "rare" -> 1; case "epic" -> 2; case "legendary" -> 3; case "mythic" -> 4; default -> 0; }; }

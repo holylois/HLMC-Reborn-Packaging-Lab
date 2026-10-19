@@ -850,7 +850,13 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var enchanted=item.apply("minecraft:diamond_sword");
             enchanted.enchant(registries.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS),3);
             check(nameColor.apply(enchanted)==green,"an enchanted sword is Uncommon green, not vanilla aqua ("+holylois.boombox.HolyRarity.of(enchanted)+" "+enchanted.getStyledHoverName()+")");
-            check(nameColor.apply(item.apply("minecraft:enchanted_golden_apple"))==purple&&holylois.boombox.HolyRarity.of(item.apply("minecraft:mace")).equals("legendary"),"enchanted golden apple is Epic, mace Legendary (item floors)");
+            check(nameColor.apply(item.apply("minecraft:enchanted_golden_apple"))==gold&&holylois.boombox.HolyRarity.of(item.apply("minecraft:mace")).equals("legendary"),"enchanted golden apple and mace are Legendary (item floors)");
+            check(holylois.boombox.HolyRarity.of(item.apply("runeforged:amethyst_sword")).equals("uncommon")&&holylois.boombox.HolyRarity.of(item.apply("runeforged:shaping_stone")).equals("uncommon")
+                &&holylois.boombox.HolyRarity.of(item.apply("runeforged:elite_zombie_spawn_egg_cursed")).equals("mythic"),"gem weapons and basic stones are Uncommon, the Cursed Elite egg Mythic");
+            for(String id:new String[]{"minecraft:dirt","minecraft:diamond_sword","runeforged:amethyst_sword"}){
+                var f=com.anthonyhilyard.legendarytooltips.LegendaryTooltips.getDefinitionColors(item.apply(id),0xF0100010,0xF0100010,0x505000FF,0x5028007F,registries);
+                check(f==null||f.index()==-1,"below Legendary keeps the plain standard border ("+id+" "+(f==null?"none":f.index())+")");
+            }
             var epic=item.apply("minecraft:stick");epic.set(net.minecraft.core.component.DataComponents.RARITY,net.minecraft.world.item.Rarity.EPIC);
             check(nameColor.apply(epic)==purple,"a vanilla Epic item is our Epic purple");
             var link=epic.getDisplayName().getStyle().getColor();
@@ -904,7 +910,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
     private static void tierTooltipShots(ClientGameTestContext context, TestSingleplayerContext world) throws Exception {
         var server = world.getServer();
         server.runCommand("gamemode survival @a");
-        String[] kinds = {"rod", "book", "lootbox-pickaxe", "rune-magic", "rune-legendary", "rune-cursed", "fish-legendary", "fish-mythic"};
+        String[] kinds = {"dirt", "amethyst-sword", "beacon", "golden-apple", "cursed-egg", "rod", "book", "lootbox-pickaxe", "rune-magic", "rune-legendary", "rune-cursed", "fish-legendary", "fish-mythic"};
         for (String kind : kinds) {
             server.runCommand("clear @a");
             server.runOnServer(s -> {
@@ -916,6 +922,11 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
                         e.set(sharp.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.MENDING), 1); b.set(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, e.toImmutable()); yield b; }
                     case "lootbox-pickaxe" -> { var t = new ItemStack(net.minecraft.world.item.Items.DIAMOND_PICKAXE); t.enchant(sharp.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.FORTUNE), 2);
                         t.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Tester's Lucky Pickaxe").withStyle(st -> st.withColor(0xFFAA00).withItalic(false))); yield t; }
+                    case "dirt" -> new ItemStack(net.minecraft.world.item.Items.DIRT);
+                    case "beacon" -> new ItemStack(net.minecraft.world.item.Items.BEACON);
+                    case "golden-apple" -> new ItemStack(net.minecraft.world.item.Items.ENCHANTED_GOLDEN_APPLE);
+                    case "amethyst-sword" -> new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse("runeforged:amethyst_sword")));
+                    case "cursed-egg" -> new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse("runeforged:elite_zombie_spawn_egg_cursed")));
                     case "fish-legendary", "fish-mythic" -> { var cod = new ItemStack(net.minecraft.world.item.Items.COD); var tag = new net.minecraft.nbt.CompoundTag(); var fishTag = new net.minecraft.nbt.CompoundTag();
                         fishTag.putString("rarity", kind.substring(5)); fishTag.putDouble("kg", kind.endsWith("mythic") ? 60 : 25); tag.put("holylois_fish", fishTag);
                         cod.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag)); yield cod; }

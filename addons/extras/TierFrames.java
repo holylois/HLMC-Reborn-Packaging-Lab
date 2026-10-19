@@ -7,8 +7,9 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Legendary Tooltips frames in our tiers (client only): tier-coloured border; gold spikes only for Legendary, our own red Mythic and
- * purple Cursed frames (textures/gui/tooltip_frames.png, original art from make-frames.py). Index -1 is the mod's standard border,
- * which draws gold spikes too, so everything below Legendary gets -2 (plain). Used by both the frame lookup and the colour lookup.
+ * purple Cursed frames (textures/gui/tooltip_frames.png, original art from make-frames.py). Everything below Legendary gets the
+ * mod's plain standard border (-1; its config gave the gold frame to every vanilla rare/epic item, which includes anything
+ * enchanted). -2 means no border at all and loses the background. Used by both the frame lookup and the colour lookup.
  */
 public final class TierFrames {
     private static final Identifier BORDERS = Identifier.fromNamespaceAndPath("legendarytooltips", "textures/gui/tooltip_borders.png"),
@@ -24,12 +25,12 @@ public final class TierFrames {
         if (old == null) return null;
         String tier = HolyRarity.of(stack);
         boolean ours = tier.equals("mythic") || tier.equals("cursed"), fancy = ours || tier.equals("legendary"), hadFrame = old.index() >= 0;
-        int index = ours ? (tier.equals("mythic") ? 0 : 1) : fancy ? (hadFrame ? old.index() : 0) : -2;
+        int index = ours ? (tier.equals("mythic") ? 0 : 1) : fancy ? (hadFrame ? old.index() : 0) : -1;
         int color = FishData.color(tier);
         if (index == old.index() && color == 0) return old;
         boolean defaults = ours || fancy && !hadFrame;
-        // The standard border (-1) gets its background later from the call site; once we switch it, give the background here.
-        boolean ownBackground = ours || !hadFrame;
+        // The standard border (-1) gets its background from the call site; when we turn it into a fancy frame, give one here.
+        boolean ownBackground = ours || fancy && !hadFrame;
         int top = background(tier), bottom = (top & 0x00FFFFFF) | 0xE8000000;
         return new FrameDefinition(ours ? HOLY : old.resource() != null ? old.resource() : BORDERS, index,
             color != 0 ? () -> color : old.startBorder(), color != 0 ? () -> color : old.endBorder(),

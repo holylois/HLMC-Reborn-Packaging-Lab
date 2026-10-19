@@ -237,6 +237,7 @@
   "holylois.journal.level": "Высший уровень: %s",
   "holylois.journal.first_level": "Уровень при первой победе: %s",
   "holylois.journal.unknown_first_level": "Уровень при первой победе: не записан",
+  "holylois.fish.thorns": "Шипы: отвечает уроном %s",
   "holylois.fish.held": "В руке:",
   "holylois.map.treasure": "Карта зарытого сокровища",
   "holylois.map.clue": "Следуйте отметке на карте к зарытому сокровищу.",
