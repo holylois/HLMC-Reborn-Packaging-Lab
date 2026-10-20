@@ -282,6 +282,11 @@ public final class DailyRewards {
     }
 
     static void celebrate(ServerPlayer player, int tier) {
+        celebrate(player, tier, null);
+    }
+
+    /** Fireworks, sparks and the chime; with a line, it goes small above the hotbar instead of the big lootbox title. */
+    static void celebrate(ServerPlayer player, int tier, Component line) {
         var level = player.level();
         int[] colors = {0xF4C542, 0xFFAD42, 0xFFFFFF};
         for (int i = 0; i < tier; i++) {
@@ -294,7 +299,8 @@ public final class DailyRewards {
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.WAX_ON, player.getX(), player.getY() + 1.1, player.getZ(), 36, 0.35, 0.35, 0.35, 0.9);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD, player.getX(), player.getY() + 1.1, player.getZ(), 10, 0.2, 0.2, 0.2, 0.08);
         level.playSound(null, player.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.7f, 1.2f);
-        title(player, Component.literal("✦ Holy Lootbox ✦").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("Tier " + tier).withStyle(ChatFormatting.YELLOW));
+        if (line != null) player.sendOverlayMessage(line);
+        else title(player, Component.literal("✦ Holy Lootbox ✦").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), Component.literal("Tier " + tier).withStyle(ChatFormatting.YELLOW));
     }
 
     static void title(ServerPlayer player, Component title, Component subtitle) {

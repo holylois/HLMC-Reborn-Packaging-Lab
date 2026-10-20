@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +40,7 @@ final class FreePlayNames {
                 if (moved != null) tell(server, player, moved);
             } catch (IOException | RuntimeException | LinkageError error) {
                 LOG.warn("Free-play name check failed for {}", player.getGameProfile().name(), error);
+                handler.disconnect(Component.literal("Your account files need a staff recovery check. Please contact Holy Lois support."));
             }
         });
     }
@@ -48,9 +48,21 @@ final class FreePlayNames {
     static UUID offline(String name) { return UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(StandardCharsets.UTF_8)); }
 
     /** Moves every file named after the name's offline UUID out of the world's per-player folders. Returns the backup folder, or null if there was nothing to move. */
-    static Path moveToBackup(Path world, String name, UUID owner, Instant now) throws IOException {
+    static synchronized Path moveToBackup(Path world, String name, UUID owner, Instant now) throws IOException {
+        world = world.toAbsolutePath().normalize();
+        if (!name.matches("[A-Za-z0-9_]{3,16}")) throw new IOException("Invalid account name");
         var old = offline(name);
         if (old.equals(owner)) return null;
+        var backups = world.resolve("holylois/private-account-backups");
+        FileQuarantine.safe(world, backups);
+        if (Files.isDirectory(backups)) {
+            try (var prior = Files.list(backups)) {
+                for (var dir : prior.filter(p -> p.getFileName().toString().startsWith("free-play-" + name + "-")).toList()) {
+                    if (Files.exists(dir.resolve("transaction.json")) && FileQuarantine.resume(world, dir, owner.toString())) return dir;
+                    if (Files.exists(dir.resolve("transaction.pending"))) throw new IOException("Incomplete account journal needs staff review");
+                }
+            }
+        }
         // The free-play player may have joined as "steve" before the owner of "Steve" bought it: offline UUIDs depend on case.
         var olds = new java.util.LinkedHashSet<UUID>(); olds.add(old); olds.addAll(cachedSpellings(world, name)); olds.remove(owner);
         var prefixes = olds.stream().map(id -> id + ".").toList();
@@ -61,11 +73,7 @@ final class FreePlayNames {
         }
         if (files.isEmpty()) return null;
         var backup = world.resolve("holylois/private-account-backups/free-play-" + name + "-" + now.getEpochSecond());
-        for (var file : files) {
-            var target = backup.resolve(world.relativize(file));
-            Files.createDirectories(target.getParent());
-            Files.move(file, target, StandardCopyOption.ATOMIC_MOVE);
-        }
+        FileQuarantine.begin(world, backup, owner.toString(), files);
         Files.writeString(backup.resolve("moved.txt"), "Free-play character of " + name + " (offline UUID " + old + ") moved to backup at " + now
             + " because the bought account " + owner + " joined with this name.\n" + files.size() + " files, original folders kept below.\n");
         LOG.info("Free-play character of {} moved to {} ({} files): the bought account owner joined", name, backup, files.size());
