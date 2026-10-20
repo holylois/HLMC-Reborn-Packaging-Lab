@@ -627,6 +627,24 @@
       "sha256": "134edcc2992d2f6c3793746101dec1aba3ef02f046024fd280afb09094593027",
       "size": 579146,
       "side": "client"
+    },
+    "httpclient5-5.6.1.jar": {
+      "url": "https://repo.maven.apache.org/maven2/org/apache/httpcomponents/client5/httpclient5/5.6.1/httpclient5-5.6.1.jar",
+      "sha256": "1e3d8444c3c27772e4b9d42a790f06b3345a8ece4fd16d00981f2f2460e1e772",
+      "size": 1054142,
+      "side": "server"
+    },
+    "httpcore5-5.4.jar": {
+      "url": "https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5/5.4/httpcore5-5.4.jar",
+      "sha256": "cec2981fa7f520efb63f0787c24f10af2679e31f9f75c448c4dde40a3ae8100d",
+      "size": 952936,
+      "side": "server"
+    },
+    "httpcore5-h2-5.4.jar": {
+      "url": "https://repo.maven.apache.org/maven2/org/apache/httpcomponents/core5/httpcore5-h2/5.4/httpcore5-h2-5.4.jar",
+      "sha256": "2e0f4ace15db2d1609c2b06eca6012e7582afe4a99ad8d15073f62dd8edb3460",
+      "size": 263347,
+      "side": "server"
     }
   }
 }

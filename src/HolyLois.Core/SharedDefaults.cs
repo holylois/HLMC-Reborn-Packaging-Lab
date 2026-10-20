@@ -47,9 +47,12 @@ public static class SharedDefaults
         }
         // TOML: only keys whose shared default changed are written, inside their own [section], and only where the player
         // still has the old default (or no value): a value the player chose stays theirs (DH range 128 -> 64 keeps a personal 256).
-        if (target.EndsWith(".toml", StringComparison.OrdinalIgnoreCase) && Toml(next) is { } newToml && Toml(personal) is { } mine)
+        if (target.EndsWith(".toml", StringComparison.OrdinalIgnoreCase))
         {
-            var oldToml = previous is null ? [] : Toml(previous) ?? [];
+            // An unsupported personal file is not permission to replace the player's entire configuration.
+            var newToml = Toml(next); var mine = Toml(personal); var parsedOld = previous is null ? null : Toml(previous);
+            if (newToml is null || mine is null || previous is not null && parsedOld is null) return personal;
+            var oldToml = parsedOld ?? [];
             var changed = newToml.Where(x => !oldToml.TryGetValue(x.Key, out var old) || old != x.Value)
                 .Where(x => !mine.TryGetValue(x.Key, out var own) || oldToml.TryGetValue(x.Key, out var was) && own == was).ToList();
             if (changed.Count == 0) return personal;
@@ -62,7 +65,7 @@ public static class SharedDefaults
     }
 
     /// <summary>"[section]" and "key = value" lines of a simple TOML file; null when it has something this merge does not
-    /// understand (array tables, multi-line values), so the caller falls back to the complete file.</summary>
+    /// understand (array tables, multi-line values), so the caller preserves the personal file.</summary>
     private static Dictionary<(string Section, string Key), string>? Toml(byte[] bytes)
     {
         var map = new Dictionary<(string, string), string>();
@@ -76,7 +79,7 @@ public static class SharedDefaults
             if (eq <= 0) return null;
             var value = line[(eq + 1)..].Trim();
             if (value.StartsWith("\"\"\"") || value.StartsWith("'''") || value.StartsWith('[') && !value.EndsWith(']')) return null;
-            map[(section, line[..eq].Trim())] = value;
+            if (!map.TryAdd((section, line[..eq].Trim()), value)) return null;
         }
         return map;
     }

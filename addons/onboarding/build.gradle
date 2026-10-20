@@ -2,4 +2,25 @@
 dependencies {
     compileOnly project(':extras')
     testRuntimeOnly project(':extras')
+    // Hash-locked by ../deps.lock.json. Keep Apache's LICENSE/NOTICE inside each nested library.
+    include('org.apache.httpcomponents.client5:httpclient5:5.6.1') { transitive = false }
+    include('org.apache.httpcomponents.core5:httpcore5:5.4') { transitive = false }
+    include('org.apache.httpcomponents.core5:httpcore5-h2:5.4') { transitive = false }
 }
+
+configurations.create('audioLibraryVerification') {
+    canBeResolved = true
+    canBeConsumed = false
+    extendsFrom configurations.include
+}
+tasks.register('verifyAudioLibraries') {
+    doLast {
+        def lock = new groovy.json.JsonSlurper().parse(file('../deps.lock.json')).jars
+        configurations.audioLibraryVerification.files.each { jar ->
+            def expected = lock[jar.name]?.sha256
+            def actual = java.security.MessageDigest.getInstance('SHA-256').digest(jar.bytes).encodeHex().toString()
+            if (!expected || actual != expected) throw new GradleException("Unverified nested audio library: ${jar.name}")
+        }
+    }
+}
+tasks.named('processIncludeJars') { dependsOn 'verifyAudioLibraries' }

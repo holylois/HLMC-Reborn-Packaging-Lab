@@ -16,18 +16,26 @@ public static partial class GameReports
     public const int TailLines = 400;
 
     [GeneratedRegex(@"\b(?:\d{1,3}\.){3}\d{1,3}\b")] private static partial Regex Ipv4();
-    [GeneratedRegex(@"(--accessToken|accessToken[""=:]+|token:)\s*[^\s"",)]+", RegexOptions.IgnoreCase)] private static partial Regex Token();
-    [GeneratedRegex(@"\b(?:[0-9a-fA-F]{1,4}:){4,7}[0-9a-fA-F]{1,4}\b")] private static partial Regex Ipv6();
+    [GeneratedRegex("""((?:--)?(?:access[_-]?token|refresh[_-]?token|id[_-]?token|client[_-]?secret|password|passwd|api[_-]?key|session[_-]?id|token))(["'\s]*[:=]["'\s]*|\s+)(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;)]+)""", RegexOptions.IgnoreCase)] private static partial Regex Token();
+    [GeneratedRegex(@"(?<![\w])(?:[0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F:.]+(?:%[A-Za-z0-9_.-]+)?")] private static partial Regex Ipv6();
+    [GeneratedRegex("""((?:proxy-)?authorization|(?:set-)?cookie)(["'\s]*[:=]["'\s]*)[^\r\n]+""", RegexOptions.IgnoreCase)] private static partial Regex Headers();
+    [GeneratedRegex("""https?://[^\s<>"']+""", RegexOptions.IgnoreCase)] private static partial Regex Links();
+    [GeneratedRegex(@"(/(?:login|register|l|reg))\s+[^\r\n]+", RegexOptions.IgnoreCase)] private static partial Regex Login();
     [GeneratedRegex(@"(--xuid|--clientId|--uuid)\s+\S+", RegexOptions.IgnoreCase)] private static partial Regex Ids();
 
     /// <summary>Removes personal details. The Holy Lois server address stays, it is public anyway.</summary>
     public static string Redact(string text, string? windowsUser)
     {
-        if (!string.IsNullOrWhiteSpace(windowsUser) && windowsUser.Length >= 2)
+        if (!string.IsNullOrWhiteSpace(windowsUser))
             text = Regex.Replace(text, @"(?<=[\\/]Users[\\/])" + Regex.Escape(windowsUser) + @"(?=[\\/\r\n""']|$)", "<user>", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+        text = Headers().Replace(text, m => m.Groups[1].Value + ": HIDDEN");
+        text = Links().Replace(text, m => Uri.TryCreate(m.Value, UriKind.Absolute, out var uri)
+            ? new UriBuilder(uri.Scheme, uri.Host, uri.IsDefaultPort ? -1 : uri.Port).Uri.GetLeftPart(UriPartial.Authority) + "/LINK-HIDDEN" : "LINK-HIDDEN");
         text = Token().Replace(text, m => m.Groups[1].Value + " HIDDEN");
+        text = Login().Replace(text, m => m.Groups[1].Value + " HIDDEN");
         text = Ids().Replace(text, m => m.Groups[1].Value + " HIDDEN");
-        text = Ipv6().Replace(text, "IP-HIDDEN");
+        text = Ipv6().Replace(text, m => System.Net.IPAddress.TryParse(m.Value.Split('%')[0], out var ip)
+            && ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6 ? "IP-HIDDEN" : m.Value);
         return Ipv4().Replace(text, m => m.Value == ServerAddress.Ip.Split(':')[0] || m.Value.StartsWith("127.", StringComparison.Ordinal) || m.Value == "0.0.0.0" ? m.Value : "IP-HIDDEN");
     }
 

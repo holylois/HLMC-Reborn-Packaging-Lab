@@ -8,6 +8,23 @@ var root = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "test-output"
 Directory.CreateDirectory(root);
 var tests = new List<(string Name, Func<Task> Run)>();
 var passed = 0;
+tests.Add(("Reports redact headers, signed links, refresh tokens and compressed IPv6", () => {
+    var report = GameReports.Redact("Authorization: Bearer test-private-credential\nCookie: session=private-cookie\nrefresh_token=private-refresh\n"
+        + "https://user:private-pass@audio.example/private/path?signature=private-signature#secret\n"
+        + "address [2001:db8::42] and ::ffff:192.168.1.2 and fe80::42%generated-adapter at 12:00:13\n/login private-login", null);
+    foreach (var secret in new[] { "test-private-credential", "private-cookie", "private-refresh", "private-pass", "private-signature", "private/path", "private-login", "2001:db8::42", "192.168.1.2", "fe80::42", "generated-adapter" })
+        Check(!report.Contains(secret, StringComparison.Ordinal), "Report retained a generated secret: " + secret);
+    Check(report.Contains("12:00:13") && report.Contains("audio.example"), "Useful timestamps and origin were lost.");
+    return Task.CompletedTask;
+}));
+tests.Add(("Unsupported personal TOML is preserved byte for byte", () => {
+    var personal = Encoding.UTF8.GetBytes("[[custom]]\nrange = 256\n");
+    var old = Encoding.UTF8.GetBytes("range = 128\n"); var next = Encoding.UTF8.GetBytes("range = 64\n");
+    Check(SharedDefaults.Merge("config/test.toml", personal, old, next).SequenceEqual(personal), "Unsupported personal TOML was overwritten.");
+    var mine = Encoding.UTF8.GetBytes("range = 256\n");
+    Check(SharedDefaults.Merge("config/test.toml", mine, personal, next).SequenceEqual(mine), "Unsupported previous TOML allowed a destructive merge.");
+    return Task.CompletedTask;
+}));
 tests.Add(("Signed update channels stay fresh and silent patches remain compatible", SignedChannelTests.RunAsync));
 tests.Add(("Player notes translate presentation while retaining signed identity and a safe fallback", () => {
     var note = new ReleaseNote("1.10.0", "2026-10-11", "Signed summary", ["Signed addition"], [], ["Signed change"]);
@@ -61,7 +78,7 @@ tests.Add(("TOML defaults change only untouched keys that changed, inside their 
     Check(merged.Contains("lodChunkRenderDistanceRadius = 256\n\t\tnewQualityKey = true\n\t[client.advanced.multiplayer]"), "A new key was not added inside its section with its indentation.");
     Check(merged.TrimEnd().EndsWith("[server]\nfresh = 1") && merged.StartsWith("# mine\n"), "A new section was not appended or a comment was lost.");
     Check(ReferenceEquals(SharedDefaults.Merge(target, personal, next, next), personal), "Unchanged defaults rewrote the personal file.");
-    Check(Encoding.UTF8.GetString(SharedDefaults.Merge(target, personal, null, B("x = [\n1]\n"))).StartsWith("x = ["), "A TOML shape the merge cannot read did not fall back to the complete file.");
+    Check(SharedDefaults.Merge(target, personal, null, B("x = [\n1]\n")).SequenceEqual(personal), "An unsupported default TOML shape overwrote the personal file.");
     return Task.CompletedTask;
 }));
 tests.Add(("Body toggle migrates legacy defaults without stealing custom controls", () => {
