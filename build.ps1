@@ -1,5 +1,9 @@
-param([switch]$Package, [string]$Version = '1.6.1', [string]$Output = 'publish\release')
+param([switch]$Package, [string]$Version, [string]$Output = 'publish\release')
 $ErrorActionPreference = 'Stop'
+if (!$Version) {
+    [xml]$versionSource = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'LauncherVersion.props')
+    $Version = $versionSource.Project.PropertyGroup.Version
+}
 $env:DOTNET_CLI_HOME = Join-Path $PSScriptRoot '..\dotnet-home'
 $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 $env:DOTNET_NOLOGO = '1'

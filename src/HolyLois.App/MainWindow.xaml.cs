@@ -298,9 +298,10 @@ public partial class MainWindow : ThemedWindow
         Progress.IsIndeterminate = busy;
         if (busy) { operationTime.Restart(); progressClock.Start(); progressDetail = T("Checking"); Progress.Value = 0; Progress.Foreground = (Brush)FindResource("ActionGreen"); WorkPanel.Visibility = Visibility.Visible; ProgressDetails.Text = T("Checking"); }
         else { progressClock.Stop(); operationTime.Stop(); }
-        SettingsButton.IsEnabled = !busy; LauncherActions.IsEnabled = !busy;
-        LinkSkButton.IsEnabled = RebuildSkButton.IsEnabled = VerifyButton.IsEnabled = OfficialCard.IsEnabled = SkCard.IsEnabled = ModeButton.IsEnabled = ChangeNameButton.IsEnabled = LanguageChoice.IsEnabled = !busy;
-        CheckUpdatesButton.IsEnabled = !busy && !checking; PrimaryAction.IsEnabled = !busy && !starting && CurrentStep() != Step.Blocked; NameSaveButton.IsEnabled = !busy;
+        var locked = busy || starting;
+        SettingsButton.IsEnabled = !locked; LauncherActions.IsEnabled = !locked;
+        LinkSkButton.IsEnabled = RebuildSkButton.IsEnabled = VerifyButton.IsEnabled = OfficialCard.IsEnabled = SkCard.IsEnabled = ModeButton.IsEnabled = ChangeNameButton.IsEnabled = LanguageChoice.IsEnabled = !locked;
+        CheckUpdatesButton.IsEnabled = !locked && !checking; PrimaryAction.IsEnabled = !locked && CurrentStep() != Step.Blocked; NameSaveButton.IsEnabled = !locked;
         CancelButton.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
         StatusText.Visibility = Visibility.Visible;
         PrimaryHint.Visibility = busy ? Visibility.Collapsed : Visibility.Visible;
@@ -352,25 +353,51 @@ public partial class MainWindow : ThemedWindow
     private void CopyAddress_Click(object sender, RoutedEventArgs e) { try { Clipboard.SetText(ServerAddress.Public); StatusText.Text = T("Copied"); } catch (System.Runtime.InteropServices.COMException) { StatusText.Text = ServerAddress.Public; } }
     private void DisableShaders_Click(object sender, RoutedEventArgs e) { if (cancellation is not null) return; try { context.DisableShaders(); StatusText.Text = T("Disabled"); } catch (Exception ex) { StatusText.Text = Localize.Error(ex); } }
     private GameSession? game;
-    /// <summary>Fast start: check the pack, get Java and Minecraft ready, start the game, then step aside once its window is open.</summary>
-    private async Task FastStartAsync()
+    internal async Task<bool> CheckGuardForFastStartAsync(Func<GuardReport> check)
     {
-        if (starting || cancellation is not null) return;
-        if (game is not null) { StatusText.Text = T("GameRunning"); return; }
-        starting = true; Refresh();
+        starting = true; Refresh(); SetBusy(false);
+        StatusText.Text = T("Start_check");
+        var ready = false;
+        bool Closed() => IsClosed || Dispatcher.HasShutdownStarted;
         // Damaged pack files are repaired here in the main window first, so its progress and dialogs never fight the launch window.
         try
         {
-            if (context.Guard().Damaged.Length > 0)
+            var report = await Task.Run(check);
+            if (Closed()) return false;
+            if (report.Moved.Length > 0)
+                AppDialog.Show(this, T("Start_check"), string.Format(T("GuardMoved"), report.Moved.Length));
+            if (Closed()) return false;
+            if (report.Damaged.Length > 0)
             {
                 await RunInstallAsync(false);
-                if (context.Guard().Damaged.Length > 0) throw new IOException(T("GuardFailed"));
+                if (Closed()) return false;
+                var repaired = await Task.Run(check);
+                if (Closed()) return false;
+                if (repaired.Damaged.Length > 0) throw new IOException(T("GuardFailed"));
             }
+            ready = true;
+            return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or System.Net.Http.HttpRequestException)
         {
-            starting = false; StatusText.Text = Localize.Error(ex); Refresh(); return;
+            if (!Closed()) StatusText.Text = Localize.Error(ex);
+            return false;
         }
+        finally
+        {
+            if (!ready)
+            {
+                starting = false;
+                if (!Closed()) { SetBusy(false); Refresh(); }
+            }
+        }
+    }
+    /// <summary>Fast start: check the pack, get Java and Minecraft ready, start the game, then step aside once its window is open.</summary>
+    private async Task FastStartAsync()
+    {
+        if (starting || cancellation is not null || IsClosed) return;
+        if (game is not null) { StatusText.Text = T("GameRunning"); return; }
+        if (!await CheckGuardForFastStartAsync(context.Guard)) return;
         var window = new LaunchWindow(context.PlayerName ?? "", context.Settings.JoinServer) { Owner = this };
         window.Show();
         GameSession? session = null;
@@ -415,7 +442,7 @@ public partial class MainWindow : ThemedWindow
             actions.Add(("Discord", () => { ReportActions.OpenDiscord(); return null; }, false));
             if (!window.IsClosed) window.Fail(T("StartFailed"), reason + "\n\n" + T("StartFailedHelp"), actions);
         }
-        finally { session?.Dispose(); starting = false; Refresh(); }
+        finally { session?.Dispose(); starting = false; SetBusy(false); Refresh(); }
     }
     private sealed class GameStartException(string message) : Exception(message);
     /// <summary>After the game closes: quietly exit, or come back with the crash window when it ended with an error.</summary>

@@ -20,6 +20,6 @@ jobs:
       - name: Build and test
         shell: pwsh
         run: |
-          [xml]$taskProject = Get-Content src/HolyLois.App/HolyLois.App.csproj
+          [xml]$taskProject = Get-Content LauncherVersion.props
           $taskVersion = @($taskProject.Project.PropertyGroup.Version) | Where-Object { $_ } | Select-Object -First 1
           ./build.ps1 -Version $taskVersion

@@ -26,6 +26,8 @@ public static partial class GameReports
     /// <summary>Removes personal details. The Holy Lois server address stays, it is public anyway.</summary>
     public static string Redact(string text, string? windowsUser)
     {
+        text = Regex.Replace(text, @"^(\s*(?:USERNAME|USERPROFILE|HOMEPATH|HOMEDRIVE|USERDOMAIN)\s*=)[^\r\n]*", "$1HIDDEN", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+        text = Regex.Replace(text, @"^(\s*(?:java_command|Command Line)\s*[:=])[^\r\n]*", "$1 HIDDEN", RegexOptions.IgnoreCase | RegexOptions.Multiline);
         if (!string.IsNullOrWhiteSpace(windowsUser))
             text = Regex.Replace(text, @"(?<=[\\/]Users[\\/])" + Regex.Escape(windowsUser) + @"(?=[\\/\r\n""']|$)", "<user>", RegexOptions.IgnoreCase | RegexOptions.Multiline);
         text = Headers().Replace(text, m => m.Groups[1].Value + ": HIDDEN");

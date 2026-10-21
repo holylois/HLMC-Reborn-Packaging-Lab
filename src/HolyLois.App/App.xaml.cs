@@ -102,6 +102,31 @@ public partial class App : Application
                 }
                 File.WriteAllText(Path.Combine(data,"setup-scroll-result.txt"),"EN/RU/LV setup steps at 720px and 600px: name wheel scroll works on the play step, both shortcut choices and the Finish button stay reachable on the last step.");Shutdown(0);return;
             }
+            if (args.Contains("--verify-fast-start-guard")) {
+                if (data is null || !context.IsIsolated) throw new ArgumentException("Guard verification requires an isolated folder.");
+                foreach (var outcome in new[] { "ready", "closed", "closed-error" }) {
+                    var main = new MainWindow(context); main.Show();
+                    using var release = new ManualResetEventSlim();
+                    var uiThread = Environment.CurrentManagedThreadId;
+                    var pending = main.CheckGuardForFastStartAsync(() => {
+                        if (Environment.CurrentManagedThreadId == uiThread) throw new InvalidOperationException("Guard ran on the dispatcher.");
+                        if (!release.Wait(TimeSpan.FromSeconds(10))) throw new IOException("Guard fixture timed out.");
+                        if (outcome == "closed-error") throw new IOException("Generated guard error.");
+                        return GuardReport.Empty;
+                    });
+                    try {
+                        await Task.Delay(100);
+                        if (pending.IsCompleted) throw new IOException("Guard did not wait for the worker.");
+                        foreach (var name in new[] { "PrimaryAction", "SettingsButton", "ModeButton", "ChangeNameButton", "CheckUpdatesButton", "VerifyButton", "LanguageChoice" })
+                            if (((UIElement)main.FindName(name)).IsEnabled) throw new IOException("Guard left a conflicting control enabled: " + name);
+                        if (outcome != "ready") main.Close();
+                    } finally { release.Set(); }
+                    if (await pending != (outcome == "ready")) throw new IOException("Guard continued after window closure or rejected a clean check.");
+                    if (!main.IsClosed) main.Close();
+                }
+                File.WriteAllText(Path.Combine(data,"fast-start-guard-result.txt"),"Guard runs off the dispatcher, conflicting controls stay disabled, a clean check continues, and closing during success or failure prevents launch.");
+                Shutdown(0); return;
+            }
             if (args.Contains("--verify-ui-polish")) {
                 if (data is null || !context.IsIsolated) throw new ArgumentException("UI polish verification requires an isolated folder.");
                 var setup = new SetupWindow(context, data); setup.EnsureChrome();setup.Show();setup.UpdateLayout();

@@ -25,6 +25,16 @@ tests.Add(("Unsupported personal TOML is preserved byte for byte", () => {
     Check(SharedDefaults.Merge("config/test.toml", mine, personal, next).SequenceEqual(mine), "Unsupported previous TOML allowed a destructive merge.");
     return Task.CompletedTask;
 }));
+tests.Add(("Reports redact environment identity and JVM command lines without a known user", () => {
+    var report = GameReports.Redact("USERNAME=GeneratedPrivateUser\nUSERPROFILE=D:\\Profiles\\GeneratedPrivateUser\n"
+        + "HOMEPATH=\\Profiles\\GeneratedPrivateUser\nUSERDOMAIN=GeneratedPrivateDomain\n"
+        + "java_command: generated.game --username GeneratedPrivatePlayer\nCommand Line: generated java arguments\n"
+        + "OS: Windows\n", null);
+    foreach (var value in new[] { "GeneratedPrivateUser", "GeneratedPrivateDomain", "GeneratedPrivatePlayer", "generated.game", "generated java arguments" })
+        Check(!report.Contains(value, StringComparison.Ordinal), "Report retained generated identity or launch arguments.");
+    Check(report.Contains("OS: Windows"), "Useful OS context was removed.");
+    return Task.CompletedTask;
+}));
 tests.Add(("Signed update channels stay fresh and silent patches remain compatible", SignedChannelTests.RunAsync));
 tests.Add(("Player notes translate presentation while retaining signed identity and a safe fallback", () => {
     var note = new ReleaseNote("1.10.0", "2026-10-11", "Signed summary", ["Signed addition"], [], ["Signed change"]);
