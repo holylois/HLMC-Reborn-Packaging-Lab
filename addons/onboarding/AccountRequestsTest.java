@@ -33,6 +33,11 @@ public final class AccountRequestsTest {
             check(link.getStyle().isUnderlined()&&net.minecraft.network.chat.TextColor.fromLegacyFormat(net.minecraft.ChatFormatting.AQUA).equals(link.getStyle().getColor())&&link.getStyle().getClickEvent() instanceof net.minecraft.network.chat.ClickEvent.RunCommand&&reminder.getStyle().getClickEvent()==null,"the form link is distinct and only the link is clickable");
             check(AccountRequests.passwordMaximum(-1)==100 && AccountRequests.passwordMaximum(32)==32,"unlimited native password maximum remains bounded by the safe packet limit");
         }finally{field.set(null,original);}
+        // Quick reset IP lock (documentation-range addresses only).
+        check(AccountRequests.sameIp("192.0.2.10",new java.net.InetSocketAddress(java.net.InetAddress.getByName("192.0.2.10"),51000)),"quick reset accepts the account's last login IP");
+        check(!AccountRequests.sameIp("192.0.2.10",new java.net.InetSocketAddress(java.net.InetAddress.getByName("198.51.100.7"),51000)),"quick reset refuses another IP");
+        check(AccountRequests.sameIp("/2001:db8::1",new java.net.InetSocketAddress(java.net.InetAddress.getByName("2001:db8:0:0:0:0:0:1"),51000)),"IPv6 forms are compared normalised");
+        check(!AccountRequests.sameIp("",new java.net.InetSocketAddress(java.net.InetAddress.getByName("192.0.2.10"),51000))&&AccountRequests.normalIp("example.com")==null,"an unknown or non-literal IP never matches and never resolves");
         System.out.println("Passed "+checked+" account alias/challenge/expiry/replay/persistence/privacy checks; no database used.");
     }
 }
