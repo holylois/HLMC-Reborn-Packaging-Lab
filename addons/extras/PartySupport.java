@@ -27,7 +27,7 @@ public final class PartySupport {
     private static final Map<UUID, Mark> marks = new HashMap<>();
     private static final Map<UUID, Long> cooldown = new HashMap<>();
     private static final Map<UUID, UUID> lastParty = new HashMap<>();
-    private static final Pattern UNSAFE = Pattern.compile("n[i1!|l][g6q9]{2}|f[a@4][g6q9]{1,2}[o0]t|f[a@4][g6q9]$|r[e3]t[a@4]rd|p[i1!]d[o0a]r|k[i1!]ke|ch[i1!]nk|tr[a@4]nn(?:y|ie)|п[иі]д[оа]р", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+    private static final Pattern UNSAFE = Pattern.compile("n[i1!|l][g6q9]{2}|f[a@4][g6q9]{1,2}[o0]t|f[a@4][g6q9]$|r[e3]t[a@4]rd|p[i1!]d[o0a]r|k[i1!]ke|ch[i1!]nk|tr[a@4]nn(?:y|ie)|п[иі]д[оа]р|(?:p[o0]|n[a@4]|n[i1])h[uy][ijy]|x[uy][ijy](?!e)|p[i1!]zd|bl[yj]a[dt]|[yj][e3]b[a@4][nlt]|d[o0]lb[o0][e3]b|m[uy]d[a@4]k|g[a@4]nd[o0]n|z[a@4]l[uy]p|p[i1!]mp[i1!]s|m[a@4][uy]k[a@4]", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     public static String display(String name) { return UNSAFE.matcher(name).find() ? name.substring(0, 1).toUpperCase(Locale.ROOT) + "*****" : name; }
     public static boolean ready(ServerPlayer p) {
         if (!FabricLoader.getInstance().isModLoaded("easyauth")) return true;
