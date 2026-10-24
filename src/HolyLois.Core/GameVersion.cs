@@ -128,11 +128,22 @@ public sealed class GameVersion
         {
             var name = (string?)library["name"] ?? throw new InvalidDataException("Minecraft library has no name.");
             if (!Allowed(library["rules"], platform, new HashSet<string>()) || library["downloads"]?["artifact"] is not JsonObject artifact) continue;
+            // Mojang allows natives-windows-arm64 on every Windows PC. Next to the x64 jar, Fabric's class loader can hand
+            // LWJGL the arm64 copy, and the game stops with "Failed to locate library: lwjgl.dll". Keep only our CPU's natives.
+            if (!NativesMatch(name, platform)) continue;
             if (!seen.Add(LibraryKey(name))) continue;
             var path = (string?)artifact["path"] ?? MavenPath(name);
             result.Add(Remote("libraries/" + path, artifact));
         }
         return result;
+    }
+
+    private static bool NativesMatch(string name, GamePlatform platform)
+    {
+        var parts = name.Split(':');
+        if (parts.Length < 4 || !parts[3].StartsWith("natives-", StringComparison.Ordinal)) return true;
+        var arch = parts[3].EndsWith("-arm64", StringComparison.Ordinal) ? "arm64" : parts[3].EndsWith("-x86", StringComparison.Ordinal) ? "x86" : "x64";
+        return arch == platform.Arch;
     }
 
     private static GameFile Checked(GameFile file)

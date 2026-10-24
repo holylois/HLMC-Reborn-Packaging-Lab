@@ -891,6 +891,7 @@ public final class HolyLoisClientTests implements FabricClientGameTest {
             var lootboxTool=item.apply("minecraft:diamond_pickaxe");
             lootboxTool.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Tester's Lucky Pickaxe").withStyle(st->st.withColor(0xFFAA00)));
             check(holylois.boombox.HolyRarity.of(lootboxTool).equals("legendary"),"a gold or orange named item (lootbox tools) is Legendary");
+            check(holylois.boombox.HolyRarity.of(new net.minecraft.world.item.ItemStack(holylois.boombox.HolyLootbox.ITEM)).equals("legendary"),"the plain Holy Lootbox (reward screen, recipe viewer) is Legendary");
             var runeRare=item.apply("minecraft:iron_sword");
             com.ultimatearpg.item.ArpgWeaponHelper.setQuality(runeRare,com.ultimatearpg.item.ArpgItemQuality.RARE);
             var lines=runeRare.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(registries),null,net.minecraft.world.item.TooltipFlag.NORMAL);

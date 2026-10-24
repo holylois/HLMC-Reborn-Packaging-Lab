@@ -100,7 +100,7 @@ public final class HolyRarity {
     static final java.util.Map<String, Integer> FLOORS = java.util.Map.ofEntries(
         java.util.Map.entry("minecraft:mace", 4), java.util.Map.entry("minecraft:trident", 4), java.util.Map.entry("minecraft:elytra", 4),
         java.util.Map.entry("minecraft:dragon_egg", 4), java.util.Map.entry("minecraft:nether_star", 4), java.util.Map.entry("minecraft:beacon", 4),
-        java.util.Map.entry("minecraft:heavy_core", 4),
+        java.util.Map.entry("minecraft:heavy_core", 4), java.util.Map.entry("holylois:holy_lootbox", 4),
         java.util.Map.entry("minecraft:enchanted_golden_apple", 4), java.util.Map.entry("minecraft:totem_of_undying", 3), java.util.Map.entry("minecraft:conduit", 3),
         java.util.Map.entry("minecraft:dragon_head", 3), java.util.Map.entry("minecraft:end_crystal", 3),
         java.util.Map.entry("minecraft:netherite_ingot", 2), java.util.Map.entry("minecraft:netherite_upgrade_smithing_template", 2),

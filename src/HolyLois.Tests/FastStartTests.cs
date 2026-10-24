@@ -36,6 +36,8 @@ internal static class FastStartTests
             Check(libraries[0].Path.StartsWith("libraries/org/ow2/asm/asm/", StringComparison.Ordinal) && libraries.Any(l => l.Path.Contains("fabric-loader-0.19.5.jar")), "Fabric libraries do not come first.");
             Check(libraries.Any(l => l.Path.EndsWith("natives-windows.jar", StringComparison.Ordinal)) && !libraries.Any(l => l.Path.Contains("natives-linux") || l.Path.Contains("natives-macos") || l.Path.Contains("java-objc-bridge")),
                 "Native libraries for other systems were included or Windows ones are missing.");
+            Check(!libraries.Any(l => l.Path.Contains("natives-windows-arm64")) && libraries.Count(l => l.Path.Contains("/lwjgl/3.4.3/lwjgl-3.4.3-natives-windows.jar")) == 1,
+                "ARM64 natives sit next to the x64 ones, so LWJGL can load the wrong CPU's lwjgl.dll.");
             Check(libraries.Count(l => l.Path.Contains("/asm/")) == 1 || libraries.Where(l => l.Path.Contains("org/ow2/asm/asm/")).Count() == 1, "A library appears twice.");
             Check(libraries.All(l => l.Hash.Length is 40 or 64 && l.Size > 0), "A library has no checksum.");
             var values = new Dictionary<string, string> { ["auth_player_name"] = "pjamtest", ["auth_uuid"] = FastStart.OfflineUuid("pjamtest"), ["auth_access_token"] = "0",
