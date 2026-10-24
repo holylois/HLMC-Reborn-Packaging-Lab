@@ -248,6 +248,15 @@ tests.Add(("Server list keeps other entries and existing resource-pack consent",
     Check((byte)((Dictionary<string, NbtTag>)list.Items[1].Value)["acceptTextures"].Value == 0, "User consent changed.");
     Check(((int[])changed.Root["custom"].Value)[1] == -2, "Unknown tag lost."); return Task.CompletedTask;
 }));
+tests.Add(("Game files with a Low integrity label are not reused", () => {
+    var d = Dir("low-label"); var plain = Path.Combine(d, "plain.bin"); var low = Path.Combine(d, "low.bin");
+    File.WriteAllBytes(plain, [1]); File.WriteAllBytes(low, [1]);
+    using (var icacls = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("icacls", $"\"{low}\" /setintegritylevel L") { UseShellExecute = false, RedirectStandardOutput = true })!) icacls.WaitForExit();
+    // A new file takes its folder's label (the folder itself is Low when this runs at Low integrity).
+    Check(GameDownloads.LowIntegrity(plain) == GameDownloads.LowIntegrity(d), "A normal file did not match its folder's label.");
+    Check(GameDownloads.LowIntegrity(low), "A Low integrity file was not detected.");
+    return Task.CompletedTask;
+}));
 tests.Add(("Server list moves the IP entry to the domain without duplicates", () => {
     var holy = new Dictionary<string, NbtTag> { ["name"] = new(8, "Holy Lois: Reborn"), ["ip"] = new(8, ServerAddress.Ip), ["acceptTextures"] = new(1, (byte)1) };
     var again = new Dictionary<string, NbtTag> { ["name"] = new(8, "Copy"), ["ip"] = new(8, ServerAddress.Public) };
@@ -255,6 +264,7 @@ tests.Add(("Server list moves the IP entry to the domain without duplicates", ()
     var list = (NbtList)NbtCodec.Read(ServerList.Upsert(initial, ServerAddress.Public, [1], ServerAddress.Ip)).Root["servers"].Value;
     var entry = (Dictionary<string, NbtTag>)list.Items[0].Value;
     Check(list.Items.Count == 1 && (string)entry["ip"].Value == ServerAddress.Public && (byte)entry["acceptTextures"].Value == 1, "The saved server was not moved cleanly to the domain.");
+    Check((string)entry["name"].Value == " ", "The server name should be blank so only the MOTD title shows.");
     return Task.CompletedTask;
 }));
 tests.Add(("Official profile keeps other profiles and opaque account data", () => {

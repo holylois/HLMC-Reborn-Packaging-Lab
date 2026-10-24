@@ -149,6 +149,8 @@ public static class ServerAddress
 
 public static class ServerList
 {
+    public const string Name = " ";
+
     // Entries saved under an older address (the IP) are moved to the new one instead of being duplicated.
     public static byte[] Upsert(byte[]? existing, string address, byte[] icon, params string[] aliases)
     {
@@ -162,7 +164,9 @@ public static class ServerList
         var entry = matches.Select(t => (Dictionary<string, NbtTag>)t.Value).FirstOrDefault();
         foreach (var duplicate in matches.Skip(1)) servers.Items.Remove(duplicate);
         if (entry is null) { entry = []; servers.Items.Insert(0, new(10, entry)); }
-        entry["name"] = new(8, "Holy Lois: Reborn"); entry["ip"] = new(8, address);
+        // The MOTD's first line already shows the shining server name. One space, not empty: Minecraft's Edit Server screen
+        // refuses to save an entry without a name.
+        entry["name"] = new(8, Name); entry["ip"] = new(8, address);
         entry["icon"] = new(8, Convert.ToBase64String(icon));
         return NbtCodec.Write(doc);
     }

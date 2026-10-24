@@ -23,6 +23,7 @@ public sealed class GameDownloads
     private readonly string root;
     private readonly IReadOnlyList<string> reuseRoots;
     private readonly string stampPath;
+    private readonly bool rootLow;
     private readonly ConcurrentDictionary<string, Stamp> stamps;
     public int Parallel { get; init; } = 12;
     /// <summary>For tests: count of files that came from the network.</summary>
@@ -39,6 +40,7 @@ public sealed class GameDownloads
         this.reuseRoots = reuseRoots.Where(r => !string.IsNullOrWhiteSpace(r) && Directory.Exists(r)).Select(Path.GetFullPath)
             .Where(r => !r.Equals(this.root, StringComparison.OrdinalIgnoreCase)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         Directory.CreateDirectory(this.root);
+        rootLow = LowIntegrity(this.root);
         stampPath = SafePaths.Resolve(this.root, "checked-files.json");
         stamps = new(StringComparer.OrdinalIgnoreCase);
         try
@@ -113,7 +115,7 @@ public sealed class GameDownloads
             {
                 var source = SafePaths.Resolve(other, file.Path);
                 var info = new FileInfo(source);
-                if (!info.Exists || info.Length != file.Size || !Same(source, file)) continue;
+                if (!info.Exists || info.Length != file.Size || (LowIntegrity(source) && !rootLow) || !Same(source, file)) continue;
                 var target = PathOf(file);
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                 var temp = target + ".holylois-tmp-" + Guid.NewGuid().ToString("N");
@@ -131,6 +133,34 @@ public sealed class GameDownloads
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException) { }
         }
         return false;
+    }
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetNamedSecurityInfoW")]
+    private static extern uint GetNamedSecurityInfo(string name, int type, int info, IntPtr owner, IntPtr group, IntPtr dacl, IntPtr sacl, out IntPtr descriptor);
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "ConvertSecurityDescriptorToStringSecurityDescriptorW")]
+    private static extern bool DescriptorToString(IntPtr descriptor, int revision, int info, out IntPtr text, IntPtr length);
+    [DllImport("kernel32.dll")]
+    private static extern IntPtr LocalFree(IntPtr memory);
+
+    // A file with a Low integrity label (left by a sandboxed tool) makes java.exe run at Low integrity: it cannot write
+    // Temp or the game folder and LWJGL fails to load. A hard link shares that label, so such files are not reused into a
+    // normal game folder (a game folder that is itself Low gains nothing from refusing them).
+    public static bool LowIntegrity(string path)
+    {
+        if (!OperatingSystem.IsWindows()) return false;
+        const int File = 1, Label = 0x10;
+        try
+        {
+            if (GetNamedSecurityInfo(path, File, Label, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, out var descriptor) != 0) return false;
+            try
+            {
+                if (!DescriptorToString(descriptor, 1, Label, out var text, IntPtr.Zero)) return false;
+                try { return (Marshal.PtrToStringUni(text) ?? "").Contains(";;;LW)", StringComparison.Ordinal); }
+                finally { LocalFree(text); }
+            }
+            finally { LocalFree(descriptor); }
+        }
+        catch (Exception ex) when (ex is EntryPointNotFoundException or DllNotFoundException) { return false; }
     }
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "CreateHardLinkW")]
